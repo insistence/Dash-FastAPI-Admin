@@ -1,0 +1,42 @@
+._dash-loading {
+    color: transparent;
+    position: fixed;
+    width: calc(544px / 2.5);
+    height: calc(408px / 2.5);
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    background-image: url("/assets/imgs/加载动画.webp");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+._dash-loading::after {
+    content: '';
+}
+
+#login-form-container .ant-card-head-wrapper {
+    text-align: center;
+}
+
+#login-form-container .ant-card-head-title {
+    font-size: 26px !important;
+    font-weight: bold;
+}
+
+/*滚动条自定义样式*/
+*::-webkit-scrollbar-thumb {
+    background-color: #bfbfbf;
+    outline: none;
+    border-radius: 6px;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+/*火狐浏览器*/
+* {
+    scrollbar-width: thin;
+}
