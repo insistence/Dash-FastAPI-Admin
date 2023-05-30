@@ -6,9 +6,10 @@ from entity.dept_entity import SysDept
 from entity.post_entity import SysPost
 from entity.menu_entity import SysMenu
 from mapper.schema.user_schema import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserPageObject, \
-    UserPageObjectResponse, CrudUserResponse
-from utils.time_format_tool import list_format_datetime
+    UserPageObjectResponse, CrudUserResponse, UserInfoJoinDept
+from utils.time_format_tool import list_format_datetime, format_datetime_dict_list
 from utils.page_tool import get_page_info
+from datetime import datetime, time
 
 
 def get_user_by_name(db: Session, user_name: str):
@@ -67,6 +68,48 @@ def get_user_by_id(db: Session, user_id: int):
     return CurrentUserInfo(**results)
 
 
+def get_user_detail_by_id(db: Session, user_id: int):
+    """
+    根据user_id获取用户详细信息
+    :param db: orm对象
+    :param user_id: 用户id
+    :return: 当前user_id的用户信息对象
+    """
+    query_user_basic_info = db.query(SysUser) \
+        .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
+        .distinct().all()
+    query_user_dept_info = db.query(SysDept).select_from(SysUser) \
+        .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
+        .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+        .distinct().all()
+    query_user_role_info = db.query(SysRole).select_from(SysUser) \
+        .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
+        .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+        .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+        .distinct().all()
+    query_user_post_info = db.query(SysPost).select_from(SysUser) \
+        .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
+        .outerjoin(SysUserPost, SysUser.user_id == SysUserPost.user_id) \
+        .outerjoin(SysPost, and_(SysUserPost.post_id == SysPost.post_id, SysPost.status == 0)) \
+        .distinct().all()
+    query_user_menu_info = db.query(SysMenu).select_from(SysUser) \
+        .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
+        .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+        .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+        .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
+        .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
+        .distinct().all()
+    results = dict(
+        user_basic_info=list_format_datetime(query_user_basic_info),
+        user_dept_info=list_format_datetime(query_user_dept_info),
+        user_role_info=list_format_datetime(query_user_role_info),
+        user_post_info=list_format_datetime(query_user_post_info),
+        user_menu_info=list_format_datetime(query_user_menu_info)
+    )
+
+    return CurrentUserInfo(**results)
+
+
 def get_user_list(db: Session, page_object: UserPageObject):
     """
     根据查询参数获取用户列表信息
@@ -75,32 +118,70 @@ def get_user_list(db: Session, page_object: UserPageObject):
     :return: 用户列表信息对象
     """
     offset = (page_object.page_num - 1) * page_object.page_size
-    user_list = db.query(SysUser) \
+    user_list = db.query(SysUser, SysDept) \
         .filter(SysUser.del_flag == 0,
                 SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
                 SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
                 SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
                 SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
                 SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
-                SysUser.sex == page_object.sex if page_object.sex else True
+                SysUser.status == page_object.status if page_object.status else True,
+                SysUser.sex == page_object.sex if page_object.sex else True,
+                SysUser.create_time.between(
+                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+                if page_object.create_time_start and page_object.create_time_end else True
                 ) \
+        .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
         .offset(offset) \
         .limit(page_object.page_size) \
         .distinct().all()
-    count = db.query(SysUser) \
+    count = db.query(SysUser, SysDept) \
         .filter(SysUser.del_flag == 0,
                 SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
                 SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
                 SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
                 SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
                 SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
-                SysUser.sex == page_object.sex if page_object.sex else True
+                SysUser.status == page_object.status if page_object.status else True,
+                SysUser.sex == page_object.sex if page_object.sex else True,
+                SysUser.create_time.between(
+                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+                if page_object.create_time_start and page_object.create_time_end else True
                 ) \
+        .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
         .distinct().count()
+
+    result = []
+    if user_list:
+        for item in user_list:
+            obj = dict(
+                user_id=item[0].user_id,
+                dept_id=item[0].dept_id,
+                dept_name=item[1].dept_name,
+                user_name=item[0].user_name,
+                nick_name=item[0].nick_name,
+                user_type=item[0].user_type,
+                email=item[0].email,
+                phonenumber=item[0].phonenumber,
+                sex=item[0].sex,
+                avatar=item[0].avatar,
+                status=item[0].status,
+                del_flag=item[0].del_flag,
+                login_ip=item[0].login_ip,
+                login_date=item[0].login_date,
+                create_by=item[0].create_by,
+                create_time=item[0].create_time,
+                update_by=item[0].update_by,
+                update_time=item[0].update_time,
+                remark=item[0].remark
+            )
+            result.append(obj)
 
     page_info = get_page_info(offset, page_object.page_num, page_object.page_size, count)
     result = dict(
-        rows=list_format_datetime(user_list),
+        rows=format_datetime_dict_list(result),
         page_num=page_info.page_num,
         page_size=page_info.page_size,
         total=page_info.total,
@@ -146,8 +227,8 @@ def edit_user_crud(db: Session, user: UserModel):
     else:
         # 筛选出属性值为不为None和''的
         filtered_dict = {k: v for k, v in user.dict().items() if v is not None and v != ''}
-        db.query(SysUser)\
-            .filter(SysUser.user_id == user.user_id)\
+        db.query(SysUser) \
+            .filter(SysUser.user_id == user.user_id) \
             .update(filtered_dict)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
@@ -164,7 +245,7 @@ def delete_user_crud(db: Session, user: UserModel):
     """
     db.query(SysUser) \
         .filter(SysUser.user_id == user.user_id) \
-        .delete()
+        .update({SysUser.del_flag: '2', SysUser.update_by: user.update_by, SysUser.update_time: user.update_time})
     db.commit()  # 提交保存到数据库中
 
 

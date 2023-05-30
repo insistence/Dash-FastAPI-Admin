@@ -10,7 +10,7 @@ from server import app, logger
 # api拦截器——根据api返回编码确定是否强制退出
 @app.callback(
     [Output('token-invalid-modal', 'visible'),
-     Output('global-message-container', 'children', allow_duplicate=True)],
+     Output('global-notification-container', 'children', allow_duplicate=True)],
     Input('api-check-token', 'data'),
     prevent_initial_call=True
 )

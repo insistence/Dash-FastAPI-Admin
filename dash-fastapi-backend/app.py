@@ -7,6 +7,9 @@ from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from controller.login_controller import loginController
 from controller.user_controller import userController
+from controller.dept_controller import deptController
+from controller.role_controller import roleController
+from controller.post_controler import postController
 from config.env import RedisConfig
 
 
@@ -57,8 +60,12 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         status_code=exc.status_code
     )
 
+
 app.include_router(loginController, prefix="/login", tags=['login'])
-app.include_router(userController, prefix="/system", tags=['system'])
+app.include_router(userController, prefix="/system", tags=['system/user'])
+app.include_router(deptController, prefix="/system", tags=['system/dept'])
+app.include_router(roleController, prefix="/system", tags=['system/role'])
+app.include_router(postController, prefix="/system", tags=['system/post'])
 
 
 if __name__ == '__main__':

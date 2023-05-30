@@ -76,7 +76,7 @@ def delete_user_services(result_db: Session, page_object: DeleteUserModel):
     if page_object.user_ids.split(','):
         user_id_list = page_object.user_ids.split(',')
         for user_id in user_id_list:
-            user_id_dict = dict(user_id=user_id)
+            user_id_dict = dict(user_id=user_id, update_by=page_object.update_by, update_time=page_object.update_time)
             delete_user_role_crud(result_db, UserRoleModel(**user_id_dict))
             delete_user_post_crud(result_db, UserPostModel(**user_id_dict))
             delete_user_crud(result_db, UserModel(**user_id_dict))
@@ -93,7 +93,7 @@ def detail_user_services(result_db: Session, user_id: int):
     :param user_id: 用户id
     :return: 用户id对应的信息
     """
-    user = get_user_by_id(result_db, user_id=user_id)
+    user = get_user_detail_by_id(result_db, user_id=user_id)
 
     return UserDetailModel(
         user=user.user_basic_info[0],

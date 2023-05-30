@@ -134,6 +134,6 @@ def render_content(user_name, nick_name, phone_number, menu_info):
         ),
         listenPropsMode='include',
         includeProps=[
-            'tabs-test.children'
+            'tabs-container.items'
         ]
     )

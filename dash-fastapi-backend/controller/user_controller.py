@@ -80,6 +80,8 @@ async def delete_system_user(request: Request, delete_user: DeleteUserModel, tok
             logger.warning(current_user)
             return response_401(data="", message=current_user)
         else:
+            delete_user.update_by = current_user.user.user_name
+            delete_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             delete_user_result = delete_user_services(query_db, delete_user)
             if delete_user_result.is_success:
                 logger.info(delete_user_result.message)

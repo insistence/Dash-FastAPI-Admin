@@ -48,17 +48,39 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
             ]
 
         menu_title = find_title_by_key(session.get('menu_info'), currentKey)
+        # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
         menu_modules = find_modules_by_key(session.get('menu_info'), currentKey)
 
-        # 否则追加子项返回
-        # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
+        if menu_modules:
+            # 否则追加子项返回
+            # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
+            return [
+                [
+                    *origin_items,
+                    {
+                        'label': menu_title,
+                        'key': currentKey,
+                        'children': eval('views.' + menu_modules + '.render()'),
+                    }
+                ],
+                currentKey
+            ]
+
         return [
             [
                 *origin_items,
                 {
                     'label': menu_title,
                     'key': currentKey,
-                    'children': eval('views.' + menu_modules + '.render()'),
+                    'children': fac.AntdResult(
+                        status='404',
+                        title='页面不存在',
+                        subTitle='请先配置该路由的页面',
+                        style={
+                            'paddingBottom': 0,
+                            'paddingTop': 0
+                        }
+                    ),
                 }
             ],
             currentKey

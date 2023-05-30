@@ -13,3 +13,11 @@ def get_role_by_id(db: Session, role_id: int):
         .first()
 
     return role_info
+
+
+def get_role_select_option_crud(db: Session):
+    role_info = db.query(SysRole) \
+        .filter(SysRole.status == 0, SysRole.del_flag == 0) \
+        .all()
+
+    return role_info

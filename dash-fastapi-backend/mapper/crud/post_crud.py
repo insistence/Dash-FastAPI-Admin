@@ -12,3 +12,11 @@ def get_post_by_id(db: Session, post_id: int):
         .first()
 
     return post_info
+
+
+def get_post_select_option_crud(db: Session):
+    post_info = db.query(SysPost) \
+        .filter(SysPost.status == 0) \
+        .all()
+
+    return post_info

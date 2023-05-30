@@ -128,6 +128,8 @@ def render_content():
                                     '登录',
                                     id='login-submit',
                                     type='primary',
+                                    loadingChildren='登录中',
+                                    autoSpin=True,
                                     block=True,
                                     size='large',
                                 ),

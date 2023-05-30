@@ -18,7 +18,6 @@ from api.login import login_api
      Output('login-password-form-item', 'help'),
      Output('login-captcha-form-item', 'help'),
      Output('login-captcha', 'refresh'),
-     Output('login-submit', 'children'),
      Output('login-submit', 'loading'),
      Output('redirect-container', 'children', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
@@ -50,7 +49,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                             None,
                             None,
                             True,
-                            '登录中',
                             True,
                             dcc.Location(
                                 pathname='/',
@@ -69,7 +67,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                             None,
                             None,
                             True,
-                            '登录',
                             False,
                             None,
                             None
@@ -85,7 +82,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                             '密码错误',
                             None,
                             True,
-                            '登录',
                             False,
                             None,
                             None
@@ -101,7 +97,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                             None,
                             None,
                             True,
-                            '登录',
                             False,
                             None,
                             fuc.FefferyFancyMessage(userinfo_result['message'], type='error'),
@@ -116,7 +111,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                         None,
                         None,
                         True,
-                        '登录',
                         False,
                         None,
                         fuc.FefferyFancyMessage('接口异常', type='error'),
@@ -131,7 +125,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
                     None,
                     '验证码错误！',
                     True,
-                    '登录',
                     False,
                     None,
                     None
@@ -145,7 +138,6 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
             None if password else '请输入密码！',
             None if input_captcha else '请输入验证码！',
             True,
-            '登录',
             False,
             None,
             None
