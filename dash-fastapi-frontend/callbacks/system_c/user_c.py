@@ -1,5 +1,6 @@
 import dash
 import time
+import uuid
 from dash import html
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
@@ -35,6 +36,7 @@ def get_search_dept_tree(dept_input):
 @app.callback(
     [Output('user-list-table', 'data', allow_duplicate=True),
      Output('user-list-table', 'pagination', allow_duplicate=True),
+     Output('user-list-table', 'key'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('dept-tree', 'selectedKeys'),
      Input('user-search', 'nClicks'),
@@ -110,11 +112,11 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
                     }
                 ]
 
-            return [table_data, table_pagination, {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return dash.no_update
+    return [dash.no_update] * 4
 
 
 @app.callback(
@@ -130,7 +132,7 @@ def reset_user_query_params(reset_click):
     if reset_click:
         return [None, None, None, None, None]
 
-    return dash.no_update
+    return [dash.no_update] * 5
 
 
 @app.callback(
@@ -146,11 +148,11 @@ def change_edit_delete_button_status(table_rows_selected):
 
         return [False, False]
 
-    return dash.no_update
+    return [True, True]
 
 
 @app.callback(
-    [Output('user-add-modal', 'visible'),
+    [Output('user-add-modal', 'visible', allow_duplicate=True),
      Output('user-add-dept_id', 'treeData'),
      Output('user-add-post', 'options'),
      Output('user-add-role', 'options'),
@@ -179,7 +181,7 @@ def add_user_modal(add_click):
 
         return [dash.no_update] * 4 + [{'timestamp': time.time()}]
 
-    return dash.no_update
+    return [dash.no_update] * 5
 
 
 @app.callback(
@@ -189,6 +191,7 @@ def add_user_modal(add_click):
      Output('user-add-nick_name-form-item', 'help'),
      Output('user-add-user_name-form-item', 'help'),
      Output('user-add-password-form-item', 'help'),
+     Output('user-add-modal', 'visible', allow_duplicate=True),
      Output('operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
@@ -225,6 +228,7 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
                     None,
                     None,
                     None,
+                    False,
                     {'type': 'add'},
                     {'timestamp': time.time()},
                     fuc.FefferyFancyMessage('新增成功', type='success')
@@ -238,6 +242,7 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
                 None,
                 None,
                 dash.no_update,
+                dash.no_update,
                 {'timestamp': time.time()},
                 fuc.FefferyFancyMessage('新增失败', type='error')
             ]
@@ -250,15 +255,16 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
             None if user_name else '请输入用户名称！',
             None if password else '请输入用户密码！',
             dash.no_update,
+            dash.no_update,
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('新增失败', type='error')
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 10
 
 
 @app.callback(
-    [Output('user-edit-modal', 'visible'),
+    [Output('user-edit-modal', 'visible', allow_duplicate=True),
      Output('user-edit-dept_id', 'treeData'),
      Output('user-edit-post', 'options'),
      Output('user-edit-role', 'options'),
@@ -296,7 +302,7 @@ def user_edit_modal(edit_click, dropdown_click,
             if recently_clicked_dropdown_item_title == '修改':
                 user_id = int(recently_dropdown_item_clicked_row['key'])
             else:
-                return dash.no_update
+                return [dash.no_update] * 15
 
         edit_button_info = get_user_detail_api(user_id)
         if edit_button_info['code'] == 200:
@@ -309,16 +315,16 @@ def user_edit_modal(edit_click, dropdown_click,
             return [
                 True,
                 tree_data,
-                [dict(label=item['post_name'], value=item['post_id']) for item in post_option],
-                [dict(label=item['role_name'], value=item['role_id']) for item in role_option],
+                [dict(label=item['post_name'], value=item['post_id']) for item in post_option if item] or [],
+                [dict(label=item['role_name'], value=item['role_id']) for item in role_option if item] or [],
                 user['nick_name'],
-                dept['dept_id'],
+                dept['dept_id'] if dept else None,
                 user['phonenumber'],
                 user['email'],
                 user['sex'],
                 user['status'],
-                [item['post_id'] for item in post],
-                [item['role_id'] for item in role],
+                [item['post_id'] for item in post if item] or [],
+                [item['role_id'] for item in role if item] or [],
                 user['remark'],
                 {'user_id': user_id},
                 {'timestamp': time.time()}
@@ -326,12 +332,13 @@ def user_edit_modal(edit_click, dropdown_click,
 
         return [dash.no_update] * 14 + [{'timestamp': time.time()}]
 
-    return dash.no_update
+    return [dash.no_update] * 15
 
 
 @app.callback(
     [Output('user-edit-nick_name-form-item', 'validateStatus'),
      Output('user-edit-nick_name-form-item', 'help'),
+     Output('user-edit-modal', 'visible', allow_duplicate=True),
      Output('operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
@@ -352,15 +359,16 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
     if edit_confirm:
 
         if all([nick_name]):
-            params = dict(user_id=user_id['user_id'], nick_name=nick_name, dept_id=dept_id, phonenumber=phone_number,
-                          email=email, sex=sex, status=status, post_id=','.join(map(str, post)),
-                          role_id=','.join(map(str, role)), remark=remark)
+            params = dict(user_id=user_id['user_id'], nick_name=nick_name, dept_id=dept_id if dept_id else -1,
+                          phonenumber=phone_number, email=email, sex=sex, status=status,
+                          post_id=','.join(map(str, post)), role_id=','.join(map(str, role)), remark=remark)
             edit_button_result = edit_user_api(params)
 
             if edit_button_result['code'] == 200:
                 return [
                     None,
                     None,
+                    False,
                     {'type': 'edit'},
                     {'timestamp': time.time()},
                     fuc.FefferyFancyMessage('编辑成功', type='success')
@@ -370,6 +378,7 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
                 None,
                 None,
                 dash.no_update,
+                dash.no_update,
                 {'timestamp': time.time()},
                 fuc.FefferyFancyMessage('编辑失败', type='error')
             ]
@@ -378,11 +387,45 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
             None if nick_name else 'error',
             None if nick_name else '请输入用户昵称！',
             dash.no_update,
+            dash.no_update,
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('编辑失败', type='error')
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 6
+
+
+@app.callback(
+    [Output('operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    [Input('user-list-table', 'recentlySwitchDataIndex'),
+     Input('user-list-table', 'recentlySwitchStatus'),
+     Input('user-list-table', 'recentlySwitchRow')],
+    prevent_initial_call=True
+)
+def table_switch_user_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
+    if recently_switch_data_index:
+        if recently_switch_status:
+            params = dict(user_id=int(recently_switch_row['key']), status='0')
+        else:
+            params = dict(user_id=int(recently_switch_row['key']), status='1')
+        edit_button_result = edit_user_api(params)
+        if edit_button_result['code'] == 200:\
+
+            return [
+                {'type': 'switch-status'},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('修改成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('修改失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
 
 
 @app.callback(
@@ -407,15 +450,15 @@ def user_delete_modal(delete_click, dropdown_click,
             if recently_clicked_dropdown_item_title == '删除':
                 user_ids = recently_dropdown_item_clicked_row['key']
             else:
-                return dash.no_update
+                return [dash.no_update] * 3
 
         return [
-            f'是否确认删除user_id为{user_ids}的用户？',
+            f'是否确认删除用户编号为{user_ids}的用户？',
             True,
             {'user_ids': user_ids}
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 3
 
 
 @app.callback(
@@ -444,4 +487,4 @@ def user_delete_confirm(delete_confirm, user_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 3

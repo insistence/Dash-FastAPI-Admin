@@ -8,41 +8,10 @@ from api.dept import get_dept_tree_api
 
 def render():
     dept_params = dict(dept_name='')
-    user_params = dict(page_num=1, page_size=10)
     tree_info = get_dept_tree_api(dept_params)
-    table_info = get_user_list_api(user_params)
     tree_data = []
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
     if tree_info['code'] == 200:
         tree_data = tree_info['data']
-    if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(checked=True)
-            else:
-                item['status'] = dict(checked=False)
-            item['key'] = str(item['user_id'])
-            item['operation'] = [
-                {
-                    'title': '修改',
-                    'icon': 'antd-edit'
-                },
-                {
-                    'title': '删除',
-                    'icon': 'antd-delete'
-                },
-                {
-                    'title': '重置密码',
-                    'icon': 'antd-key'
-                }
-            ]
 
     return [
         fac.AntdRow(
@@ -259,7 +228,7 @@ def render():
                                     fac.AntdSpin(
                                         fac.AntdTable(
                                             id='user-list-table',
-                                            data=table_data,
+                                            data=[],
                                             columns=[
                                                 {
                                                     'dataIndex': 'user_id',
@@ -332,12 +301,12 @@ def render():
                                             rowSelectionWidth=50,
                                             bordered=True,
                                             pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
+                                                'pageSize': 10,
+                                                'current': 1,
                                                 'showSizeChanger': True,
                                                 'pageSizeOptions': [10, 30, 50, 100],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': 0
                                             },
                                             mode='server-side',
                                             style={
@@ -578,7 +547,8 @@ def render():
             title='新增用户',
             mask=False,
             width=650,
-            renderFooter=True
+            renderFooter=True,
+            okClickClose=False
         ),
 
         # 编辑用户表单modal
@@ -767,7 +737,8 @@ def render():
             title='编辑用户',
             mask=False,
             width=650,
-            renderFooter=True
+            renderFooter=True,
+            okClickClose=False
         ),
 
         # 删除用户二次确认modal

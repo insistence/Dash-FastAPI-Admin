@@ -9,3 +9,7 @@ def login_api(page_obj: dict):
 def get_current_user_info_api():
 
     return api_request(method='post', url='/login/getLoginUserInfo', is_headers=True)
+
+
+def logout_api():
+    return api_request(method='post', url='/login/logout', is_headers=True)

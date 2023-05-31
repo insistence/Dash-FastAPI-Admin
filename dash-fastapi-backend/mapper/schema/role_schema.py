@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional
+from typing import Union, Optional, List
 from mapper.schema.user_schema import RoleModel
 
 
@@ -15,4 +15,4 @@ class RoleSelectOptionResponseModel(BaseModel):
     """
     角色管理不分页查询模型
     """
-    role: list[RoleModel]
+    role: List[Union[RoleModel, None]]

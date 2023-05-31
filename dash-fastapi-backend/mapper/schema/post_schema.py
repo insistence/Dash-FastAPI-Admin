@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional
+from typing import Union, Optional, List
 from mapper.schema.user_schema import PostModel
 
 
@@ -15,4 +15,4 @@ class PostSelectOptionResponseModel(BaseModel):
     """
     岗位管理不分页查询模型
     """
-    post: list[PostModel]
+    post: List[Union[PostModel, None]]

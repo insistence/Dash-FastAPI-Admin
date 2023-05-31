@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional
+from typing import Union, Optional, List
 
 
 class TokenData(BaseModel):
@@ -128,28 +128,28 @@ class CurrentUserInfo(BaseModel):
     """
     数据库返回当前用户信息
     """
-    user_basic_info: list[UserModel]
-    user_dept_info: list[DeptModel]
-    user_role_info: list[RoleModel]
-    user_post_info: list[PostModel]
-    user_menu_info: list
+    user_basic_info: List[Union[UserModel, None]]
+    user_dept_info: List[Union[DeptModel, None]]
+    user_role_info: List[Union[RoleModel, None]]
+    user_post_info: List[Union[PostModel, None]]
+    user_menu_info: Union[List, None]
 
 
 class UserDetailModel(BaseModel):
     """
     获取用户详情信息响应模型
     """
-    user: UserModel
-    dept: DeptModel
-    role: list[RoleModel]
-    post: list[PostModel]
+    user: Union[UserModel, None]
+    dept: Union[DeptModel, None]
+    role: List[Union[RoleModel, None]]
+    post: List[Union[PostModel, None]]
 
 
 class CurrentUserInfoServiceResponse(UserDetailModel):
     """
     获取当前用户信息响应模型
     """
-    menu: list
+    menu: Union[List, None]
 
 
 class UserPageObject(UserModel):
@@ -191,7 +191,7 @@ class UserPageObjectResponse(BaseModel):
     """
     用户管理列表分页查询返回模型
     """
-    rows: list[UserInfoJoinDept] = []
+    rows: List[Union[UserInfoJoinDept, None]] = []
     page_num: int
     page_size: int
     total: int
@@ -236,11 +236,11 @@ class RoleInfo(BaseModel):
     """
     用户角色信息
     """
-    role_info: list
+    role_info: Union[List]
 
 
 class MenuList(BaseModel):
     """
     用户菜单信息
     """
-    menu_info: list
+    menu_info: Union[List]

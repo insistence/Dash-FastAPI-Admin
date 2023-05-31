@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional
+from typing import Union, Optional, List
 from mapper.schema.user_schema import DeptModel
 
 
@@ -15,4 +15,4 @@ class DeptTree(BaseModel):
     """
     部门树响应模型
     """
-    dept_tree: list
+    dept_tree: Union[List, None]

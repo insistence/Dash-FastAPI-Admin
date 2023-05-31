@@ -4,6 +4,7 @@ from flask import session
 from dash.dependencies import Input, Output, State
 
 from server import app
+from api.login import logout_api
 
 
 # 页首右侧个人中心选项卡回调
@@ -38,14 +39,16 @@ def index_dropdown_click(nClicks, clickedKey):
 )
 def logout_confirm(okCounts):
     if okCounts:
-        session.clear()
+        result = logout_api()
+        if result['code'] == 200:
+            session.clear()
 
-        return [
-            dcc.Location(
-                pathname='/login',
-                id='index-redirect'
-            ),
-        ]
+            return [
+                dcc.Location(
+                    pathname='/login',
+                    id='index-redirect'
+                ),
+            ]
 
     return dash.no_update
 

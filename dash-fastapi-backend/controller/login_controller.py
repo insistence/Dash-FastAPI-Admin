@@ -64,3 +64,19 @@ async def get_login_user_info(request: Request, token: Optional[str] = Header(..
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")
+
+
+@loginController.post("/logout")
+async def logout(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
+    try:
+        current_user = await get_current_user(request, token, query_db)
+        if current_user == "用户token已失效，请重新登录" or current_user == "用户token不合法":
+            logger.warning(current_user)
+            return response_401(data="", message=current_user)
+        else:
+            await logout_services(request, current_user)
+            logger.info('退出成功')
+            return response_200(data=current_user, message="退出成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")

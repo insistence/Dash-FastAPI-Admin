@@ -56,6 +56,19 @@ async def get_current_user(request: Request, token: str, result_db: Session):
         return "用户token已失效，请重新登录"
 
 
+async def logout_services(request: Request, current_user: CurrentUserInfoServiceResponse):
+    """
+    退出登录services
+    :param request: Request对象
+    :param current_user: 用户用户
+    :return: 退出登录结果
+    """
+    await request.app.state.redis.delete(f'{current_user.user.user_id}_access_token')
+    await request.app.state.redis.delete(f'{current_user.user.user_id}_session_id')
+
+    return True
+
+
 def verify_password(plain_password, hashed_password):
     """
     工具方法：校验当前输入的密码与数据库存储的密码是否一致
