@@ -8,10 +8,41 @@ from api.dept import get_dept_tree_api
 
 def render():
     dept_params = dict(dept_name='')
+    user_params = dict(page_num=1, page_size=10)
     tree_info = get_dept_tree_api(dept_params)
+    table_info = get_user_list_api(user_params)
     tree_data = []
+    table_data = []
+    page_num = 1
+    page_size = 10
+    total = 0
     if tree_info['code'] == 200:
         tree_data = tree_info['data']
+    if table_info['code'] == 200:
+        table_data = table_info['data']['rows']
+        page_num = table_info['data']['page_num']
+        page_size = table_info['data']['page_size']
+        total = table_info['data']['total']
+        for item in table_data:
+            if item['status'] == '0':
+                item['status'] = dict(checked=True)
+            else:
+                item['status'] = dict(checked=False)
+            item['key'] = str(item['user_id'])
+            item['operation'] = [
+                {
+                    'title': '修改',
+                    'icon': 'antd-edit'
+                },
+                {
+                    'title': '删除',
+                    'icon': 'antd-delete'
+                },
+                {
+                    'title': '重置密码',
+                    'icon': 'antd-key'
+                }
+            ]
 
     return [
         fac.AntdRow(
@@ -228,7 +259,7 @@ def render():
                                     fac.AntdSpin(
                                         fac.AntdTable(
                                             id='user-list-table',
-                                            data=[],
+                                            data=table_data,
                                             columns=[
                                                 {
                                                     'dataIndex': 'user_id',
@@ -301,12 +332,12 @@ def render():
                                             rowSelectionWidth=50,
                                             bordered=True,
                                             pagination={
-                                                'pageSize': 10,
-                                                'current': 1,
+                                                'pageSize': page_size,
+                                                'current': page_num,
                                                 'showSizeChanger': True,
                                                 'pageSizeOptions': [10, 30, 50, 100],
                                                 'showQuickJumper': True,
-                                                'total': 0
+                                                'total': total
                                             },
                                             mode='server-side',
                                             style={
@@ -743,7 +774,7 @@ def render():
 
         # 删除用户二次确认modal
         fac.AntdModal(
-            fac.AntdText('是否确认删除？', id='delete-text'),
+            fac.AntdText('是否确认删除？', id='user-delete-text'),
             id='user-delete-confirm-modal',
             visible=False,
             title='提示',
@@ -770,8 +801,4 @@ def render():
             renderFooter=True,
             centered=True
         ),
-
-        dcc.Store(id='operations-store'),
-        dcc.Store(id='edit-id-store'),
-        dcc.Store(id='delete-ids-store')
     ]

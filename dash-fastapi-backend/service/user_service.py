@@ -88,7 +88,7 @@ def delete_user_services(result_db: Session, page_object: DeleteUserModel):
 
 def detail_user_services(result_db: Session, user_id: int):
     """
-    获取用户列表信息service
+    获取用户详细信息service
     :param result_db: orm对象
     :param user_id: 用户id
     :return: 用户id对应的信息

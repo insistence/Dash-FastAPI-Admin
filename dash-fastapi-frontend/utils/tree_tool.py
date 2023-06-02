@@ -116,3 +116,29 @@ def find_parents(tree, target_key):
             break
 
     return result[::-1]
+
+
+def get_dept_tree(pid: int, permission_list: list):
+    """
+    工具方法：根据部门信息生成树形嵌套数据
+    :param pid: 部门id
+    :param permission_list: 部门列表信息
+    :return: 部门树形嵌套数据
+    """
+    dept_list = []
+    for permission in permission_list:
+        if permission['parent_id'] == pid:
+            children = get_dept_tree(permission['dept_id'], permission_list)
+            dept_list_data = {}
+            if children:
+                dept_list_data['children'] = children
+            dept_list_data['key'] = str(permission['dept_id'])
+            dept_list_data['dept_id'] = permission['dept_id']
+            dept_list_data['dept_name'] = permission['dept_name']
+            dept_list_data['order_num'] = permission['order_num']
+            dept_list_data['status'] = permission['status']
+            dept_list_data['create_time'] = permission['create_time']
+            dept_list_data['operation'] = permission['operation']
+            dept_list.append(dept_list_data)
+
+    return dept_list

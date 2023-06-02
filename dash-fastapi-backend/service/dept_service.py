@@ -2,17 +2,29 @@ from mapper.schema.dept_schema import *
 from mapper.crud.dept_crud import *
 
 
-def get_dept_tree_services(result_db: Session, page_object: DeptPageObject):
+def get_dept_tree_services(result_db: Session, page_object: DeptModel):
     """
     获取部门树信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param page_object: 查询参数对象
     :return: 部门树信息对象
     """
     dept_list_result = get_dept_list_for_tree(result_db, page_object)
     dept_tree_result = get_dept_tree(0, DeptTree(dept_tree=dept_list_result))
 
     return dept_tree_result
+
+
+def get_dept_list_services(result_db: Session, page_object: DeptModel):
+    """
+    获取部门列表信息service
+    :param result_db: orm对象
+    :param page_object: 分页查询参数对象
+    :return: 部门列表信息对象
+    """
+    dept_list_result = get_dept_list(result_db, page_object)
+
+    return dept_list_result
 
 
 def get_dept_tree(pid: int, permission_list: DeptTree):

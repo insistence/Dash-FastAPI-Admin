@@ -154,7 +154,7 @@ def get_user_list(db: Session, page_object: UserPageObject):
         .limit(page_object.page_size) \
         .distinct().all()
 
-    result = []
+    result_list = []
     if user_list:
         for item in user_list:
             obj = dict(
@@ -178,10 +178,10 @@ def get_user_list(db: Session, page_object: UserPageObject):
                 update_time=item[0].update_time,
                 remark=item[0].remark
             )
-            result.append(obj)
+            result_list.append(obj)
 
     result = dict(
-        rows=format_datetime_dict_list(result),
+        rows=format_datetime_dict_list(result_list),
         page_num=page_info.page_num,
         page_size=page_info.page_size,
         total=page_info.total,

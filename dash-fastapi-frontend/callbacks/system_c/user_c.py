@@ -41,7 +41,7 @@ def get_search_dept_tree(dept_input):
     [Input('dept-tree', 'selectedKeys'),
      Input('user-search', 'nClicks'),
      Input('user-list-table', 'pagination'),
-     Input('operations-store', 'data')],
+     Input('user-operations-store', 'data')],
     [State('user-user_name-input', 'value'),
      State('user-phone_number-input', 'value'),
      State('user-status-select', 'value'),
@@ -124,15 +124,16 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
      Output('user-user_name-input', 'value'),
      Output('user-phone_number-input', 'value'),
      Output('user-status-select', 'value'),
-     Output('user-create_time-range', 'value')],
+     Output('user-create_time-range', 'value'),
+     Output('user-operations-store', 'data')],
     Input('user-reset', 'nClicks'),
     prevent_initial_call=True
 )
 def reset_user_query_params(reset_click):
     if reset_click:
-        return [None, None, None, None, None]
+        return [None, None, None, None, None, {'type': 'reset'}]
 
-    return [dash.no_update] * 5
+    return [dash.no_update] * 6
 
 
 @app.callback(
@@ -141,7 +142,7 @@ def reset_user_query_params(reset_click):
     Input('user-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_edit_delete_button_status(table_rows_selected):
+def change_user_edit_delete_button_status(table_rows_selected):
     if table_rows_selected:
         if len(table_rows_selected) > 1:
             return [True, False]
@@ -192,7 +193,7 @@ def add_user_modal(add_click):
      Output('user-add-user_name-form-item', 'help'),
      Output('user-add-password-form-item', 'help'),
      Output('user-add-modal', 'visible', allow_duplicate=True),
-     Output('operations-store', 'data', allow_duplicate=True),
+     Output('user-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('user-add-modal', 'okCounts'),
@@ -277,7 +278,7 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
      Output('user-edit-post', 'value'),
      Output('user-edit-role', 'value'),
      Output('user-edit-remark', 'value'),
-     Output('edit-id-store', 'data'),
+     Output('user-edit-id-store', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('user-edit', 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
@@ -339,7 +340,7 @@ def user_edit_modal(edit_click, dropdown_click,
     [Output('user-edit-nick_name-form-item', 'validateStatus'),
      Output('user-edit-nick_name-form-item', 'help'),
      Output('user-edit-modal', 'visible', allow_duplicate=True),
-     Output('operations-store', 'data', allow_duplicate=True),
+     Output('user-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('user-edit-modal', 'okCounts'),
@@ -352,7 +353,7 @@ def user_edit_modal(edit_click, dropdown_click,
      State('user-edit-post', 'value'),
      State('user-edit-role', 'value'),
      State('user-edit-remark', 'value'),
-     State('edit-id-store', 'data')],
+     State('user-edit-id-store', 'data')],
     prevent_initial_call=True
 )
 def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex, status, post, role, remark, user_id):
@@ -396,7 +397,7 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
 
 
 @app.callback(
-    [Output('operations-store', 'data', allow_duplicate=True),
+    [Output('user-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     [Input('user-list-table', 'recentlySwitchDataIndex'),
@@ -411,7 +412,7 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
         else:
             params = dict(user_id=int(recently_switch_row['key']), status='1')
         edit_button_result = edit_user_api(params)
-        if edit_button_result['code'] == 200:\
+        if edit_button_result['code'] == 200:
 
             return [
                 {'type': 'switch-status'},
@@ -429,9 +430,9 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
 
 
 @app.callback(
-    [Output('delete-text', 'children'),
+    [Output('user-delete-text', 'children'),
      Output('user-delete-confirm-modal', 'visible'),
-     Output('delete-ids-store', 'data')],
+     Output('user-delete-ids-store', 'data')],
     [Input('user-delete', 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
     [State('user-list-table', 'selectedRowKeys'),
@@ -462,11 +463,11 @@ def user_delete_modal(delete_click, dropdown_click,
 
 
 @app.callback(
-    [Output('operations-store', 'data', allow_duplicate=True),
+    [Output('user-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('user-delete-confirm-modal', 'okCounts'),
-    State('delete-ids-store', 'data'),
+    State('user-delete-ids-store', 'data'),
     prevent_initial_call=True
 )
 def user_delete_confirm(delete_confirm, user_ids_data):
