@@ -34,3 +34,20 @@ class DeptTree(BaseModel):
     部门树响应模型
     """
     dept_tree: Union[List, None]
+
+
+class CrudDeptResponse(BaseModel):
+    """
+    操作部门响应模型
+    """
+    is_success: bool
+    message: str
+
+
+class DeleteDeptModel(BaseModel):
+    """
+    删除部门模型
+    """
+    dept_ids: str
+    update_by: Optional[str]
+    update_time: Optional[str]
