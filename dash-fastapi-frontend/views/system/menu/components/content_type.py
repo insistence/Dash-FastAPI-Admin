@@ -14,14 +14,14 @@ def render():
                         options=[
                             {
                                 'label': '是',
-                                'value': '0'
+                                'value': 0
                             },
                             {
                                 'label': '否',
-                                'value': '1'
+                                'value': 1
                             },
                         ],
-                        defaultValue='1',
+                        defaultValue=1,
                         style={
                             'width': 200
                         }

@@ -102,10 +102,32 @@ def reset_menu_query_params(reset_click):
 
 
 @app.callback(
+    [Output('menu-icon', 'value'),
+     Output('menu-icon', 'prefix')],
+    Input('icon-category', 'value'),
+    prevent_initial_call=True
+)
+def get_select_icon(icon):
+    if icon:
+        return [
+            icon,
+            fac.AntdIcon(icon=icon)
+        ]
+
+    return [dash.no_update] * 2
+
+
+
+@app.callback(
     [Output('menu-modal', 'visible', allow_duplicate=True),
      Output('menu-modal', 'title'),
      Output('menu-parent_id', 'treeData'),
      Output('menu-parent_id', 'value'),
+     Output('menu-menu_type', 'value'),
+     Output('menu-icon', 'value', allow_duplicate=True),
+     Output('menu-icon', 'prefix', allow_duplicate=True),
+     Output('menu-menu_name', 'value'),
+     Output('menu-order_num', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('menu-add', 'nClicks'),
      Output('menu-edit-id-store', 'data'),
@@ -132,6 +154,11 @@ def add_menu_modal(add_click, button_click, clicked_content, recently_button_cli
                     '新增菜单',
                     tree_data,
                     '0',
+                    'M',
+                    None,
+                    None,
+                    None,
+                    None,
                     {'timestamp': time.time()},
                     None,
                     None,
@@ -143,12 +170,17 @@ def add_menu_modal(add_click, button_click, clicked_content, recently_button_cli
                     '新增菜单',
                     tree_data,
                     str(recently_button_clicked_row['key']),
+                    'M',
+                    None,
+                    None,
+                    None,
+                    None,
                     {'timestamp': time.time()},
                     None,
-                    'add',
+                    None,
                     {'type': 'add'}
                 ]
-            else:
+            elif button_click and clicked_content == '修改':
                 menu_id = int(recently_button_clicked_row['key'])
                 menu_info_res = get_menu_detail_api(menu_id=menu_id)
                 if menu_info_res['code'] == 200:
@@ -158,15 +190,20 @@ def add_menu_modal(add_click, button_click, clicked_content, recently_button_cli
                         '编辑菜单',
                         tree_data,
                         str(menu_info.get('parent_id')),
+                        menu_info.get('menu_type'),
+                        menu_info.get('icon'),
+                        fac.AntdIcon(icon=menu_info.get('icon')),
+                        menu_info.get('menu_name'),
+                        menu_info.get('order_num'),
                         {'timestamp': time.time()},
                         None,
                         menu_info,
                         {'type': 'edit'}
                     ]
 
-        return [dash.no_update] * 4 + [{'timestamp': time.time()}, None, None, None]
+        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None, None]
 
-    return [dash.no_update] * 5 + [None, None, None]
+    return [dash.no_update] * 10 + [None, None, None]
 
 
 @app.callback(

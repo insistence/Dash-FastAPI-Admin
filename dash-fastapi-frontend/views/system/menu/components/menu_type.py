@@ -1,6 +1,8 @@
 from dash import html
 import feffery_antd_components as fac
 
+import callbacks.system_c.menu_c.components_c.menu_type_c
+
 
 def render():
     return [
@@ -12,14 +14,14 @@ def render():
                         options=[
                             {
                                 'label': '是',
-                                'value': '0'
+                                'value': 0
                             },
                             {
                                 'label': '否',
-                                'value': '1'
+                                'value': 1
                             },
                         ],
-                        defaultValue='1',
+                        defaultValue=1,
                         style={
                             'width': 200
                         }
@@ -172,14 +174,14 @@ def render():
                         options=[
                             {
                                 'label': '缓存',
-                                'value': '0'
+                                'value': 0
                             },
                             {
                                 'label': '不缓存',
-                                'value': '1'
+                                'value': 1
                             },
                         ],
-                        defaultValue='0',
+                        defaultValue=0,
                         style={
                             'width': 200
                         }

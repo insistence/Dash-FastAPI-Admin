@@ -11,16 +11,16 @@ from api.menu import add_menu_api, edit_menu_api
     [Output('menu-parent_id-form-item', 'validateStatus', allow_duplicate=True),
      Output('menu-menu_name-form-item', 'validateStatus', allow_duplicate=True),
      Output('menu-order_num-form-item', 'validateStatus', allow_duplicate=True),
-     Output('content-menu-path-form-item', 'validateStatus'),
+     Output('menu-menu-path-form-item', 'validateStatus'),
      Output('menu-parent_id-form-item', 'help', allow_duplicate=True),
      Output('menu-menu_name-form-item', 'help', allow_duplicate=True),
      Output('menu-order_num-form-item', 'help', allow_duplicate=True),
-     Output('content-menu-path-form-item', 'help'),
-     Output('menu-modal', 'visible', allow_duplicate=True),
+     Output('menu-menu-path-form-item', 'help', allow_duplicate=True),
+     Output('menu-modal', 'visible'),
      Output('menu-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('menu-modal-M-trigger', 'data'),
+    Input('menu-modal-C-trigger', 'data'),
     [State('menu-operations-store-bk', 'data'),
      State('menu-edit-id-store', 'data'),
      State('menu-parent_id', 'value'),
@@ -28,19 +28,25 @@ from api.menu import add_menu_api, edit_menu_api
      State('menu-icon', 'value'),
      State('menu-menu_name', 'value'),
      State('menu-order_num', 'value'),
-     State('content-menu-is_frame', 'value'),
-     State('content-menu-path', 'value'),
-     State('content-menu-visible', 'value'),
-     State('content-menu-status', 'value')],
+     State('menu-menu-is_frame', 'value'),
+     State('menu-menu-path', 'value'),
+     State('menu-menu-component', 'value'),
+     State('menu-menu-perms', 'value'),
+     State('menu-menu-query', 'value'),
+     State('menu-menu-is_cache', 'value'),
+     State('menu-menu-visible', 'value'),
+     State('menu-menu-status', 'value')],
     prevent_initial_call=True
 )
-def menu_confirm_content(confirm_trigger, operation_type, cur_menu_info, parent_id, menu_type, icon, menu_name, order_num, is_frame, path, visible, status):
+def menu_confirm_menu(confirm_trigger, operation_type, cur_menu_info, parent_id, menu_type, icon, menu_name, order_num, is_frame, path, 
+                 component, perms, query, is_cache, visible, status):
     if confirm_trigger:
         if all([parent_id, menu_name, order_num, path]):
-            params_add = dict(parent_id=parent_id, menu_type=menu_type, icon=icon, menu_name=menu_name, order_num=order_num,
-                            is_frame=is_frame, path=path, visible=visible, status=status)
+            params_add = dict(parent_id=parent_id, menu_type=menu_type, icon=icon, menu_name=menu_name, order_num=order_num, is_frame=is_frame, 
+                              path=path, component=component, perms=perms, query=query, is_cache=is_cache, visible=visible, status=status)
             params_edit = dict(menu_id=cur_menu_info.get('menu_id') if cur_menu_info else None, parent_id=parent_id, menu_type=menu_type, icon=icon, 
-                            menu_name=menu_name, order_num=order_num, is_frame=is_frame, path=path, visible=visible, status=status)
+                            menu_name=menu_name, order_num=order_num, is_frame=is_frame, path=path, component=component, 
+                            perms=perms, query=query, is_cache=is_cache, visible=visible, status=status)
             api_res = {}
             operation_type = operation_type.get('type')
             if operation_type == 'add':
@@ -113,10 +119,14 @@ def menu_confirm_content(confirm_trigger, operation_type, cur_menu_info, parent_
 
 
 @app.callback(
-    [Output('content-menu-is_frame', 'value'),
-     Output('content-menu-path', 'value'),
-     Output('content-menu-visible', 'value'),
-     Output('content-menu-status', 'value')],
+    [Output('menu-menu-is_frame', 'value'),
+     Output('menu-menu-path', 'value'),
+     Output('menu-menu-component', 'value'),
+     Output('menu-menu-perms', 'value'),
+     Output('menu-menu-query', 'value'),
+     Output('menu-menu-is_cache', 'value'),
+     Output('menu-menu-visible', 'value'),
+     Output('menu-menu-status', 'value')],
     Input('menu-edit-id-store', 'data')
 )
 def set_edit_info(edit_info):
@@ -124,8 +134,12 @@ def set_edit_info(edit_info):
         return [
             edit_info.get('is_frame'),
             edit_info.get('path'),
+            edit_info.get('component'),
+            edit_info.get('perms'),
+            edit_info.get('query'),
+            edit_info.get('is_cache'),
             edit_info.get('visible'),
             edit_info.get('status')
         ]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 8

@@ -3,6 +3,7 @@ import feffery_antd_components as fac
 
 from api.menu import get_menu_list_api
 from utils.tree_tool import list_to_tree
+from views.system.menu.components.icon_category import render_icon
 import callbacks.system_c.menu_c.menu_c
 
 
@@ -334,27 +335,15 @@ def render():
                                     fac.AntdPopover(
                                         fac.AntdInput(
                                             id='menu-icon',
-                                            placeholder='点击选择图标',
+                                            placeholder='点击此处选择图标',
                                             readOnly=True,
-                                            prefix=fac.AntdIcon(
-                                                icon='antd-search'
-                                            ),
                                             style={
                                                 'width': 495
                                             }
                                         ),
-                                        title=fac.AntdInput(
-                                            id='menu-icon-search',
-                                            placeholder='请输入图标名称',
-                                            suffix=fac.AntdIcon(
-                                                icon='antd-search'
-                                            ),
-                                            style={
-                                                'width': 450
-                                            }
-                                        ),
+                                        content=render_icon(),
                                         trigger='click',
-                                        placement='bottom',
+                                        placement='bottom'
                                     ),
                                     label='菜单图标',
                                     id='menu-icon-form-item',
