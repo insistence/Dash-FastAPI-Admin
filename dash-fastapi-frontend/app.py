@@ -112,7 +112,7 @@ def router(pathname, trigger):
 
                         # 否则正常渲染主页面
                         return [
-                            views.layout.index.render_content(user_name, nick_name, phone_number, menu_info),
+                            views.layout.render_content(user_name, nick_name, phone_number, menu_info),
                             None,
                             fuc.FefferyFancyNotification('进入主页面', type='success', autoClose=2000),
                             {'timestamp': time.time()},

@@ -1,9 +1,8 @@
 import requests
 from typing import Optional
-from flask import session
+from flask import session, request
 from config.global_config import ApiBaseUrlConfig
 from server import logger
-from flask import request
 
 
 def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] = None, data: Optional[dict] = None,
@@ -29,18 +28,23 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
         else:
             raise ValueError(f'Unsupported HTTP method: {method}')
 
-        response_code = response.json()['code']
-        response_message = response.json()['message']
+        data_list = [params, data, json]
+        response_code = response.json().get('code')
+        response_message = response.json().get('message')
         session['code'] = response_code
         session['message'] = response_message
         if response_code == 200:
-            logger.info("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求结果:{}",
+            logger.info("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求参数:{}||请求结果:{}",
                         session.get('user_info').get('user_name') if session.get('user_info') else None,
-                        request.remote_addr, method, url, response_message)
+                        request.remote_addr, method, url,
+                        ','.join([str(x) for x in data_list if x]),
+                        response_message)
         else:
-            logger.warning("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求结果:{}",
+            logger.warning("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求参数:{}||请求结果:{}",
                            session.get('user_info').get('user_name') if session.get('user_info') else None,
-                           request.remote_addr, method, url, response_message)
+                           request.remote_addr, method, url,
+                           ','.join([str(x) for x in data_list if x]),
+                           response_message)
 
         return response.json()
     except Exception as e:

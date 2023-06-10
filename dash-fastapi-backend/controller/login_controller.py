@@ -18,21 +18,17 @@ loginController = APIRouter()
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
         result = authenticate_user(query_db, user.user_name, user.password)
-        if result == '用户不存在':
-            logger.warning('用户不存在')
-            return response_400(data="", message="用户不存在")
-
-        elif result == '密码错误':
-            logger.warning('密码错误')
-            return response_400(data="", message="密码错误")
+        if result == '用户不存在' or result == '密码错误' or result == '用户已停用':
+            logger.warning(result)
+            return response_400(data="", message=result)
 
         else:
             access_token_expires = timedelta(minutes=JwtConfig.ACCESS_TOKEN_EXPIRE_MINUTES)
             try:
-                access_token = create_access_token(
-                    data={"sub": str(result.user_id)}, expires_delta=access_token_expires
-                )
                 session_id = str(uuid.uuid4())
+                access_token = create_access_token(
+                    data={"user_id": str(result.user_id), "session_id": session_id}, expires_delta=access_token_expires
+                )
                 await request.app.state.redis.set(f'{result.user_id}_access_token', access_token, ex=timedelta(minutes=30))
                 await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
                 logger.info('登录成功')

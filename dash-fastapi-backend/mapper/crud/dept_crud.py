@@ -16,6 +16,15 @@ def get_dept_by_id(db: Session, dept_id: int):
     return dept_info
 
 
+def get_dept_by_id_for_list(db: Session, dept_id: int):
+    dept_info = db.query(SysDept) \
+        .filter(SysDept.dept_id == dept_id,
+                SysDept.del_flag == 0) \
+        .first()
+
+    return dept_info
+
+
 def get_dept_detail_by_id(db: Session, dept_id: int):
     dept_info = db.query(SysDept) \
         .filter(SysDept.dept_id == dept_id,
@@ -101,7 +110,7 @@ def get_dept_list(db: Session, page_object: DeptModel):
                 ancestor_info = dept_query.ancestors.split(',')
                 ancestor_info.append(dept_query.dept_id)
                 for ancestor in ancestor_info:
-                    dept_item = get_dept_by_id(db, int(ancestor))
+                    dept_item = get_dept_by_id_for_list(db, int(ancestor))
                     if dept_item:
                         dept.append(dept_item)
         # 去重

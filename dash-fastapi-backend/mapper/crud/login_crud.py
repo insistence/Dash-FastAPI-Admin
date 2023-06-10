@@ -11,7 +11,7 @@ def login_by_account(db: Session, user_name: str):
     :return: 用户对象
     """
     user = db.query(SysUser).\
-        filter_by(user_name=user_name).\
+        filter(SysUser.user_name == user_name, SysUser.del_flag == '0').\
         distinct().\
         first()
 

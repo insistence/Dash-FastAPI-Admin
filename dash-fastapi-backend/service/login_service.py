@@ -23,7 +23,7 @@ async def get_current_user(request: Request, token: str, result_db: Session):
         return "用户token不合法"
     try:
         payload = jwt.decode(token[6:], JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: str = payload.get("user_id")
         if user_id is None:
             return "用户token不合法"
         token_data = TokenData(user_id=int(user_id))
@@ -101,6 +101,8 @@ def authenticate_user(query_db: Session, user_name: str, input_password: str):
         return '用户不存在'
     if not verify_password(input_password, user.password):
         return '密码错误'
+    if user.status == '1':
+        return '用户已停用'
     return user
 
 
