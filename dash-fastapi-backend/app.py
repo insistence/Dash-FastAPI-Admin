@@ -12,6 +12,7 @@ from controller.dept_controller import deptController
 from controller.role_controller import roleController
 from controller.post_controler import postController
 from config.env import RedisConfig
+from utils.response_tool import response_401, AuthException
 
 
 app = FastAPI()
@@ -52,6 +53,12 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await app.state.redis.close()
+    
+    
+# 自定义token检验异常
+@app.exception_handler(AuthException)
+async def auth_exception_handler(request: Request, exc: AuthException):
+    return response_401(data=exc.data, message=exc.message)
 
 
 @app.exception_handler(HTTPException)

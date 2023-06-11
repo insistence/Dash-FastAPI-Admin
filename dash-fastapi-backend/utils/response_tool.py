@@ -63,3 +63,12 @@ def response_500(*, data: str = None, message: str = "接口异常") -> Response
             }
         )
     )
+    
+    
+class AuthException(Exception):
+    """
+    自定义令牌异常AuthException
+    """
+    def __init__(self, data: str = None, message: str = None):
+        self.data = data
+        self.message = message

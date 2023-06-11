@@ -5,33 +5,41 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from config.env import JwtConfig
 from utils.response_tool import *
+from utils.log_tool import *
 from datetime import datetime, timedelta
 from fastapi import Request
+from fastapi import Depends, Header
+from config.get_db import get_db
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-async def get_current_user(request: Request, token: str, result_db: Session):
+async def get_current_user(request: Request = Request, token: str = Header(...), result_db: Session = Depends(get_db)):
     """
     根据token获取当前用户信息
     :param request: Request对象
     :param token: 用户token
     :param result_db: orm对象
     :return: 当前用户信息对象
+    :raise: 令牌异常AuthException
     """
     if token[:6] != 'Bearer':
-        return "用户token不合法"
+        logger.warning("用户token不合法")
+        raise AuthException(data="", message="用户token不合法")
     try:
         payload = jwt.decode(token[6:], JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
         user_id: str = payload.get("user_id")
         if user_id is None:
-            return "用户token不合法"
+            logger.warning("用户token不合法")
+            raise AuthException(data="", message="用户token不合法")
         token_data = TokenData(user_id=int(user_id))
     except JWTError:
-        return "用户token已失效，请重新登录"
+        logger.warning("用户token已失效，请重新登录")
+        raise AuthException(data="", message="用户token已失效，请重新登录")
     user = get_user_by_id(result_db, user_id=token_data.user_id)
     if user is None:
-        return "用户token不合法"
+        logger.warning("用户token不合法")
+        raise AuthException(data="", message="用户token不合法")
     redis_token = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_access_token')
     redis_session = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_session_id')
     if token[6:] == redis_token:
@@ -53,7 +61,8 @@ async def get_current_user(request: Request, token: str, result_db: Session):
             menu=user_menu_info
         )
     else:
-        return "用户token已失效，请重新登录"
+        logger.warning("用户token已失效，请重新登录")
+        raise AuthException(data="", message="用户token已失效，请重新登录")
 
 
 async def logout_services(request: Request, current_user: CurrentUserInfoServiceResponse):
