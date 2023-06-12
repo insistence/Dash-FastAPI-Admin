@@ -23,9 +23,9 @@ async def get_system_post_select(query_db: Session = Depends(get_db)):
 
 
 @postController.post("/post/get", response_model=PostPageObjectResponse)
-async def get_system_post_list(user_query: PostPageObject, query_db: Session = Depends(get_db)):
+async def get_system_post_list(post_query: PostPageObject, query_db: Session = Depends(get_db)):
     try:
-        post_query_result = get_post_list_services(query_db, user_query)
+        post_query_result = get_post_list_services(query_db, post_query)
         logger.info('获取成功')
         return response_200(data=post_query_result, message="获取成功")
     except Exception as e:

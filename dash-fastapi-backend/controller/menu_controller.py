@@ -13,7 +13,7 @@ menuController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @menuController.post("/menu/tree", response_model=MenuTree)
-async def get_system_menu_tree(menu_query: MenuModel, query_db: Session = Depends(get_db)):
+async def get_system_menu_tree(menu_query: MenuTreeModel, query_db: Session = Depends(get_db)):
     try:
         menu_query_result = get_menu_tree_services(query_db, menu_query)
         logger.info('获取成功')

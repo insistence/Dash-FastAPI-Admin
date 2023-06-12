@@ -138,7 +138,7 @@ def get_select_icon(icon):
      State('menu-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_menu_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
+def add_edit_menu_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
     if add_click or button_click:
         menu_params = dict(menu_name='')
         if clicked_content == '修改':

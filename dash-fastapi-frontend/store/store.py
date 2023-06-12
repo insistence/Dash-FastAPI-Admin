@@ -19,6 +19,15 @@ def render_store_container():
             dcc.Store(id='user-edit-id-store'),
             # 用户管理模块删除操作行key存储容器
             dcc.Store(id='user-delete-ids-store'),
+            # 角色管理模块操作类型存储容器
+            dcc.Store(id='role-operations-store'),
+            dcc.Store(id='role-operations-store-bk'),
+            # 角色管理模块修改操作行key存储容器
+            dcc.Store(id='role-edit-id-store'),
+            # 角色管理模块删除操作行key存储容器
+            dcc.Store(id='role-delete-ids-store'),
+            # 角色管理模块菜单权限存储容器
+            dcc.Store(id='role-menu-store'),
             # 菜单管理模块操作类型存储容器
             dcc.Store(id='menu-operations-store'),
             dcc.Store(id='menu-operations-store-bk'),

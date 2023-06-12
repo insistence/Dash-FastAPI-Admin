@@ -236,11 +236,11 @@ class RoleInfo(BaseModel):
     """
     用户角色信息
     """
-    role_info: Union[List]
+    role_info: Union[List, None]
 
 
 class MenuList(BaseModel):
     """
     用户菜单信息
     """
-    menu_info: Union[List]
+    menu_info: Union[List, None]

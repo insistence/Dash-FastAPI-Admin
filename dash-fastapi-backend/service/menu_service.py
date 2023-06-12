@@ -2,7 +2,7 @@ from mapper.schema.menu_schema import *
 from mapper.crud.menu_crud import *
 
 
-def get_menu_tree_services(result_db: Session, page_object: MenuModel):
+def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel):
     """
     获取菜单树信息service
     :param result_db: orm对象
@@ -10,9 +10,12 @@ def get_menu_tree_services(result_db: Session, page_object: MenuModel):
     :return: 菜单树信息对象
     """
     menu_tree_option = []
-    menu_list_result = get_menu_list_for_tree(result_db, page_object)
+    menu_list_result = get_menu_list_for_tree(result_db, MenuModel(**page_object.dict()))
     menu_tree_result = get_menu_tree(0, MenuTree(menu_tree=menu_list_result))
-    menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
+    if page_object.type != 'role':
+        menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
+    else:
+        menu_tree_option = [menu_tree_result, menu_list_result]
 
     return menu_tree_option
 

@@ -3,6 +3,9 @@ from typing import Union, Optional, List
 
 
 class MenuModel(BaseModel):
+    """
+    菜单表对应pydantic模型
+    """
     menu_id: Optional[int]
     menu_name: Optional[str]
     parent_id: Optional[int]
@@ -25,6 +28,13 @@ class MenuModel(BaseModel):
 
     class Config:
         orm_mode = True
+        
+        
+class MenuTreeModel(MenuModel):
+    """
+    菜单树查询模型
+    """
+    type: Optional[str]
 
 
 class MenuPageObject(MenuModel):

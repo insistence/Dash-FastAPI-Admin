@@ -1,4 +1,4 @@
-from sqlalchemy import and_
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 from entity.user_entity import SysUser, SysUserRole, SysUserPost
 from entity.role_entity import SysRole, SysRoleMenu
@@ -21,7 +21,7 @@ def get_user_by_name(db: Session, user_name: str):
     """
     query_user_info = db.query(SysUser) \
         .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_name == user_name) \
-        .distinct().first()
+        .order_by(desc(SysUser.create_time)).distinct().first()
 
     return query_user_info
 
