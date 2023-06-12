@@ -48,7 +48,7 @@ def edit_user_services(result_db: Session, page_object: AddUserModel):
     """
     edit_user = UserModel(**page_object.dict())
     edit_user_result = edit_user_crud(result_db, edit_user)
-    if edit_user_result.is_success:
+    if edit_user_result.is_success and page_object.type != 'status':
         user_id_dict = dict(user_id=page_object.user_id)
         delete_user_role_crud(result_db, UserRoleModel(**user_id_dict))
         delete_user_post_crud(result_db, UserPostModel(**user_id_dict))

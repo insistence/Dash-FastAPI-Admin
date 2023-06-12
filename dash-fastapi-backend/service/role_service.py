@@ -54,7 +54,7 @@ def edit_role_services(result_db: Session, page_object: AddRoleModel):
     """
     edit_role = RoleModel(**page_object.dict())
     edit_role_result = edit_role_crud(result_db, edit_role)
-    if edit_role_result.is_success:
+    if edit_role_result.is_success and page_object.type != 'status':
         role_id_dict = dict(role_id=page_object.role_id)
         delete_role_menu_crud(result_db, RoleMenuModel(**role_id_dict))
         if page_object.menu_id:

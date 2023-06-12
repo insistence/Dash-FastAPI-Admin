@@ -345,6 +345,7 @@ def render():
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
                                 id='role-role_sort',
+                                placeholder='请输入角色顺序',
                                 defaultValue=0,
                                 min=0,
                                 style={

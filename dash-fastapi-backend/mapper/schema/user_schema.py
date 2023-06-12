@@ -204,6 +204,7 @@ class AddUserModel(UserModel):
     """
     role_id: Optional[str]
     post_id: Optional[str]
+    type: Optional[str]
 
 
 class DeleteUserModel(BaseModel):

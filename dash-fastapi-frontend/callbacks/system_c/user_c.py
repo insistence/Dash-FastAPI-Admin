@@ -408,9 +408,9 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
 def table_switch_user_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
     if recently_switch_data_index:
         if recently_switch_status:
-            params = dict(user_id=int(recently_switch_row['key']), status='0')
+            params = dict(user_id=int(recently_switch_row['key']), status='0', type='status')
         else:
-            params = dict(user_id=int(recently_switch_row['key']), status='1')
+            params = dict(user_id=int(recently_switch_row['key']), status='1', type='status')
         edit_button_result = edit_user_api(params)
         if edit_button_result['code'] == 200:
 

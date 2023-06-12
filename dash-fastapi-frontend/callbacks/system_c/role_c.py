@@ -350,6 +350,39 @@ def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role
 
 
 @app.callback(
+    [Output('role-operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    [Input('role-list-table', 'recentlySwitchDataIndex'),
+     Input('role-list-table', 'recentlySwitchStatus'),
+     Input('role-list-table', 'recentlySwitchRow')],
+    prevent_initial_call=True
+)
+def table_switch_role_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
+    if recently_switch_data_index:
+        if recently_switch_status:
+            params = dict(role_id=int(recently_switch_row['key']), status='0', type='status')
+        else:
+            params = dict(role_id=int(recently_switch_row['key']), status='1', type='status')
+        edit_button_result = edit_role_api(params)
+        if edit_button_result['code'] == 200:
+
+            return [
+                {'type': 'switch-status'},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('修改成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('修改失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
     [Output('role-delete-text', 'children'),
      Output('role-delete-confirm-modal', 'visible'),
      Output('role-delete-ids-store', 'data')],

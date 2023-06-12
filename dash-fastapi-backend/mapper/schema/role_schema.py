@@ -56,6 +56,7 @@ class AddRoleModel(RoleModel):
     新增角色模型
     """
     menu_id: Optional[str]
+    type: Optional[str]
 
 
 class DeleteRoleModel(BaseModel):
