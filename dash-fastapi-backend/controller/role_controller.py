@@ -50,7 +50,7 @@ async def add_system_role(request: Request, add_role: AddRoleModel, token: Optio
         return response_500(data="", message="接口异常")
     
     
-@roleController.post("/role/edit", response_model=CrudRoleResponse)
+@roleController.patch("/role/edit", response_model=CrudRoleResponse)
 async def edit_system_role(request: Request, edit_role: AddRoleModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

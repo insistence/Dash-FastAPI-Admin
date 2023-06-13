@@ -41,7 +41,7 @@ async def add_system_user(request: Request, add_user: AddUserModel, token: Optio
         return response_500(data="", message="接口异常")
 
 
-@userController.post("/user/edit", response_model=CrudUserResponse)
+@userController.patch("/user/edit", response_model=CrudUserResponse)
 async def edit_system_user(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

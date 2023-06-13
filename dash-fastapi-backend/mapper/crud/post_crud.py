@@ -84,22 +84,20 @@ def add_post_crud(db: Session, post: PostModel):
     return CrudPostResponse(**result)
 
 
-def edit_post_crud(db: Session, post: PostModel):
+def edit_post_crud(db: Session, post: dict):
     """
     编辑岗位数据库操作
     :param db: orm对象
-    :param post: 岗位对象
+    :param post: 需要更新的岗位字典
     :return: 编辑校验结果
     """
-    is_post_id = db.query(SysPost).filter(SysPost.post_id == post.post_id).all()
+    is_post_id = db.query(SysPost).filter(SysPost.post_id == post.get('post_id')).all()
     if not is_post_id:
         result = dict(is_success=False, message='岗位不存在')
     else:
-        # 筛选出属性值为不为None和''的
-        filtered_dict = {k: v for k, v in post.dict().items() if v is not None and v != ''}
         db.query(SysPost) \
-            .filter(SysPost.post_id == post.post_id) \
-            .update(filtered_dict)
+            .filter(SysPost.post_id == post.get('post_id')) \
+            .update(post)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
 

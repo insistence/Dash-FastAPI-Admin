@@ -69,7 +69,8 @@ def edit_dept_services(result_db: Session, page_object: DeptModel):
         page_object.ancestors = f'{parent_info.ancestors},{page_object.parent_id}'
     else:
         page_object.ancestors = '0'
-    edit_dept_result = edit_dept_crud(result_db, page_object)
+    edit_dept = page_object.dict(exclude_unset=True)
+    edit_dept_result = edit_dept_crud(result_db, edit_dept)
     update_children_info(result_db, DeptModel(dept_id=page_object.dept_id,
                                               ancestors=page_object.ancestors,
                                               update_by=page_object.update_by,
@@ -155,11 +156,11 @@ def update_children_info(result_db, page_object):
         for child in children_info:
             child.ancestors = f'{page_object.ancestors},{page_object.dept_id}'
             edit_dept_crud(result_db,
-                           DeptModel(dept_id=child.dept_id,
-                                     ancestors=child.ancestors,
-                                     update_by=page_object.update_by,
-                                     update_time=page_object.update_time
-                                     )
+                           dict(dept_id=child.dept_id,
+                                ancestors=child.ancestors,
+                                update_by=page_object.update_by,
+                                update_time=page_object.update_time
+                                )
                            )
             update_children_info(result_db, DeptModel(dept_id=child.dept_id,
                                                       ancestors=child.ancestors,

@@ -44,7 +44,8 @@ def edit_post_services(result_db: Session, page_object: PostModel):
     :param page_object: 编辑岗位对象
     :return: 编辑岗位校验结果
     """
-    edit_post_result = edit_post_crud(result_db, page_object)
+    edit_post = page_object.dict(exclude_unset=True)
+    edit_post_result = edit_post_crud(result_db, edit_post)
 
     return edit_post_result
 

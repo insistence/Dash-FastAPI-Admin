@@ -52,7 +52,11 @@ def edit_role_services(result_db: Session, page_object: AddRoleModel):
     :param page_object: 编辑角色对象
     :return: 编辑角色校验结果
     """
-    edit_role = RoleModel(**page_object.dict())
+    edit_role = page_object.dict(exclude_unset=True)
+    if page_object.type != 'status':
+        del edit_role['menu_id']
+    if page_object.type == 'status':
+        del edit_role['type']
     edit_role_result = edit_role_crud(result_db, edit_role)
     if edit_role_result.is_success and page_object.type != 'status':
         role_id_dict = dict(role_id=page_object.role_id)

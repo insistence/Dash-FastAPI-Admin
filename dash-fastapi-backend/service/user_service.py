@@ -46,7 +46,12 @@ def edit_user_services(result_db: Session, page_object: AddUserModel):
     :param page_object: 编辑用户对象
     :return: 编辑用户校验结果
     """
-    edit_user = UserModel(**page_object.dict())
+    edit_user = page_object.dict(exclude_unset=True)
+    if page_object.type != 'status':
+        del edit_user['role_id']
+        del edit_user['post_id']
+    if page_object.type == 'status':
+        del edit_user['type']
     edit_user_result = edit_user_crud(result_db, edit_user)
     if edit_user_result.is_success and page_object.type != 'status':
         user_id_dict = dict(user_id=page_object.user_id)

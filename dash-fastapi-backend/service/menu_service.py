@@ -66,7 +66,8 @@ def edit_menu_services(result_db: Session, page_object: MenuModel):
     :param page_object: 编辑部门对象
     :return: 编辑菜单校验结果
     """
-    edit_menu_result = edit_menu_crud(result_db, page_object)
+    edit_menu = page_object.dict(exclude_unset=True)
+    edit_menu_result = edit_menu_crud(result_db, edit_menu)
 
     return edit_menu_result
 

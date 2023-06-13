@@ -50,7 +50,7 @@ async def add_system_post(request: Request, add_post: PostModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@postController.post("/post/edit", response_model=CrudPostResponse)
+@postController.patch("/post/edit", response_model=CrudPostResponse)
 async def edit_system_post(request: Request, edit_post: PostModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

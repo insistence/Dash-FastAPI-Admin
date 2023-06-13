@@ -23,7 +23,7 @@ def add_menu_api(page_obj: dict):
 
 def edit_menu_api(page_obj: dict):
 
-    return api_request(method='post', url='/system/menu/edit', is_headers=True, json=page_obj)
+    return api_request(method='patch', url='/system/menu/edit', is_headers=True, json=page_obj)
 
 
 def delete_menu_api(page_obj: dict):

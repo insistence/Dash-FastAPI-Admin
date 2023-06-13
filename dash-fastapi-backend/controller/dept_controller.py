@@ -62,7 +62,7 @@ async def add_system_dept(request: Request, add_dept: DeptModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@deptController.post("/dept/edit", response_model=CrudDeptResponse)
+@deptController.patch("/dept/edit", response_model=CrudDeptResponse)
 async def edit_system_dept(request: Request, edit_dept: DeptModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

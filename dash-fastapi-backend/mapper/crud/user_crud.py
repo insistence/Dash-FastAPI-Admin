@@ -211,25 +211,23 @@ def add_user_crud(db: Session, user: UserModel):
     return CrudUserResponse(**result)
 
 
-def edit_user_crud(db: Session, user: UserModel):
+def edit_user_crud(db: Session, user: dict):
     """
     编辑用户数据库操作
     :param db: orm对象
-    :param user: 用户对象
+    :param user: 需要更新的用户字典
     :return: 编辑校验结果
     """
-    is_user_id = db.query(SysUser).filter(SysUser.user_id == user.user_id, SysUser.del_flag == 0).all()
-    is_user_name = db.query(SysUser).filter(SysUser.user_name == user.user_name, SysUser.del_flag == 0).all()
+    is_user_id = db.query(SysUser).filter(SysUser.user_id == user.get('user_id'), SysUser.del_flag == 0).all()
+    is_user_name = db.query(SysUser).filter(SysUser.user_name == user.get('user_name'), SysUser.del_flag == 0).all()
     if not is_user_id:
         result = dict(is_success=False, message='用户不存在')
     elif is_user_name:
         result = dict(is_success=False, message='用户名已存在，不允许修改')
     else:
-        # 筛选出属性值为不为None和''的
-        filtered_dict = {k: v for k, v in user.dict().items() if v is not None and v != ''}
         db.query(SysUser) \
-            .filter(SysUser.user_id == user.user_id) \
-            .update(filtered_dict)
+            .filter(SysUser.user_id == user.get('user_id')) \
+            .update(user)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
 

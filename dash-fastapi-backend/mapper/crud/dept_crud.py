@@ -144,23 +144,20 @@ def add_dept_crud(db: Session, dept: DeptModel):
     return CrudDeptResponse(**result)
 
 
-def edit_dept_crud(db: Session, dept: DeptModel):
+def edit_dept_crud(db: Session, dept: dict):
     """
     编辑部门数据库操作
     :param db: orm对象
-    :param dept: 部门对象
+    :param dept: 需要更新的部门字典
     :return: 编辑校验结果
     """
-    print(dept.dept_id)
-    is_dept_id = db.query(SysDept).filter(SysDept.dept_id == dept.dept_id).all()
+    is_dept_id = db.query(SysDept).filter(SysDept.dept_id == dept.get('dept_id')).all()
     if not is_dept_id:
         result = dict(is_success=False, message='部门不存在')
     else:
-        # 筛选出属性值为不为None和''的
-        filtered_dict = {k: v for k, v in dept.dict().items() if v is not None and v != ''}
         db.query(SysDept) \
-            .filter(SysDept.dept_id == dept.dept_id) \
-            .update(filtered_dict)
+            .filter(SysDept.dept_id == dept.get('dept_id')) \
+            .update(dept)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
 

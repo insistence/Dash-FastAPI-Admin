@@ -74,22 +74,20 @@ def add_menu_crud(db: Session, menu: MenuModel):
     return CrudMenuResponse(**result)
 
 
-def edit_menu_crud(db: Session, menu: MenuModel):
+def edit_menu_crud(db: Session, menu: dict):
     """
     编辑菜单数据库操作
     :param db: orm对象
-    :param menu: 菜单对象
+    :param menu: 需要更新的菜单字典
     :return: 编辑校验结果
     """
-    is_menu_id = db.query(SysMenu).filter(SysMenu.menu_id == menu.menu_id).all()
+    is_menu_id = db.query(SysMenu).filter(SysMenu.menu_id == menu.get('menu_id')).all()
     if not is_menu_id:
         result = dict(is_success=False, message='菜单不存在')
     else:
-        # 筛选出属性值为不为None和''的
-        filtered_dict = {k: v for k, v in menu.dict().items() if v is not None and v != ''}
         db.query(SysMenu) \
-            .filter(SysMenu.menu_id == menu.menu_id) \
-            .update(filtered_dict)
+            .filter(SysMenu.menu_id == menu.get('menu_id')) \
+            .update(menu)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
 

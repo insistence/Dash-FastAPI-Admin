@@ -62,7 +62,7 @@ async def add_system_menu(request: Request, add_menu: MenuModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@menuController.post("/menu/edit", response_model=CrudMenuResponse)
+@menuController.patch("/menu/edit", response_model=CrudMenuResponse)
 async def edit_system_menu(request: Request, edit_menu: MenuModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

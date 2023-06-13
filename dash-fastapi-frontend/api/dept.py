@@ -23,7 +23,7 @@ def add_dept_api(page_obj: dict):
 
 def edit_dept_api(page_obj: dict):
 
-    return api_request(method='post', url='/system/dept/edit', is_headers=True, json=page_obj)
+    return api_request(method='patch', url='/system/dept/edit', is_headers=True, json=page_obj)
 
 
 def delete_dept_api(page_obj: dict):

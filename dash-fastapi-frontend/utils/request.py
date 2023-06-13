@@ -25,6 +25,9 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
         elif method == 'put':
             response = requests.put(url=api_url, params=params, data=data, json=json, headers=api_headers,
                                     timeout=timeout)
+        elif method == 'patch':
+            response = requests.patch(url=api_url, params=params, data=data, json=json, headers=api_headers,
+                                    timeout=timeout)
         else:
             raise ValueError(f'Unsupported HTTP method: {method}')
 

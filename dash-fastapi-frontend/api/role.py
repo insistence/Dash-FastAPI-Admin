@@ -18,7 +18,7 @@ def add_role_api(page_obj: dict):
 
 def edit_role_api(page_obj: dict):
 
-    return api_request(method='post', url='/system/role/edit', is_headers=True, json=page_obj)
+    return api_request(method='patch', url='/system/role/edit', is_headers=True, json=page_obj)
 
 
 def delete_role_api(page_obj: dict):

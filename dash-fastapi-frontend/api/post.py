@@ -18,7 +18,7 @@ def add_post_api(page_obj: dict):
 
 def edit_post_api(page_obj: dict):
 
-    return api_request(method='post', url='/system/post/edit', is_headers=True, json=page_obj)
+    return api_request(method='patch', url='/system/post/edit', is_headers=True, json=page_obj)
 
 
 def delete_post_api(page_obj: dict):

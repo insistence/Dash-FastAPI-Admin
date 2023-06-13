@@ -126,22 +126,20 @@ def add_role_crud(db: Session, role: RoleModel):
     return CrudRoleResponse(**result)
 
 
-def edit_role_crud(db: Session, role: RoleModel):
+def edit_role_crud(db: Session, role: dict):
     """
     编辑角色数据库操作
     :param db: orm对象
-    :param role: 角色对象
+    :param role: 需要更新的角色字典
     :return: 编辑校验结果
     """
-    is_role_id = db.query(SysRole).filter(SysRole.role_id == role.role_id).all()
+    is_role_id = db.query(SysRole).filter(SysRole.role_id == role.get('role_id')).all()
     if not is_role_id:
         result = dict(is_success=False, message='角色不存在')
     else:
-        # 筛选出属性值为不为None和''的
-        filtered_dict = {k: v for k, v in role.dict().items() if v is not None and v != ''}
         db.query(SysRole) \
-            .filter(SysRole.role_id == role.role_id) \
-            .update(filtered_dict)
+            .filter(SysRole.role_id == role.get('role_id')) \
+            .update(role)
         db.commit()  # 提交保存到数据库中
         result = dict(is_success=True, message='更新成功')
 
