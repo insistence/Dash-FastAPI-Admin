@@ -99,7 +99,7 @@ async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, tok
 
 
 @deptController.get("/dept/{dept_id}", response_model=DeptModel)
-async def query_detail_system_post(dept_id: int, query_db: Session = Depends(get_db)):
+async def query_detail_system_dept(dept_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dept_result = detail_dept_services(query_db, dept_id)
         logger.info(f'获取dept_id为{dept_id}的信息成功')

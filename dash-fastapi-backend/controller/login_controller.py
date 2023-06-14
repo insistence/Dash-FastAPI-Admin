@@ -58,8 +58,8 @@ async def get_login_user_info(request: Request, token: Optional[str] = Header(..
         return response_500(data="", message="接口异常")
 
 
-@loginController.post("/logout")
-async def logout(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db), dependencies=[Depends(get_current_user)]):
+@loginController.post("/logout", dependencies=[Depends(get_current_user)])
+async def logout(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
         await logout_services(request, current_user)
