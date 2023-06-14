@@ -43,12 +43,14 @@ def render_store_container():
             dcc.Store(id='menu-delete-ids-store'),
             # 部门管理模块操作类型存储容器
             dcc.Store(id='dept-operations-store'),
+            dcc.Store(id='dept-operations-store-bk'),
             # 部门管理模块修改操作行key存储容器
             dcc.Store(id='dept-edit-id-store'),
             # 部门管理模块删除操作行key存储容器
             dcc.Store(id='dept-delete-ids-store'),
             # 岗位管理模块操作类型存储容器
             dcc.Store(id='post-operations-store'),
+            dcc.Store(id='post-operations-store-bk'),
             # 岗位管理模块修改操作行key存储容器
             dcc.Store(id='post-edit-id-store'),
             # 岗位管理模块删除操作行key存储容器

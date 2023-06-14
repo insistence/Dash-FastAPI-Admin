@@ -231,288 +231,166 @@ def render():
             gutter=5
         ),
 
-        # 新增部门表单modal
+        # 新增和编辑部门表单modal
         fac.AntdModal(
             [
                 fac.AntdForm(
                     [
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdTreeSelect(
-                                        id='dept-add-parent_id',
-                                        placeholder='请选择上级部门',
-                                        treeData=[],
-                                        treeNodeFilterProp='title',
-                                        style={
-                                            'width': 500
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdTreeSelect(
+                                            id='dept-parent_id',
+                                            placeholder='请选择上级部门',
+                                            treeData=[],
+                                            treeNodeFilterProp='title',
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='上级部门',
+                                        required=True,
+                                        id='dept-parent_id-form-item',
+                                        labelCol={
+                                            'span': 4
+                                        },
+                                        wrapperCol={
+                                            'span': 20
                                         }
                                     ),
-                                    label='上级部门',
-                                    required=True,
-                                    id='dept-add-parent_id-form-item',
+                                    span=24
                                 ),
-                            ],
-                            size="middle"
+                            ]
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-add-dept_name',
-                                        placeholder='请输入部门名称',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='dept-dept_name',
+                                            placeholder='请输入部门名称',
+                                            allowClear=True,
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='部门名称',
+                                        required=True,
+                                        id='dept-dept_name-form-item'
                                     ),
-                                    label='部门名称',
-                                    required=True,
-                                    id='dept-add-dept_name-form-item',
+                                    span=12
                                 ),
-                                fac.AntdFormItem(
-                                    fac.AntdInputNumber(
-                                        id='dept-add-order_num',
-                                        min=0,
-                                        style={
-                                            'width': 200
-                                        }
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInputNumber(
+                                            id='dept-order_num',
+                                            min=0,
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='显示顺序',
+                                        required=True,
+                                        id='dept-order_num-form-item'
                                     ),
-                                    label='显示顺序',
-                                    required=True,
-                                    id='dept-add-order_num-form-item',
-                                ),
-                            ],
-                            size="middle"
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-add-leader',
-                                        placeholder='请输入负责人',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='负责人',
-                                    id='dept-add-leader-form-item',
-                                    labelCol={
-                                        'offset': 2
-                                    },
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-add-phone',
-                                        placeholder='请输入联系电话',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='联系电话',
-                                    id='dept-add-phone-form-item',
-                                    labelCol={
-                                        'offset': 3
-                                    },
-                                ),
-                            ],
-                            size="middle"
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-add-email',
-                                        placeholder='请输入邮箱',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='邮箱',
-                                    id='dept-add-email-form-item',
-                                    labelCol={
-                                        'offset': 3
-                                    },
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdRadioGroup(
-                                        id='dept-add-status',
-                                        options=[
-                                            {
-                                                'label': '正常',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '停用',
-                                                'value': '1'
-                                            },
-                                        ],
-                                        defaultValue='0',
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='部门状态',
-                                    id='dept-add-status-form-item',
-                                    labelCol={
-                                        'offset': 4
-                                    },
+                                    span=12
                                 )
                             ],
-                            size="middle"
+                            gutter=5
                         ),
-                    ]
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='dept-leader',
+                                            placeholder='请输入负责人',
+                                            allowClear=True,
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='负责人',
+                                        id='dept-leader-form-item'
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='dept-phone',
+                                            placeholder='请输入联系电话',
+                                            allowClear=True,
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='联系电话',
+                                        id='dept-phone-form-item'
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='dept-email',
+                                            placeholder='请输入邮箱',
+                                            allowClear=True,
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='邮箱',
+                                        id='dept-email-form-item'
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdRadioGroup(
+                                            id='dept-status',
+                                            options=[
+                                                {
+                                                    'label': '正常',
+                                                    'value': '0'
+                                                },
+                                                {
+                                                    'label': '停用',
+                                                    'value': '1'
+                                                },
+                                            ],
+                                            defaultValue='0',
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        label='部门状态',
+                                        id='dept-status-form-item'
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                    ],
+                    labelCol={
+                        'span': 8
+                    },
+                    wrapperCol={
+                        'span': 16
+                    },
+                    style={
+                        'marginRight': '15px'
+                    }
                 )
             ],
-            id='dept-add-modal',
-            title='新增部门',
-            mask=False,
-            width=650,
-            renderFooter=True,
-            okClickClose=False
-        ),
-
-        # 编辑部门表单modal
-        fac.AntdModal(
-            [
-                fac.AntdForm(
-                    [
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdTreeSelect(
-                                        id='dept-edit-parent_id',
-                                        placeholder='请选择上级部门',
-                                        treeData=[],
-                                        treeNodeFilterProp='title',
-                                        style={
-                                            'width': 510
-                                        }
-                                    ),
-                                    label='上级部门',
-                                    required=True,
-                                    id='dept-edit-parent_id-form-item',
-                                ),
-                            ],
-                            size="middle"
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-edit-dept_name',
-                                        placeholder='请输入部门名称',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='部门名称',
-                                    required=True,
-                                    id='dept-edit-dept_name-form-item',
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdInputNumber(
-                                        id='dept-edit-order_num',
-                                        min=0,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='显示顺序',
-                                    required=True,
-                                    id='dept-edit-order_num-form-item',
-                                ),
-                            ],
-                            size="middle"
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-edit-leader',
-                                        placeholder='请输入负责人',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='负责人',
-                                    id='dept-edit-leader-form-item',
-                                    labelCol={
-                                        'offset': 2
-                                    },
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-edit-phone',
-                                        placeholder='请输入联系电话',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='联系电话',
-                                    id='dept-edit-phone-form-item',
-                                    labelCol={
-                                        'offset': 3
-                                    },
-                                ),
-                            ],
-                            size="middle"
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='dept-edit-email',
-                                        placeholder='请输入邮箱',
-                                        allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='邮箱',
-                                    id='dept-edit-email-form-item',
-                                    labelCol={
-                                        'offset': 3
-                                    },
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdRadioGroup(
-                                        id='dept-edit-status',
-                                        options=[
-                                            {
-                                                'label': '正常',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '停用',
-                                                'value': '1'
-                                            },
-                                        ],
-                                        defaultValue='0',
-                                        style={
-                                            'width': 200
-                                        }
-                                    ),
-                                    label='部门状态',
-                                    id='dept-edit-status-form-item',
-                                    labelCol={
-                                        'offset': 4
-                                    },
-                                )
-                            ],
-                            size="middle"
-                        ),
-                    ]
-                )
-            ],
-            id='dept-edit-modal',
-            title='编辑部门',
+            id='dept-modal',
             mask=False,
             width=650,
             renderFooter=True,

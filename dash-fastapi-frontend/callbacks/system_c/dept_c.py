@@ -95,80 +95,161 @@ def reset_dept_query_params(reset_click):
 
 
 @app.callback(
-    [Output('dept-add-modal', 'visible', allow_duplicate=True),
-     Output('dept-add-parent_id', 'treeData'),
-     Output('dept-add-parent_id', 'value'),
+    [Output('dept-modal', 'visible', allow_duplicate=True),
+     Output('dept-modal', 'title'),
+     Output('dept-parent_id', 'treeData'),
+     Output('dept-parent_id', 'value'),
+     Output('dept-dept_name', 'value'),
+     Output('dept-order_num', 'value'),
+     Output('dept-leader', 'value'),
+     Output('dept-phone', 'value'),
+     Output('dept-email', 'value'),
+     Output('dept-status', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dept-add', 'nClicks')],
+     Output('dept-add', 'nClicks'),
+     Output('dept-edit-id-store', 'data'),
+     Output('dept-operations-store-bk', 'data')],
     [Input('dept-add', 'nClicks'),
      Input('dept-list-table', 'nClicksButton')],
     [State('dept-list-table', 'clickedContent'),
      State('dept-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_user_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or (button_click and clicked_content == '新增'):
+def add_edit_dept_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
+    if add_click or (button_click and clicked_content != '删除'):
         dept_params = dict(dept_name='')
-        tree_info = get_dept_tree_api(dept_params)
+        if clicked_content == '修改':
+            tree_info = get_dept_tree_for_edit_option_api(dept_params)
+        else:
+            tree_info = get_dept_tree_api(dept_params)
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            return [
-                True,
-                tree_data,
-                int(recently_button_clicked_row['key']) if recently_button_clicked_row else dash.no_update,
-                {'timestamp': time.time()},
-                None
-            ]
+            if add_click:
+                return [
+                    True,
+                    '新增部门',
+                    tree_data,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    '0',
+                    {'timestamp': time.time()},
+                    None,
+                    None,
+                    {'type': 'add'}
+                ]
+            elif button_click and clicked_content == '新增':
+                return [
+                    True,
+                    '新增部门',
+                    tree_data,
+                    str(recently_button_clicked_row['key']),
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    '0',
+                    {'timestamp': time.time()},
+                    None,
+                    None,
+                    {'type': 'add'}
+                ]
+            elif button_click and clicked_content == '修改':
+                dept_id = int(recently_button_clicked_row['key'])
+                dept_info_res = get_dept_detail_api(dept_id=dept_id)
+                if dept_info_res['code'] == 200:
+                    dept_info = dept_info_res['data']
+                    return [
+                        True,
+                        '编辑部门',
+                        tree_data,
+                        str(dept_info.get('parent_id')),
+                        dept_info.get('dept_name'),
+                        dept_info.get('order_num'),
+                        dept_info.get('leader'),
+                        dept_info.get('phone'),
+                        dept_info.get('email'),
+                        dept_info.get('status'),
+                        {'timestamp': time.time()},
+                        None,
+                        dept_info,
+                        {'type': 'edit'}
+                    ]
 
-        return [dash.no_update] * 3 + [{'timestamp': time.time()}, None]
+        return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None, None]
 
-    return [dash.no_update] * 4 + [None]
+    return [dash.no_update] * 11 + [None, None, None]
 
 
 @app.callback(
-    [Output('dept-add-parent_id-form-item', 'validateStatus'),
-     Output('dept-add-dept_name-form-item', 'validateStatus'),
-     Output('dept-add-order_num-form-item', 'validateStatus'),
-     Output('dept-add-parent_id-form-item', 'help'),
-     Output('dept-add-dept_name-form-item', 'help'),
-     Output('dept-add-order_num-form-item', 'help'),
-     Output('dept-add-modal', 'visible', allow_duplicate=True),
+    [Output('dept-parent_id-form-item', 'validateStatus'),
+     Output('dept-dept_name-form-item', 'validateStatus'),
+     Output('dept-order_num-form-item', 'validateStatus'),
+     Output('dept-parent_id-form-item', 'help'),
+     Output('dept-dept_name-form-item', 'help'),
+     Output('dept-order_num-form-item', 'help'),
+     Output('dept-modal', 'visible'),
      Output('dept-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('dept-add-modal', 'okCounts'),
-    [State('dept-add-parent_id', 'value'),
-     State('dept-add-dept_name', 'value'),
-     State('dept-add-order_num', 'value'),
-     State('dept-add-leader', 'value'),
-     State('dept-add-phone', 'value'),
-     State('dept-add-email', 'value'),
-     State('dept-add-status', 'value')],
+    Input('dept-modal', 'okCounts'),
+    [State('dept-operations-store-bk', 'data'),
+     State('dept-edit-id-store', 'data'),
+     State('dept-parent_id', 'value'),
+     State('dept-dept_name', 'value'),
+     State('dept-order_num', 'value'),
+     State('dept-leader', 'value'),
+     State('dept-phone', 'value'),
+     State('dept-email', 'value'),
+     State('dept-status', 'value')],
     prevent_initial_call=True
 )
-def dept_add_confirm(add_confirm, parent_id, dept_name, order_num, leader, phone, email, status):
-    if add_confirm:
-
+def dept_confirm(confirm_trigger, operation_type, cur_dept_info, parent_id, dept_name, order_num, leader, phone, email, status):
+    if confirm_trigger:
         if all([parent_id, dept_name, order_num]):
-            params = dict(parent_id=parent_id, dept_name=dept_name, order_num=order_num,
-                          leader=leader, phone=phone, email=email, status=status)
-            add_button_result = add_dept_api(params)
-
-            if add_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    False,
-                    {'type': 'add'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('新增成功', type='success')
-                ]
-
+            params_add = dict(parent_id=parent_id, dept_name=dept_name, order_num=order_num, leader=leader, phone=phone, 
+                              email=email, status=status)
+            params_edit = dict(dept_id=cur_dept_info.get('dept_id') if cur_dept_info else None, parent_id=parent_id, dept_name=dept_name,
+                          order_num=order_num, leader=leader, phone=phone, email=email, status=status)
+            api_res = {}
+            operation_type = operation_type.get('type')
+            if operation_type == 'add':
+                api_res = add_dept_api(params_add)
+            if operation_type == 'edit':
+                api_res = edit_dept_api(params_edit)
+            if api_res.get('code') == 200:
+                if operation_type == 'add':
+                    return [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        False,
+                        {'type': 'add'},
+                        {'timestamp': time.time()},
+                        fuc.FefferyFancyMessage('新增成功', type='success')
+                    ]
+                if operation_type == 'edit':
+                    return [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        False,
+                        {'type': 'edit'},
+                        {'timestamp': time.time()},
+                        fuc.FefferyFancyMessage('编辑成功', type='success')
+                    ]
+            
             return [
                 None,
                 None,
@@ -179,9 +260,9 @@ def dept_add_confirm(add_confirm, parent_id, dept_name, order_num, leader, phone
                 dash.no_update,
                 dash.no_update,
                 {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('新增失败', type='error')
+                fuc.FefferyFancyMessage('处理失败', type='error')
             ]
-
+        
         return [
             None if parent_id else 'error',
             None if dept_name else 'error',
@@ -192,133 +273,8 @@ def dept_add_confirm(add_confirm, parent_id, dept_name, order_num, leader, phone
             dash.no_update,
             dash.no_update,
             {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('新增失败', type='error')
-        ]
-
-    return [dash.no_update] * 10
-
-
-@app.callback(
-    [Output('dept-edit-modal', 'visible', allow_duplicate=True),
-     Output('dept-edit-parent_id', 'treeData'),
-     Output('dept-edit-parent_id', 'value'),
-     Output('dept-edit-dept_name', 'value'),
-     Output('dept-edit-order_num', 'value'),
-     Output('dept-edit-leader', 'value'),
-     Output('dept-edit-phone', 'value'),
-     Output('dept-edit-email', 'value'),
-     Output('dept-edit-status', 'value'),
-     Output('dept-edit-id-store', 'data'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('dept-list-table', 'nClicksButton')],
-    [State('dept-list-table', 'clickedContent'),
-     State('dept-list-table', 'recentlyButtonClickedRow')],
-    prevent_initial_call=True
-)
-def dept_edit_modal(button_click, clicked_content, recently_button_clicked_row):
-    if button_click:
-
-        if clicked_content == '修改':
-            dept_id = int(recently_button_clicked_row['key'])
-        else:
-            return dash.no_update
-
-        dept_params = dict(dept_id=dept_id)
-        tree_info = get_dept_tree_for_edit_option_api(dept_params)
-        edit_button_info = get_dept_detail_api(dept_id)
-        if edit_button_info['code'] == 200 and tree_info['code'] == 200:
-            edit_button_result = edit_button_info['data']
-            tree_data = tree_info['data']
-
-            return [
-                True,
-                tree_data,
-                edit_button_result['parent_id'],
-                edit_button_result['dept_name'],
-                edit_button_result['order_num'],
-                edit_button_result['leader'],
-                edit_button_result['phone'],
-                edit_button_result['email'],
-                edit_button_result['status'],
-                {'dept_id': dept_id},
-                {'timestamp': time.time()}
-            ]
-
-        return [dash.no_update] * 10 + [{'timestamp': time.time()}]
-
-    return [dash.no_update] * 11
-
-
-@app.callback(
-    [Output('dept-edit-parent_id-form-item', 'validateStatus'),
-     Output('dept-edit-dept_name-form-item', 'validateStatus'),
-     Output('dept-edit-order_num-form-item', 'validateStatus'),
-     Output('dept-edit-parent_id-form-item', 'help'),
-     Output('dept-edit-dept_name-form-item', 'help'),
-     Output('dept-edit-order_num-form-item', 'help'),
-     Output('dept-edit-modal', 'visible', allow_duplicate=True),
-     Output('dept-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('dept-edit-modal', 'okCounts'),
-    [State('dept-edit-parent_id', 'value'),
-     State('dept-edit-dept_name', 'value'),
-     State('dept-edit-order_num', 'value'),
-     State('dept-edit-leader', 'value'),
-     State('dept-edit-phone', 'value'),
-     State('dept-edit-email', 'value'),
-     State('dept-edit-status', 'value'),
-     State('dept-edit-id-store', 'data')],
-    prevent_initial_call=True
-)
-def dept_edit_confirm(edit_confirm, parent_id, dept_name, order_num, leader, phone, email, status, dept_id):
-    if edit_confirm:
-
-        if all([parent_id, dept_name, order_num]):
-            params = dict(dept_id=dept_id['dept_id'], parent_id=parent_id, dept_name=dept_name,
-                          order_num=order_num, leader=leader, phone=phone, email=email,
-                          status=status)
-            edit_button_result = edit_dept_api(params)
-
-            if edit_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    False,
-                    {'type': 'edit'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('编辑成功', type='success')
-                ]
-
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('编辑失败', type='error')
-            ]
-
-        return [
-            None if parent_id else 'error',
-            None if dept_name else 'error',
-            None if order_num else 'error',
-            None if parent_id else '请选择上级部门！',
-            None if dept_name else '请输入部门名称！',
-            None if order_num else '请输入显示排序！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('编辑失败', type='error')
-        ]
+            fuc.FefferyFancyMessage('处理失败', type='error')
+        ]         
 
     return [dash.no_update] * 10
 

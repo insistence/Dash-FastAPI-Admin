@@ -315,7 +315,7 @@ def render():
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='role-role_Key',
+                                id='role-role_key',
                                 placeholder='请输入权限字符',
                                 allowClear=True,
                                 style={

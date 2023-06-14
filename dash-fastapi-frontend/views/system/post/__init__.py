@@ -281,14 +281,14 @@ def render():
             gutter=5
         ),
 
-        # 新增岗位表单modal
+        # 新增和编辑岗位表单modal
         fac.AntdModal(
             [
                 fac.AntdForm(
                     [
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-add-post_name',
+                                id='post-post_name',
                                 placeholder='请输入岗位名称',
                                 allowClear=True,
                                 style={
@@ -297,11 +297,11 @@ def render():
                             ),
                             label='岗位名称',
                             required=True,
-                            id='post-add-post_name-form-item'
+                            id='post-post_name-form-item'
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-add-post_code',
+                                id='post-post_code',
                                 placeholder='请输入岗位编码',
                                 allowClear=True,
                                 style={
@@ -310,11 +310,11 @@ def render():
                             ),
                             label='岗位编码',
                             required=True,
-                            id='post-add-post_code-form-item',
+                            id='post-post_code-form-item'
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
-                                id='post-add-post_sort',
+                                id='post-post_sort',
                                 defaultValue=0,
                                 min=0,
                                 style={
@@ -323,11 +323,11 @@ def render():
                             ),
                             label='岗位顺序',
                             required=True,
-                            id='post-add-post_sort-form-item',
+                            id='post-post_sort-form-item'
                         ),
                         fac.AntdFormItem(
                             fac.AntdRadioGroup(
-                                id='post-add-status',
+                                id='post-status',
                                 options=[
                                     {
                                         'label': '正常',
@@ -344,14 +344,11 @@ def render():
                                 }
                             ),
                             label='岗位状态',
-                            id='post-add-status-form-item',
-                            labelCol={
-                                'offset': 1
-                            },
+                            id='post-status-form-item'
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-add-remark',
+                                id='post-remark',
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
@@ -360,113 +357,20 @@ def render():
                                 }
                             ),
                             label='备注',
-                            id='post-add-remark-form-item',
-                            labelCol={
-                                'offset': 2
-                            },
+                            id='post-remark-form-item'
                         ),
-                    ]
+                    ],
+                    labelCol={
+                        'span': 6
+                    },
+                    wrapperCol={
+                        'span': 18
+                    }
                 )
             ],
-            id='post-add-modal',
-            title='新增岗位',
+            id='post-modal',
             mask=False,
-            width=480,
-            renderFooter=True,
-            okClickClose=False
-        ),
-
-        # 编辑岗位表单modal
-        fac.AntdModal(
-            [
-                fac.AntdForm(
-                    [
-                        fac.AntdFormItem(
-                            fac.AntdInput(
-                                id='post-edit-post_name',
-                                placeholder='请输入岗位名称',
-                                allowClear=True,
-                                style={
-                                    'width': 350
-                                }
-                            ),
-                            label='岗位名称',
-                            required=True,
-                            id='post-edit-post_name-form-item'
-                        ),
-                        fac.AntdFormItem(
-                            fac.AntdInput(
-                                id='post-edit-post_code',
-                                placeholder='请输入岗位编码',
-                                allowClear=True,
-                                style={
-                                    'width': 350
-                                }
-                            ),
-                            label='岗位编码',
-                            required=True,
-                            id='post-edit-post_code-form-item',
-                        ),
-                        fac.AntdFormItem(
-                            fac.AntdInputNumber(
-                                id='post-edit-post_sort',
-                                defaultValue=0,
-                                min=0,
-                                style={
-                                    'width': 350
-                                }
-                            ),
-                            label='岗位顺序',
-                            required=True,
-                            id='post-edit-post_sort-form-item',
-                        ),
-                        fac.AntdFormItem(
-                            fac.AntdRadioGroup(
-                                id='post-edit-status',
-                                options=[
-                                    {
-                                        'label': '正常',
-                                        'value': '0'
-                                    },
-                                    {
-                                        'label': '停用',
-                                        'value': '1'
-                                    },
-                                ],
-                                defaultValue='0',
-                                style={
-                                    'width': 350
-                                }
-                            ),
-                            label='岗位状态',
-                            id='post-edit-status-form-item',
-                            labelCol={
-                                'offset': 1
-                            },
-                        ),
-                        fac.AntdFormItem(
-                            fac.AntdInput(
-                                id='post-edit-remark',
-                                placeholder='请输入内容',
-                                allowClear=True,
-                                mode='text-area',
-                                style={
-                                    'width': 350
-                                }
-                            ),
-                            label='备注',
-                            id='post-edit-remark-form-item',
-                            labelCol={
-                                'offset': 2
-                            },
-                        ),
-                    ]
-                )
-            ],
-            id='post-edit-modal',
-            title='编辑岗位',
-            mask=False,
-            width=480,
+            width=580,
             renderFooter=True,
             okClickClose=False
         ),

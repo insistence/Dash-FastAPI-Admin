@@ -110,178 +110,132 @@ def change_post_edit_delete_button_status(table_rows_selected):
 
 
 @app.callback(
-    Output('post-add-modal', 'visible', allow_duplicate=True),
-    Input('post-add', 'nClicks'),
-    prevent_initial_call=True
-)
-def add_post_modal(add_click):
-    if add_click:
-
-        return True
-
-    return dash.no_update
-
-
-@app.callback(
-    [Output('post-add-post_name-form-item', 'validateStatus'),
-     Output('post-add-post_code-form-item', 'validateStatus'),
-     Output('post-add-post_sort-form-item', 'validateStatus'),
-     Output('post-add-post_name-form-item', 'help'),
-     Output('post-add-post_code-form-item', 'help'),
-     Output('post-add-post_sort-form-item', 'help'),
-     Output('post-add-modal', 'visible', allow_duplicate=True),
-     Output('post-operations-store', 'data', allow_duplicate=True),
+    [Output('post-modal', 'visible', allow_duplicate=True),
+     Output('post-modal', 'title'),
+     Output('post-post_name', 'value'),
+     Output('post-post_code', 'value'),
+     Output('post-post_sort', 'value'),
+     Output('post-status', 'value'),
+     Output('post-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('post-add-modal', 'okCounts'),
-    [State('post-add-post_name', 'value'),
-     State('post-add-post_code', 'value'),
-     State('post-add-post_sort', 'value'),
-     State('post-add-status', 'value'),
-     State('post-add-remark', 'value')],
-    prevent_initial_call=True
-)
-def post_add_confirm(add_confirm, post_name, post_code, post_sort, status, remark):
-    if add_confirm:
-
-        if all([post_name, post_code, post_sort]):
-            params = dict(post_name=post_name, post_code=post_code, post_sort=post_sort, status=status, remark=remark)
-            add_button_result = add_post_api(params)
-
-            if add_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    False,
-                    {'type': 'add'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('新增成功', type='success')
-                ]
-
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('新增失败', type='error')
-            ]
-
-        return [
-            None if post_name else 'error',
-            None if post_code else 'error',
-            None if post_sort else 'error',
-            None if post_name else '请输入岗位名称！',
-            None if post_code else '请输入岗位编码！',
-            None if post_sort else '请输入岗位顺序！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('新增失败', type='error')
-        ]
-
-    return [dash.no_update] * 10
-
-
-@app.callback(
-    [Output('post-edit-modal', 'visible', allow_duplicate=True),
-     Output('post-edit-post_name', 'value'),
-     Output('post-edit-post_code', 'value'),
-     Output('post-edit-post_sort', 'value'),
-     Output('post-edit-status', 'value'),
-     Output('post-edit-remark', 'value'),
+     Output('post-add', 'nClicks'),
+     Output('post-edit', 'nClicks'),
      Output('post-edit-id-store', 'data'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('post-edit', 'nClicks'),
+     Output('post-operations-store-bk', 'data')],
+    [Input('post-add', 'nClicks'),
+     Input('post-edit', 'nClicks'),
      Input('post-list-table', 'nClicksButton')],
     [State('post-list-table', 'selectedRowKeys'),
      State('post-list-table', 'clickedContent'),
      State('post-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def post_edit_modal(edit_click, button_click,
-                    selected_row_keys, clicked_content, recently_button_clicked_row):
-    if edit_click or button_click:
-        trigger_id = dash.ctx.triggered_id
-
-        if trigger_id == 'post-edit':
-            post_id = int(selected_row_keys[0])
-        else:
-            if clicked_content == '修改':
-                post_id = int(recently_button_clicked_row['key'])
-            else:
-                return dash.no_update
-
-        edit_button_info = get_post_detail_api(post_id)
-        if edit_button_info['code'] == 200:
-            edit_button_result = edit_button_info['data']
-
+def add_edit_post_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    if add_click or edit_click or button_click:
+        if add_click:
             return [
                 True,
-                edit_button_result['post_name'],
-                edit_button_result['post_code'],
-                edit_button_result['post_sort'],
-                edit_button_result['status'],
-                edit_button_result['remark'],
-                {'post_id': post_id},
-                {'timestamp': time.time()}
+                '新增岗位',
+                None,
+                None,
+                0,
+                '0',
+                None,
+                {'timestamp': time.time()},
+                None,
+                None,
+                None,
+                {'type': 'add'}
             ]
+        elif edit_click or (button_click and clicked_content == '修改'):
+            if edit_click:
+                post_id = int(','.join(selected_row_keys))
+            else:
+                post_id = int(recently_button_clicked_row['key'])
+            post_info_res = get_post_detail_api(post_id=post_id)
+            if post_info_res['code'] == 200:
+                post_info = post_info_res['data']
+                return [
+                    True,
+                    '编辑岗位',
+                    post_info.get('post_name'),
+                    post_info.get('post_code'),
+                    post_info.get('post_sort'),
+                    post_info.get('status'),
+                    post_info.get('remark'),
+                    {'timestamp': time.time()},
+                    None,
+                    None,
+                    post_info if post_info else None,
+                    {'type': 'edit'}
+                ]
+                    
+        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None, None, None]
 
-        return [dash.no_update] * 7 + [{'timestamp': time.time()}]
-
-    return [dash.no_update] * 8
+    return [dash.no_update] * 8 + [None, None, None, None]
 
 
 @app.callback(
-    [Output('post-edit-post_name-form-item', 'validateStatus'),
-     Output('post-edit-post_code-form-item', 'validateStatus'),
-     Output('post-edit-post_sort-form-item', 'validateStatus'),
-     Output('post-edit-post_name-form-item', 'help'),
-     Output('post-edit-post_code-form-item', 'help'),
-     Output('post-edit-post_sort-form-item', 'help'),
-     Output('post-edit-modal', 'visible', allow_duplicate=True),
+    [Output('post-post_name-form-item', 'validateStatus'),
+     Output('post-post_code-form-item', 'validateStatus'),
+     Output('post-post_sort-form-item', 'validateStatus'),
+     Output('post-post_name-form-item', 'help'),
+     Output('post-post_code-form-item', 'help'),
+     Output('post-post_sort-form-item', 'help'),
+     Output('post-modal', 'visible'),
      Output('post-operations-store', 'data', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('post-edit-modal', 'okCounts'),
-    [State('post-edit-post_name', 'value'),
-     State('post-edit-post_code', 'value'),
-     State('post-edit-post_sort', 'value'),
-     State('post-edit-status', 'value'),
-     State('post-edit-remark', 'value'),
-     State('post-edit-id-store', 'data')],
+    Input('post-modal', 'okCounts'),
+    [State('post-operations-store-bk', 'data'),
+     State('post-edit-id-store', 'data'),
+     State('post-post_name', 'value'),
+     State('post-post_code', 'value'),
+     State('post-post_sort', 'value'),
+     State('post-status', 'value'),
+     State('post-remark', 'value')],
     prevent_initial_call=True
 )
-def post_edit_confirm(edit_confirm, post_name, post_code, post_sort, status, remark, post_id):
-    if edit_confirm:
-
+def post_confirm(confirm_trigger, operation_type, cur_post_info, post_name, post_code, post_sort, status, remark):
+    if confirm_trigger:
         if all([post_name, post_code, post_sort]):
-            params = dict(post_id=post_id['post_id'], post_name=post_name, post_code=post_code,
-                          post_sort=post_sort, status=status, remark=remark)
-            edit_button_result = edit_post_api(params)
-
-            if edit_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    False,
-                    {'type': 'edit'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('编辑成功', type='success')
-                ]
-
+            params_add = dict(post_name=post_name, post_code=post_code, post_sort=post_sort, status=status, remark=remark)
+            params_edit = dict(post_id=cur_post_info.get('post_id') if cur_post_info else None, post_name=post_name, 
+                               post_code=post_code, post_sort=post_sort, status=status, remark=remark)
+            api_res = {}
+            operation_type = operation_type.get('type')
+            if operation_type == 'add':
+                api_res = add_post_api(params_add)
+            if operation_type == 'edit':
+                api_res = edit_post_api(params_edit)
+            if api_res.get('code') == 200:
+                if operation_type == 'add':
+                    return [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        False,
+                        {'type': 'add'},
+                        {'timestamp': time.time()},
+                        fuc.FefferyFancyMessage('新增成功', type='success')
+                    ]
+                if operation_type == 'edit':
+                    return [
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        False,
+                        {'type': 'edit'},
+                        {'timestamp': time.time()},
+                        fuc.FefferyFancyMessage('编辑成功', type='success')
+                    ]
+            
             return [
                 None,
                 None,
@@ -292,9 +246,9 @@ def post_edit_confirm(edit_confirm, post_name, post_code, post_sort, status, rem
                 dash.no_update,
                 dash.no_update,
                 {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('编辑失败', type='error')
+                fuc.FefferyFancyMessage('处理失败', type='error')
             ]
-
+        
         return [
             None if post_name else 'error',
             None if post_code else 'error',
@@ -305,8 +259,8 @@ def post_edit_confirm(edit_confirm, post_name, post_code, post_sort, status, rem
             dash.no_update,
             dash.no_update,
             {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('编辑失败', type='error')
-        ]
+            fuc.FefferyFancyMessage('处理失败', type='error')
+        ]         
 
     return [dash.no_update] * 10
 

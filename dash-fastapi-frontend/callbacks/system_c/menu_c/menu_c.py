@@ -139,7 +139,7 @@ def get_select_icon(icon):
     prevent_initial_call=True
 )
 def add_edit_menu_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or button_click:
+    if add_click or (button_click and clicked_content != '删除'):
         menu_params = dict(menu_name='')
         if clicked_content == '修改':
             tree_info = get_menu_tree_for_edit_option_api(menu_params)
