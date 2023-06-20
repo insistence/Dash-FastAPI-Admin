@@ -12,7 +12,7 @@ from module_admin.controller.dept_controller import deptController
 from module_admin.controller.role_controller import roleController
 from module_admin.controller.post_controler import postController
 from config.env import RedisConfig
-from module_admin.utils.response_tool import response_401, AuthException
+from module_admin.utils.response_util import response_401, AuthException
 
 
 app = FastAPI()
