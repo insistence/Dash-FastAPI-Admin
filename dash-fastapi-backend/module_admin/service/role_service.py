@@ -1,5 +1,5 @@
-from mapper.schema.role_schema import *
-from mapper.crud.role_crud import *
+from module_admin.entity.vo.role_schema import *
+from module_admin.mapper.role_crud import *
 
 
 def get_role_select_option_services(result_db: Session):

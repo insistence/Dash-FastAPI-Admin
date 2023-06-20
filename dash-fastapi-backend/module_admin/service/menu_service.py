@@ -1,5 +1,5 @@
-from mapper.schema.menu_schema import *
-from mapper.crud.menu_crud import *
+from module_admin.entity.vo.menu_schema import *
+from module_admin.mapper.menu_crud import *
 
 
 def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel):

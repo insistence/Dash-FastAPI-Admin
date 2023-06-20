@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from entity.user_entity import SysUser
-from utils.time_format_tool import object_format_datetime
+from module_admin.entity.do.user_entity import SysUser
+from module_admin.utils.time_format_tool import object_format_datetime
 
 
 def login_by_account(db: Session, user_name: str):

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Union, Optional, List
-from mapper.schema.user_schema import PostModel
+from module_admin.entity.vo.user_schema import PostModel
 
 
 class PostPageObject(PostModel):

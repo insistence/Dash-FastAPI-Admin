@@ -5,14 +5,14 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from controller.login_controller import loginController
-from controller.user_controller import userController
-from controller.menu_controller import menuController
-from controller.dept_controller import deptController
-from controller.role_controller import roleController
-from controller.post_controler import postController
+from module_admin.controller.login_controller import loginController
+from module_admin.controller.user_controller import userController
+from module_admin.controller.menu_controller import menuController
+from module_admin.controller.dept_controller import deptController
+from module_admin.controller.role_controller import roleController
+from module_admin.controller.post_controler import postController
 from config.env import RedisConfig
-from utils.response_tool import response_401, AuthException
+from module_admin.utils.response_tool import response_401, AuthException
 
 
 app = FastAPI()

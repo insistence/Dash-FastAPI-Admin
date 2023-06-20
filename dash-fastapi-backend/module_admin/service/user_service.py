@@ -1,5 +1,5 @@
-from mapper.schema.user_schema import *
-from mapper.crud.user_crud import *
+from module_admin.entity.vo.user_schema import *
+from module_admin.mapper.user_crud import *
 
 
 def get_user_list_services(result_db: Session, page_object: UserPageObject):

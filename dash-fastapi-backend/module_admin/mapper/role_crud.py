@@ -1,10 +1,10 @@
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-from entity.role_entity import SysRole, SysRoleMenu
-from entity.menu_entity import SysMenu
-from mapper.schema.role_schema import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
-from utils.time_format_tool import list_format_datetime, object_format_datetime
-from utils.page_tool import get_page_info
+from module_admin.entity.do.role_entity import SysRole, SysRoleMenu
+from module_admin.entity.do.menu_entity import SysMenu
+from module_admin.entity.vo.role_schema import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
+from module_admin.utils.time_format_tool import list_format_datetime, object_format_datetime
+from module_admin.utils.page_tool import get_page_info
 from datetime import datetime, time
 
 

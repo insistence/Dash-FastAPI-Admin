@@ -1,5 +1,5 @@
-from mapper.schema.dept_schema import *
-from mapper.crud.dept_crud import *
+from module_admin.entity.vo.dept_schema import *
+from module_admin.mapper.dept_crud import *
 
 
 def get_dept_tree_services(result_db: Session, page_object: DeptModel):

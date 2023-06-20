@@ -1,9 +1,7 @@
-from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
-from entity.dept_entity import SysDept
-from mapper.schema.dept_schema import DeptModel, DeptResponse, CrudDeptResponse
-from utils.time_format_tool import list_format_datetime
-from utils.page_tool import get_page_info
+from module_admin.entity.do.dept_entity import SysDept
+from module_admin.entity.vo.dept_schema import DeptModel, DeptResponse, CrudDeptResponse
+from module_admin.utils.time_format_tool import list_format_datetime
 
 
 def get_dept_by_id(db: Session, dept_id: int):

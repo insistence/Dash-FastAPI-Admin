@@ -1,5 +1,5 @@
-from mapper.schema.post_schema import *
-from mapper.crud.post_crud import *
+from module_admin.entity.vo.post_schema import *
+from module_admin.mapper.post_crud import *
 
 
 def get_post_select_option_services(result_db: Session):
