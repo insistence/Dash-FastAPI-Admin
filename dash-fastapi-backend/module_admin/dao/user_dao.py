@@ -1,14 +1,14 @@
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-from module_admin.entity.do.user_entity import SysUser, SysUserRole, SysUserPost
-from module_admin.entity.do.role_entity import SysRole, SysRoleMenu
-from module_admin.entity.do.dept_entity import SysDept
-from module_admin.entity.do.post_entity import SysPost
-from module_admin.entity.do.menu_entity import SysMenu
-from module_admin.entity.vo.user_schema import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserPageObject, \
+from module_admin.entity.do.user_do import SysUser, SysUserRole, SysUserPost
+from module_admin.entity.do.role_do import SysRole, SysRoleMenu
+from module_admin.entity.do.dept_do import SysDept
+from module_admin.entity.do.post_do import SysPost
+from module_admin.entity.do.menu_do import SysMenu
+from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserPageObject, \
     UserPageObjectResponse, CrudUserResponse
-from module_admin.utils.time_format_tool import list_format_datetime, format_datetime_dict_list
-from module_admin.utils.page_tool import get_page_info
+from module_admin.utils.time_format_util import list_format_datetime, format_datetime_dict_list
+from module_admin.utils.page_util import get_page_info
 from datetime import datetime, time
 
 
@@ -191,7 +191,7 @@ def get_user_list(db: Session, page_object: UserPageObject):
     return UserPageObjectResponse(**result)
 
 
-def add_user_crud(db: Session, user: UserModel):
+def add_user_dao(db: Session, user: UserModel):
     """
     新增用户数据库操作
     :param db: orm对象
@@ -211,7 +211,7 @@ def add_user_crud(db: Session, user: UserModel):
     return CrudUserResponse(**result)
 
 
-def edit_user_crud(db: Session, user: dict):
+def edit_user_dao(db: Session, user: dict):
     """
     编辑用户数据库操作
     :param db: orm对象
@@ -234,7 +234,7 @@ def edit_user_crud(db: Session, user: dict):
     return CrudUserResponse(**result)
 
 
-def delete_user_crud(db: Session, user: UserModel):
+def delete_user_dao(db: Session, user: UserModel):
     """
     删除用户数据库操作
     :param db: orm对象
@@ -247,7 +247,7 @@ def delete_user_crud(db: Session, user: UserModel):
     db.commit()  # 提交保存到数据库中
 
 
-def add_user_role_crud(db: Session, user_role: UserRoleModel):
+def add_user_role_dao(db: Session, user_role: UserRoleModel):
     """
     新增用户角色关联信息数据库操作
     :param db: orm对象
@@ -260,7 +260,7 @@ def add_user_role_crud(db: Session, user_role: UserRoleModel):
     db.refresh(db_user_role)  # 刷新
 
 
-def delete_user_role_crud(db: Session, user_role: UserRoleModel):
+def delete_user_role_dao(db: Session, user_role: UserRoleModel):
     """
     删除用户角色关联信息数据库操作
     :param db: orm对象
@@ -273,7 +273,7 @@ def delete_user_role_crud(db: Session, user_role: UserRoleModel):
     db.commit()  # 提交保存到数据库中
 
 
-def add_user_post_crud(db: Session, user_post: UserPostModel):
+def add_user_post_dao(db: Session, user_post: UserPostModel):
     """
     新增用户岗位关联信息数据库操作
     :param db: orm对象
@@ -286,7 +286,7 @@ def add_user_post_crud(db: Session, user_post: UserPostModel):
     db.refresh(db_user_post)  # 刷新
 
 
-def delete_user_post_crud(db: Session, user_post: UserPostModel):
+def delete_user_post_dao(db: Session, user_post: UserPostModel):
     """
     删除用户岗位关联信息数据库操作
     :param db: orm对象

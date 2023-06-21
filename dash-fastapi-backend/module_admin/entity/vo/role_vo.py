@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Union, Optional, List
-from module_admin.entity.vo.user_schema import RoleModel
-from module_admin.entity.vo.menu_schema import MenuModel
+from module_admin.entity.vo.user_vo import RoleModel
+from module_admin.entity.vo.menu_vo import MenuModel
 
 
 class RoleMenuModel(BaseModel):

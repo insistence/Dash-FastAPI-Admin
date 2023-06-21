@@ -1,10 +1,10 @@
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-from module_admin.entity.do.role_entity import SysRole, SysRoleMenu
-from module_admin.entity.do.menu_entity import SysMenu
-from module_admin.entity.vo.role_schema import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
-from module_admin.utils.time_format_tool import list_format_datetime, object_format_datetime
-from module_admin.utils.page_tool import get_page_info
+from module_admin.entity.do.role_do import SysRole, SysRoleMenu
+from module_admin.entity.do.menu_do import SysMenu
+from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
+from module_admin.utils.time_format_util import list_format_datetime, object_format_datetime
+from module_admin.utils.page_util import get_page_info
 from datetime import datetime, time
 
 
@@ -55,7 +55,7 @@ def get_role_detail_by_id(db: Session, role_id: int):
     return RoleDetailModel(**results)
 
 
-def get_role_select_option_crud(db: Session):
+def get_role_select_option_dao(db: Session):
     role_info = db.query(SysRole) \
         .filter(SysRole.status == 0, SysRole.del_flag == 0) \
         .all()
@@ -110,7 +110,7 @@ def get_role_list(db: Session, page_object: RolePageObject):
     return RolePageObjectResponse(**result)
 
 
-def add_role_crud(db: Session, role: RoleModel):
+def add_role_dao(db: Session, role: RoleModel):
     """
     新增角色数据库操作
     :param db: orm对象
@@ -126,7 +126,7 @@ def add_role_crud(db: Session, role: RoleModel):
     return CrudRoleResponse(**result)
 
 
-def edit_role_crud(db: Session, role: dict):
+def edit_role_dao(db: Session, role: dict):
     """
     编辑角色数据库操作
     :param db: orm对象
@@ -146,7 +146,7 @@ def edit_role_crud(db: Session, role: dict):
     return CrudRoleResponse(**result)
 
 
-def delete_role_crud(db: Session, role: RoleModel):
+def delete_role_dao(db: Session, role: RoleModel):
     """
     删除角色数据库操作
     :param db: orm对象
@@ -159,7 +159,7 @@ def delete_role_crud(db: Session, role: RoleModel):
     db.commit()  # 提交保存到数据库中
 
 
-def add_role_menu_crud(db: Session, role_menu: RoleMenuModel):
+def add_role_menu_dao(db: Session, role_menu: RoleMenuModel):
     """
     新增角色菜单关联信息数据库操作
     :param db: orm对象
@@ -172,7 +172,7 @@ def add_role_menu_crud(db: Session, role_menu: RoleMenuModel):
     db.refresh(db_role_menu)  # 刷新
     
     
-def delete_role_menu_crud(db: Session, role_menu: RoleMenuModel):
+def delete_role_menu_dao(db: Session, role_menu: RoleMenuModel):
     """
     删除角色菜单关联信息数据库操作
     :param db: orm对象

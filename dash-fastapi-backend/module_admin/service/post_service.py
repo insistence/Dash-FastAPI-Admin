@@ -1,5 +1,5 @@
-from module_admin.entity.vo.post_schema import *
-from module_admin.mapper.post_crud import *
+from module_admin.entity.vo.post_vo import *
+from module_admin.dao.post_dao import *
 
 
 def get_post_select_option_services(result_db: Session):
@@ -8,7 +8,7 @@ def get_post_select_option_services(result_db: Session):
     :param result_db: orm对象
     :return: 岗位列表不分页信息对象
     """
-    post_list_result = get_post_select_option_crud(result_db)
+    post_list_result = get_post_select_option_dao(result_db)
 
     return post_list_result
 
@@ -32,7 +32,7 @@ def add_post_services(result_db: Session, page_object: PostModel):
     :param page_object: 新增岗位对象
     :return: 新增岗位校验结果
     """
-    add_post_result = add_post_crud(result_db, page_object)
+    add_post_result = add_post_dao(result_db, page_object)
 
     return add_post_result
 
@@ -45,7 +45,7 @@ def edit_post_services(result_db: Session, page_object: PostModel):
     :return: 编辑岗位校验结果
     """
     edit_post = page_object.dict(exclude_unset=True)
-    edit_post_result = edit_post_crud(result_db, edit_post)
+    edit_post_result = edit_post_dao(result_db, edit_post)
 
     return edit_post_result
 
@@ -61,7 +61,7 @@ def delete_post_services(result_db: Session, page_object: DeletePostModel):
         post_id_list = page_object.post_ids.split(',')
         for post_id in post_id_list:
             post_id_dict = dict(post_id=post_id)
-            delete_post_crud(result_db, PostModel(**post_id_dict))
+            delete_post_dao(result_db, PostModel(**post_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
         result = dict(is_success=False, message='传入用户id为空')

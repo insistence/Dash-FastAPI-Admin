@@ -1,5 +1,5 @@
-from module_admin.entity.vo.dept_schema import *
-from module_admin.mapper.dept_crud import *
+from module_admin.entity.vo.dept_vo import *
+from module_admin.dao.dept_dao import *
 
 
 def get_dept_tree_services(result_db: Session, page_object: DeptModel):
@@ -52,7 +52,7 @@ def add_dept_services(result_db: Session, page_object: DeptModel):
         page_object.ancestors = f'{parent_info.ancestors},{page_object.parent_id}'
     else:
         page_object.ancestors = '0'
-    add_dept_result = add_dept_crud(result_db, page_object)
+    add_dept_result = add_dept_dao(result_db, page_object)
 
     return add_dept_result
 
@@ -70,7 +70,7 @@ def edit_dept_services(result_db: Session, page_object: DeptModel):
     else:
         page_object.ancestors = '0'
     edit_dept = page_object.dict(exclude_unset=True)
-    edit_dept_result = edit_dept_crud(result_db, edit_dept)
+    edit_dept_result = edit_dept_dao(result_db, edit_dept)
     update_children_info(result_db, DeptModel(dept_id=page_object.dept_id,
                                               ancestors=page_object.ancestors,
                                               update_by=page_object.update_by,
@@ -99,7 +99,7 @@ def delete_dept_services(result_db: Session, page_object: DeleteDeptModel):
                     return CrudDeptResponse(**result)
 
             dept_id_dict = dict(dept_id=dept_id)
-            delete_dept_crud(result_db, DeptModel(**dept_id_dict))
+            delete_dept_dao(result_db, DeptModel(**dept_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
         result = dict(is_success=False, message='传入用户id为空')
@@ -155,7 +155,7 @@ def update_children_info(result_db, page_object):
     if children_info:
         for child in children_info:
             child.ancestors = f'{page_object.ancestors},{page_object.dept_id}'
-            edit_dept_crud(result_db,
+            edit_dept_dao(result_db,
                            dict(dept_id=child.dept_id,
                                 ancestors=child.ancestors,
                                 update_by=page_object.update_by,

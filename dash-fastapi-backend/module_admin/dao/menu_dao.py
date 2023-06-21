@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from module_admin.entity.do.menu_entity import SysMenu
-from module_admin.entity.vo.menu_schema import MenuModel, MenuResponse, CrudMenuResponse
-from module_admin.utils.time_format_tool import list_format_datetime
+from module_admin.entity.do.menu_do import SysMenu
+from module_admin.entity.vo.menu_vo import MenuModel, MenuResponse, CrudMenuResponse
+from module_admin.utils.time_format_util import list_format_datetime
 
 
 def get_menu_detail_by_id(db: Session, menu_id: int):
@@ -56,7 +56,7 @@ def get_menu_list(db: Session, page_object: MenuModel):
     return MenuResponse(**result)
 
 
-def add_menu_crud(db: Session, menu: MenuModel):
+def add_menu_dao(db: Session, menu: MenuModel):
     """
     新增菜单数据库操作
     :param db: orm对象
@@ -72,7 +72,7 @@ def add_menu_crud(db: Session, menu: MenuModel):
     return CrudMenuResponse(**result)
 
 
-def edit_menu_crud(db: Session, menu: dict):
+def edit_menu_dao(db: Session, menu: dict):
     """
     编辑菜单数据库操作
     :param db: orm对象
@@ -92,7 +92,7 @@ def edit_menu_crud(db: Session, menu: dict):
     return CrudMenuResponse(**result)
 
 
-def delete_menu_crud(db: Session, menu: MenuModel):
+def delete_menu_dao(db: Session, menu: MenuModel):
     """
     删除菜单数据库操作
     :param db: orm对象

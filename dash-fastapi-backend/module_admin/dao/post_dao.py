@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from module_admin.entity.do.post_entity import SysPost
-from module_admin.entity.vo.post_schema import PostModel, PostPageObject, PostPageObjectResponse, CrudPostResponse
-from module_admin.utils.time_format_tool import list_format_datetime
-from module_admin.utils.page_tool import get_page_info
+from module_admin.entity.do.post_do import SysPost
+from module_admin.entity.vo.post_vo import PostModel, PostPageObject, PostPageObjectResponse, CrudPostResponse
+from module_admin.utils.time_format_util import list_format_datetime
+from module_admin.utils.page_util import get_page_info
 
 
 def get_post_by_id(db: Session, post_id: int):
@@ -22,7 +22,7 @@ def get_post_detail_by_id(db: Session, post_id: int):
     return post_info
 
 
-def get_post_select_option_crud(db: Session):
+def get_post_select_option_dao(db: Session):
     post_info = db.query(SysPost) \
         .filter(SysPost.status == 0) \
         .all()
@@ -67,7 +67,7 @@ def get_post_list(db: Session, page_object: PostPageObject):
     return PostPageObjectResponse(**result)
 
 
-def add_post_crud(db: Session, post: PostModel):
+def add_post_dao(db: Session, post: PostModel):
     """
     新增岗位数据库操作
     :param db: orm对象
@@ -83,7 +83,7 @@ def add_post_crud(db: Session, post: PostModel):
     return CrudPostResponse(**result)
 
 
-def edit_post_crud(db: Session, post: dict):
+def edit_post_dao(db: Session, post: dict):
     """
     编辑岗位数据库操作
     :param db: orm对象
@@ -103,7 +103,7 @@ def edit_post_crud(db: Session, post: dict):
     return CrudPostResponse(**result)
 
 
-def delete_post_crud(db: Session, post: PostModel):
+def delete_post_dao(db: Session, post: PostModel):
     """
     删除岗位数据库操作
     :param db: orm对象

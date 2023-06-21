@@ -1,5 +1,5 @@
-from module_admin.entity.vo.user_schema import *
-from module_admin.mapper.user_crud import *
+from module_admin.entity.vo.user_vo import *
+from module_admin.dao.user_dao import *
 
 
 def get_user_list_services(result_db: Session, page_object: UserPageObject):
@@ -22,19 +22,19 @@ def add_user_services(result_db: Session, page_object: AddUserModel):
     :return: 新增用户校验结果
     """
     add_user = UserModel(**page_object.dict())
-    add_user_result = add_user_crud(result_db, add_user)
+    add_user_result = add_user_dao(result_db, add_user)
     if add_user_result.is_success:
         user_id = get_user_by_name(result_db, page_object.user_name).user_id
         if page_object.role_id:
             role_id_list = page_object.role_id.split(',')
             for role in role_id_list:
                 role_dict = dict(user_id=user_id, role_id=role)
-                add_user_role_crud(result_db, UserRoleModel(**role_dict))
+                add_user_role_dao(result_db, UserRoleModel(**role_dict))
         if page_object.post_id:
             post_id_list = page_object.post_id.split(',')
             for post in post_id_list:
                 post_dict = dict(user_id=user_id, post_id=post)
-                add_user_post_crud(result_db, UserPostModel(**post_dict))
+                add_user_post_dao(result_db, UserPostModel(**post_dict))
 
     return add_user_result
 
@@ -52,21 +52,21 @@ def edit_user_services(result_db: Session, page_object: AddUserModel):
         del edit_user['post_id']
     if page_object.type == 'status':
         del edit_user['type']
-    edit_user_result = edit_user_crud(result_db, edit_user)
+    edit_user_result = edit_user_dao(result_db, edit_user)
     if edit_user_result.is_success and page_object.type != 'status':
         user_id_dict = dict(user_id=page_object.user_id)
-        delete_user_role_crud(result_db, UserRoleModel(**user_id_dict))
-        delete_user_post_crud(result_db, UserPostModel(**user_id_dict))
+        delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
+        delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
         if page_object.role_id:
             role_id_list = page_object.role_id.split(',')
             for role in role_id_list:
                 role_dict = dict(user_id=page_object.user_id, role_id=role)
-                add_user_role_crud(result_db, UserRoleModel(**role_dict))
+                add_user_role_dao(result_db, UserRoleModel(**role_dict))
         if page_object.post_id:
             post_id_list = page_object.post_id.split(',')
             for post in post_id_list:
                 post_dict = dict(user_id=page_object.user_id, post_id=post)
-                add_user_post_crud(result_db, UserPostModel(**post_dict))
+                add_user_post_dao(result_db, UserPostModel(**post_dict))
 
     return edit_user_result
 
@@ -82,9 +82,9 @@ def delete_user_services(result_db: Session, page_object: DeleteUserModel):
         user_id_list = page_object.user_ids.split(',')
         for user_id in user_id_list:
             user_id_dict = dict(user_id=user_id, update_by=page_object.update_by, update_time=page_object.update_time)
-            delete_user_role_crud(result_db, UserRoleModel(**user_id_dict))
-            delete_user_post_crud(result_db, UserPostModel(**user_id_dict))
-            delete_user_crud(result_db, UserModel(**user_id_dict))
+            delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
+            delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
+            delete_user_dao(result_db, UserModel(**user_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
         result = dict(is_success=False, message='传入用户id为空')

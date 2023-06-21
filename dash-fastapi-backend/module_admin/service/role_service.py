@@ -1,5 +1,5 @@
-from module_admin.entity.vo.role_schema import *
-from module_admin.mapper.role_crud import *
+from module_admin.entity.vo.role_vo import *
+from module_admin.dao.role_dao import *
 
 
 def get_role_select_option_services(result_db: Session):
@@ -8,7 +8,7 @@ def get_role_select_option_services(result_db: Session):
     :param result_db: orm对象
     :return: 角色列表不分页信息对象
     """
-    role_list_result = get_role_select_option_crud(result_db)
+    role_list_result = get_role_select_option_dao(result_db)
 
     return role_list_result
 
@@ -33,14 +33,14 @@ def add_role_services(result_db: Session, page_object: AddRoleModel):
     :return: 新增角色校验结果
     """
     add_role = RoleModel(**page_object.dict())
-    add_role_result = add_role_crud(result_db, add_role)
+    add_role_result = add_role_dao(result_db, add_role)
     if add_role_result.is_success:
         role_id = get_role_by_name(result_db, page_object.role_name).role_id
         if page_object.menu_id:
             menu_id_list = page_object.menu_id.split(',')
             for menu in menu_id_list:
                 menu_dict = dict(role_id=role_id, menu_id=menu)
-                add_role_menu_crud(result_db, RoleMenuModel(**menu_dict))
+                add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
 
     return add_role_result
 
@@ -57,15 +57,15 @@ def edit_role_services(result_db: Session, page_object: AddRoleModel):
         del edit_role['menu_id']
     if page_object.type == 'status':
         del edit_role['type']
-    edit_role_result = edit_role_crud(result_db, edit_role)
+    edit_role_result = edit_role_dao(result_db, edit_role)
     if edit_role_result.is_success and page_object.type != 'status':
         role_id_dict = dict(role_id=page_object.role_id)
-        delete_role_menu_crud(result_db, RoleMenuModel(**role_id_dict))
+        delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
         if page_object.menu_id:
             menu_id_list = page_object.menu_id.split(',')
             for menu in menu_id_list:
                 menu_dict = dict(role_id=page_object.role_id, menu_id=menu)
-                add_role_menu_crud(result_db, RoleMenuModel(**menu_dict))
+                add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
 
     return edit_role_result
 
@@ -81,8 +81,8 @@ def delete_role_services(result_db: Session, page_object: DeleteRoleModel):
         role_id_list = page_object.role_ids.split(',')
         for role_id in role_id_list:
             role_id_dict = dict(role_id=role_id, update_by=page_object.update_by, update_time=page_object.update_time)
-            delete_role_menu_crud(result_db, RoleMenuModel(**role_id_dict))
-            delete_role_crud(result_db, RoleModel(**role_id_dict))
+            delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
+            delete_role_dao(result_db, RoleModel(**role_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
         result = dict(is_success=False, message='传入角色id为空')

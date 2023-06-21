@@ -1,5 +1,5 @@
-from module_admin.entity.vo.menu_schema import *
-from module_admin.mapper.menu_crud import *
+from module_admin.entity.vo.menu_vo import *
+from module_admin.dao.menu_dao import *
 
 
 def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel):
@@ -54,7 +54,7 @@ def add_menu_services(result_db: Session, page_object: MenuModel):
     :param page_object: 新增菜单对象
     :return: 新增菜单校验结果
     """
-    add_menu_result = add_menu_crud(result_db, page_object)
+    add_menu_result = add_menu_dao(result_db, page_object)
 
     return add_menu_result
 
@@ -67,7 +67,7 @@ def edit_menu_services(result_db: Session, page_object: MenuModel):
     :return: 编辑菜单校验结果
     """
     edit_menu = page_object.dict(exclude_unset=True)
-    edit_menu_result = edit_menu_crud(result_db, edit_menu)
+    edit_menu_result = edit_menu_dao(result_db, edit_menu)
 
     return edit_menu_result
 
@@ -83,7 +83,7 @@ def delete_menu_services(result_db: Session, page_object: DeleteMenuModel):
         menu_id_list = page_object.menu_ids.split(',')
         for menu_id in menu_id_list:
             menu_id_dict = dict(menu_id=menu_id)
-            delete_menu_crud(result_db, MenuModel(**menu_id_dict))
+            delete_menu_dao(result_db, MenuModel(**menu_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
         result = dict(is_success=False, message='传入用户id为空')

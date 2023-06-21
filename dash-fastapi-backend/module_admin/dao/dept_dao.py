@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from module_admin.entity.do.dept_entity import SysDept
-from module_admin.entity.vo.dept_schema import DeptModel, DeptResponse, CrudDeptResponse
-from module_admin.utils.time_format_tool import list_format_datetime
+from module_admin.entity.do.dept_do import SysDept
+from module_admin.entity.vo.dept_vo import DeptModel, DeptResponse, CrudDeptResponse
+from module_admin.utils.time_format_util import list_format_datetime
 
 
 def get_dept_by_id(db: Session, dept_id: int):
@@ -126,7 +126,7 @@ def get_dept_list(db: Session, page_object: DeptModel):
     return DeptResponse(**result)
 
 
-def add_dept_crud(db: Session, dept: DeptModel):
+def add_dept_dao(db: Session, dept: DeptModel):
     """
     新增部门数据库操作
     :param db: orm对象
@@ -142,7 +142,7 @@ def add_dept_crud(db: Session, dept: DeptModel):
     return CrudDeptResponse(**result)
 
 
-def edit_dept_crud(db: Session, dept: dict):
+def edit_dept_dao(db: Session, dept: dict):
     """
     编辑部门数据库操作
     :param db: orm对象
@@ -162,7 +162,7 @@ def edit_dept_crud(db: Session, dept: dict):
     return CrudDeptResponse(**result)
 
 
-def delete_dept_crud(db: Session, dept: DeptModel):
+def delete_dept_dao(db: Session, dept: DeptModel):
     """
     删除部门数据库操作
     :param db: orm对象
