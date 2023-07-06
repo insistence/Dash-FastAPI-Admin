@@ -118,6 +118,56 @@ def find_parents(tree, target_key):
     return result[::-1]
 
 
+def deal_user_menu_info(pid: int, permission_list: list):
+    """
+    工具方法：根据菜单信息生成树形嵌套数据
+    :param pid: 菜单id
+    :param permission_list: 菜单列表信息
+    :return: 菜单树形嵌套数据
+    """
+    menu_list = []
+    for permission in permission_list:
+        if permission['parent_id'] == pid:
+            children = deal_user_menu_info(permission['menu_id'], permission_list)
+            antd_menu_list_data = {}
+            if children and permission['menu_type'] == 'M':
+                antd_menu_list_data['component'] = 'SubMenu'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon']
+                }
+                antd_menu_list_data['children'] = children
+            elif children and permission['menu_type'] == 'C':
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                    'modules': permission['component']
+                }
+                antd_menu_list_data['button'] = children
+            elif permission['menu_type'] == 'F':
+                antd_menu_list_data['component'] = 'Button'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon']
+                }
+            else:
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                }
+            menu_list.append(antd_menu_list_data)
+
+    return menu_list
+
+
 def get_dept_tree(pid: int, permission_list: list):
     """
     工具方法：根据部门信息生成树形嵌套数据

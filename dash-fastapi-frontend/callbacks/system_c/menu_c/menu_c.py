@@ -26,10 +26,11 @@ from api.menu import get_menu_tree_api, get_menu_tree_for_edit_option_api, get_m
      Input('menu-fold', 'nClicks')],
     [State('menu-menu_name-input', 'value'),
      State('menu-status-select', 'value'),
-     State('menu-list-table', 'defaultExpandedRowKeys')],
+     State('menu-list-table', 'defaultExpandedRowKeys'),
+     State('menu-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_menu_table_data(search_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys):
+def get_menu_table_data(search_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         menu_name=menu_name,
@@ -62,17 +63,17 @@ def get_menu_table_data(search_click, operations, fold_click, menu_name, status_
                         'content': '修改',
                         'type': 'link',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:menu:edit' in button_perms else {},
                     {
                         'content': '新增',
                         'type': 'link',
                         'icon': 'antd-plus'
-                    },
+                    } if 'system:menu:add' in button_perms else {},
                     {
                         'content': '删除',
                         'type': 'link',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:menu:remove' in button_perms else {},
                 ]
             table_data_new = list_to_tree(table_data)
 

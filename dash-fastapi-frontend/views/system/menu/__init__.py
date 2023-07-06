@@ -1,4 +1,4 @@
-from dash import html
+from dash import dcc, html
 import feffery_antd_components as fac
 
 from api.menu import get_menu_list_api
@@ -7,7 +7,7 @@ from views.system.menu.components.icon_category import render_icon
 import callbacks.system_c.menu_c.menu_c
 
 
-def render():
+def render(button_perms):
     table_data_new = []
     table_info = get_menu_list_api({})
     if table_info['code'] == 200:
@@ -33,21 +33,22 @@ def render():
                     'content': '修改',
                     'type': 'link',
                     'icon': 'antd-edit'
-                },
+                } if 'system:menu:edit' in button_perms else {},
                 {
                     'content': '新增',
                     'type': 'link',
                     'icon': 'antd-plus'
-                },
+                } if 'system:menu:add' in button_perms else {},
                 {
                     'content': '删除',
                     'type': 'link',
                     'icon': 'antd-delete'
-                },
+                } if 'system:menu:remove' in button_perms else {},
             ]
         table_data_new = list_to_tree(table_data)
 
     return [
+        dcc.Store(id='menu-button-perms-container', data=button_perms),
         fac.AntdRow(
             [
                 fac.AntdCol(

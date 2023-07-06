@@ -1,4 +1,4 @@
-from dash import dcc
+from dash import dcc, html
 import feffery_antd_components as fac
 
 import callbacks.system_c.dept_c
@@ -6,7 +6,7 @@ from api.dept import get_dept_list_api
 from utils.tree_tool import get_dept_tree
 
 
-def render():
+def render(button_perms):
     table_data_new = []
     default_expanded_row_keys = []
     table_info = get_dept_list_api({})
@@ -27,21 +27,22 @@ def render():
                         'content': '修改',
                         'type': 'link',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:dept:edit' in button_perms else {},
                     {
                         'content': '新增',
                         'type': 'link',
                         'icon': 'antd-plus'
-                    },
+                    } if 'system:dept:add' in button_perms else {},
                     {
                         'content': '删除',
                         'type': 'link',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:dept:remove' in button_perms else {},
                 ]
         table_data_new = get_dept_tree(0, table_data)
 
     return [
+        dcc.Store(id='dept-button-perms-container', data=button_perms),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -49,69 +50,74 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdSpace(
+                                            fac.AntdForm(
                                                 [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='dept-dept_name-input',
-                                                            placeholder='请输入部门名称',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='部门名称'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdSelect(
-                                                            id='dept-status-select',
-                                                            placeholder='部门状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='部门状态'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '搜索',
-                                                            id='dept-search',
-                                                            type='primary',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-search'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='dept-dept_name-input',
+                                                                    placeholder='请输入部门名称',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='部门名称'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdSelect(
+                                                                    id='dept-status-select',
+                                                                    placeholder='部门状态',
+                                                                    options=[
+                                                                        {
+                                                                            'label': '正常',
+                                                                            'value': '0'
+                                                                        },
+                                                                        {
+                                                                            'label': '停用',
+                                                                            'value': '1'
+                                                                        }
+                                                                    ],
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='部门状态'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '搜索',
+                                                                    id='dept-search',
+                                                                    type='primary',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-search'
+                                                                    )
+                                                                )
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '重置',
+                                                                    id='dept-reset',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-sync'
+                                                                    )
+                                                                )
                                                             )
-                                                        )
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '重置',
-                                                            id='dept-reset',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            )
-                                                        )
-                                                    )
                                                 ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
+                                                layout='inline',
+                                            )
                                         ],
-                                        layout='inline',
-                                    )
+                                        hidden='system:dept:query' not in button_perms
+                                    ),
                                 )
                             ]
                         ),
@@ -120,19 +126,24 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-plus'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-plus'
+                                                            ),
+                                                            '新增',
+                                                        ],
+                                                        id='dept-add',
+                                                        style={
+                                                            'color': '#1890ff',
+                                                            'background': '#e8f4ff',
+                                                            'border-color': '#a3d3ff'
+                                                        }
                                                     ),
-                                                    '新增',
                                                 ],
-                                                id='dept-add',
-                                                style={
-                                                    'color': '#1890ff',
-                                                    'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
+                                                hidden='system:dept:add' not in button_perms
                                             ),
                                             fac.AntdButton(
                                                 [

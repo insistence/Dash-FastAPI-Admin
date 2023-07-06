@@ -11,6 +11,9 @@ def render_store_container():
             dcc.Store(id='api-check-result-container'),
             # token存储容器
             dcc.Store(id='token-container'),
+            # 菜单信息存储容器
+            dcc.Store(id='menu-info-store-container'),
+            dcc.Store(id='menu-list-store-container'),
             # 菜单current_key存储容器
             dcc.Store(id='current-key-container'),
             # 用户管理模块操作类型存储容器
@@ -28,6 +31,7 @@ def render_store_container():
             dcc.Store(id='role-delete-ids-store'),
             # 角色管理模块菜单权限存储容器
             dcc.Store(id='role-menu-store'),
+            dcc.Store(id='current-role-menu-store'),
             # 菜单管理模块操作类型存储容器
             dcc.Store(id='menu-operations-store'),
             dcc.Store(id='menu-operations-store-bk'),

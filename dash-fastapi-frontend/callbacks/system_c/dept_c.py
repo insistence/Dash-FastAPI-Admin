@@ -26,10 +26,11 @@ from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_de
      Input('dept-fold', 'nClicks')],
     [State('dept-dept_name-input', 'value'),
      State('dept-status-select', 'value'),
-     State('dept-list-table', 'defaultExpandedRowKeys')],
+     State('dept-list-table', 'defaultExpandedRowKeys'),
+     State('dept-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_dept_table_data(search_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys):
+def get_dept_table_data(search_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         dept_name=dept_name,
@@ -55,17 +56,17 @@ def get_dept_table_data(search_click, operations, fold_click, dept_name, status_
                             'content': '修改',
                             'type': 'link',
                             'icon': 'antd-edit'
-                        },
+                        } if 'system:dept:edit' in button_perms else {},
                         {
                             'content': '新增',
                             'type': 'link',
                             'icon': 'antd-plus'
-                        },
+                        } if 'system:dept:add' in button_perms else {},
                         {
                             'content': '删除',
                             'type': 'link',
                             'icon': 'antd-delete'
-                        },
+                        } if 'system:dept:remove' in button_perms else {},
                     ]
             table_data_new = get_dept_tree(0, table_data)
 

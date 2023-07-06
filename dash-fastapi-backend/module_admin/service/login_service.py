@@ -51,14 +51,14 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
         #                                                          dept_name=user.user_dept_info[0].dept_name,
         #                                                          ancestors=user.user_dept_info[0].ancestors))
         # user_role_info = deal_user_role_info(RoleInfo(role_info=user.user_role_info))
-        user_menu_info = deal_user_menu_info(0, MenuList(menu_info=user.user_menu_info))
+        # user_menu_info = deal_user_menu_info(0, MenuList(menu_info=user.user_menu_info))
 
         return CurrentUserInfoServiceResponse(
             user=user.user_basic_info[0],
             dept=user.user_dept_info[0],
             role=user.user_role_info,
             post=user.user_post_info,
-            menu=user_menu_info
+            menu=user.user_menu_info
         )
     else:
         logger.warning("用户token已失效，请重新登录")

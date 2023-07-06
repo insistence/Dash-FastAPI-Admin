@@ -1,4 +1,4 @@
-from dash import dcc
+from dash import dcc, html
 import feffery_antd_components as fac
 
 import callbacks.system_c.user_c
@@ -6,7 +6,7 @@ from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
 
 
-def render():
+def render(button_perms):
     dept_params = dict(dept_name='')
     user_params = dict(page_num=1, page_size=10)
     tree_info = get_dept_tree_api(dept_params)
@@ -33,18 +33,19 @@ def render():
                 {
                     'title': '修改',
                     'icon': 'antd-edit'
-                },
+                } if 'system:user:edit' in button_perms else None,
                 {
                     'title': '删除',
                     'icon': 'antd-delete'
-                },
+                } if 'system:user:remove' in button_perms else None,
                 {
                     'title': '重置密码',
                     'icon': 'antd-key'
-                }
+                } if 'system:user:resetPwd' in button_perms else None
             ]
 
     return [
+        dcc.Store(id='user-button-perms-container', data=button_perms),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -78,97 +79,102 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdSpace(
+                                            fac.AntdForm(
                                                 [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='user-user_name-input',
-                                                            placeholder='请输入用户名称',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='用户名称'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='user-user_name-input',
+                                                                    placeholder='请输入用户名称',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='用户名称'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='user-phone_number-input',
+                                                                    placeholder='请输入手机号码',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='手机号码'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdSelect(
+                                                                    id='user-status-select',
+                                                                    placeholder='用户状态',
+                                                                    options=[
+                                                                        {
+                                                                            'label': '正常',
+                                                                            'value': '0'
+                                                                        },
+                                                                        {
+                                                                            'label': '停用',
+                                                                            'value': '1'
+                                                                        }
+                                                                    ],
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='用户状态'
+                                                            ),
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='user-phone_number-input',
-                                                            placeholder='请输入手机号码',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='手机号码'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdSelect(
-                                                            id='user-status-select',
-                                                            placeholder='用户状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='用户状态'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdDateRangePicker(
+                                                                    id='user-create_time-range',
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='创建时间'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '搜索',
+                                                                    id='user-search',
+                                                                    type='primary',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-search'
+                                                                    )
+                                                                )
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '重置',
+                                                                    id='user-reset',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-sync'
+                                                                    )
+                                                                )
+                                                            )
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
                                                 ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
-                                            fac.AntdSpace(
-                                                [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdDateRangePicker(
-                                                            id='user-create_time-range',
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='创建时间'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '搜索',
-                                                            id='user-search',
-                                                            type='primary',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-search'
-                                                            )
-                                                        )
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '重置',
-                                                            id='user-reset',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            )
-                                                        )
-                                                    )
-                                                ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
+                                                layout='inline',
+                                            )
                                         ],
-                                        layout='inline',
-                                    )
+                                        hidden='system:user:query' not in button_perms
+                                    ),
                                 )
                             ]
                         ),
@@ -177,77 +183,102 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-plus'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-plus'
+                                                            ),
+                                                            '新增',
+                                                        ],
+                                                        id='user-add',
+                                                        style={
+                                                            'color': '#1890ff',
+                                                            'background': '#e8f4ff',
+                                                            'border-color': '#a3d3ff'
+                                                        }
                                                     ),
-                                                    '新增',
                                                 ],
-                                                id='user-add',
-                                                style={
-                                                    'color': '#1890ff',
-                                                    'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
+                                                hidden='system:user:add' not in button_perms
                                             ),
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-edit'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-edit'
+                                                            ),
+                                                            '修改',
+                                                        ],
+                                                        id='user-edit',
+                                                        disabled=True,
+                                                        style={
+                                                            'color': '#71e2a3',
+                                                            'background': '#e7faf0',
+                                                            'border-color': '#d0f5e0'
+                                                        }
                                                     ),
-                                                    '修改',
                                                 ],
-                                                id='user-edit',
-                                                disabled=True,
-                                                style={
-                                                    'color': '#71e2a3',
-                                                    'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
+                                                hidden='system:user:edit' not in button_perms
                                             ),
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-minus'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-minus'
+                                                            ),
+                                                            '删除',
+                                                        ],
+                                                        id='user-delete',
+                                                        disabled=True,
+                                                        style={
+                                                            'color': '#ff9292',
+                                                            'background': '#ffeded',
+                                                            'border-color': '#ffdbdb'
+                                                        }
                                                     ),
-                                                    '删除',
                                                 ],
-                                                id='user-delete',
-                                                disabled=True,
-                                                style={
-                                                    'color': '#ff9292',
-                                                    'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
+                                                hidden='system:user:remove' not in button_perms
                                             ),
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-arrow-up'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-arrow-up'
+                                                            ),
+                                                            '导入',
+                                                        ],
+                                                        id='user-import',
+                                                        style={
+                                                            'color': '#909399',
+                                                            'background': '#f4f4f5',
+                                                            'border-color': '#d3d4d6'
+                                                        }
                                                     ),
-                                                    '导入',
                                                 ],
-                                                id='user-import',
-                                                style={
-                                                    'color': '#909399',
-                                                    'background': '#f4f4f5',
-                                                    'border-color': '#d3d4d6'
-                                                }
+                                                hidden='system:user:export' not in button_perms
                                             ),
-                                            fac.AntdButton(
+                                            html.Div(
                                                 [
-                                                    fac.AntdIcon(
-                                                        icon='antd-arrow-down'
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-arrow-down'
+                                                            ),
+                                                            '导出',
+                                                        ],
+                                                        id='user-export',
+                                                        style={
+                                                            'color': '#ffba00',
+                                                            'background': '#fff8e6',
+                                                            'border-color': '#ffe399'
+                                                        }
                                                     ),
-                                                    '导出',
                                                 ],
-                                                id='user-export',
-                                                style={
-                                                    'color': '#ffba00',
-                                                    'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
+                                                hidden='system:user:import' not in button_perms
                                             ),
                                         ],
                                         style={

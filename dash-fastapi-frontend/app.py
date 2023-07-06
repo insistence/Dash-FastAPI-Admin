@@ -15,7 +15,7 @@ import views
 
 from callbacks import app_c
 from api.login import get_current_user_info_api
-from utils.tree_tool import find_node_values, find_key_by_href
+from utils.tree_tool import find_node_values, find_key_by_href, deal_user_menu_info
 
 app.layout = html.Div(
     [
@@ -66,7 +66,9 @@ app.layout = html.Div(
      Output('redirect-container', 'children', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('current-key-container', 'data')],
+     Output('current-key-container', 'data'),
+     Output('menu-info-store-container', 'data'),
+     Output('menu-list-store-container', 'data')],
     Input('url-container', 'pathname'),
     State('url-container', 'trigger'),
     prevent_initial_call=True
@@ -83,12 +85,14 @@ def router(pathname, trigger):
                 user_name = current_user['user']['user_name']
                 nick_name = current_user['user']['nick_name']
                 phone_number = current_user['user']['phonenumber']
-                menu_info = current_user['menu']
+                menu_list = current_user['menu']
+                user_menu_list = [item for item in menu_list if item.get('visible') == '0']
+                menu_info = deal_user_menu_info(0, menu_list)
+                user_menu_info = deal_user_menu_info(0, user_menu_list)
                 session['user_info'] = current_user['user']
                 session['dept_info'] = current_user['dept']
                 session['role_info'] = current_user['role']
                 session['post_info'] = current_user['post']
-                session['menu_info'] = menu_info
                 valid_href_list = find_node_values(menu_info, 'href')
                 valid_href_list.append('/')
                 if pathname in valid_href_list:
@@ -107,16 +111,21 @@ def router(pathname, trigger):
                                     id='router-redirect'
                                 ),
                                 None,
-                                {'timestamp': time.time()}
+                                {'timestamp': time.time()},
+                                {'current_key': current_key},
+                                {'menu_info': menu_info},
+                                {'menu_list': menu_list}
                             ]
 
                         # 否则正常渲染主页面
                         return [
-                            views.layout.render_content(user_name, nick_name, phone_number, menu_info),
+                            views.layout.render_content(user_name, nick_name, phone_number, user_menu_info),
                             None,
                             fuc.FefferyFancyNotification('进入主页面', type='success', autoClose=2000),
                             {'timestamp': time.time()},
-                            {'current_key': current_key}
+                            {'current_key': current_key},
+                            {'menu_info': menu_info},
+                            {'menu_list': menu_list}
                         ]
 
                     # elif trigger == 'pushstate':
@@ -128,7 +137,9 @@ def router(pathname, trigger):
                             None,
                             None,
                             {'timestamp': time.time()},
-                            {'current_key': current_key}
+                            {'current_key': current_key},
+                            {'menu_info': menu_info},
+                            {'menu_list': menu_list}
                         ]
 
                     # else:
@@ -148,6 +159,8 @@ def router(pathname, trigger):
                         None,
                         None,
                         {'timestamp': time.time()},
+                        dash.no_update,
+                        dash.no_update,
                         dash.no_update
                     ]
 
@@ -157,6 +170,8 @@ def router(pathname, trigger):
                     dash.no_update,
                     dash.no_update,
                     {'timestamp': time.time()},
+                    dash.no_update,
+                    dash.no_update,
                     dash.no_update
                 ]
 
@@ -168,6 +183,8 @@ def router(pathname, trigger):
                 None,
                 fuc.FefferyFancyNotification('接口异常', type='error', autoClose=2000),
                 {'timestamp': time.time()},
+                dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
     else:
@@ -181,6 +198,8 @@ def router(pathname, trigger):
                 None,
                 None,
                 {'timestamp': time.time()},
+                dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
 
@@ -190,6 +209,8 @@ def router(pathname, trigger):
                 None,
                 None,
                 {'timestamp': time.time()},
+                dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
 
@@ -199,6 +220,8 @@ def router(pathname, trigger):
                 None,
                 None,
                 {'timestamp': time.time()},
+                dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
 
@@ -211,6 +234,8 @@ def router(pathname, trigger):
             ),
             None,
             {'timestamp': time.time()},
+            dash.no_update,
+            dash.no_update,
             dash.no_update
         ]
 

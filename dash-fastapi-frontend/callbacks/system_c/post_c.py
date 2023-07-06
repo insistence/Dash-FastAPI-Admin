@@ -20,10 +20,11 @@ from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_
      Input('post-operations-store', 'data')],
     [State('post-post_code-input', 'value'),
      State('post-post_name-input', 'value'),
-     State('post-status-select', 'value')],
+     State('post-status-select', 'value'),
+     State('post-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_post_table_data(search_click, pagination, operations, post_code, post_name, status_select):
+def get_post_table_data(search_click, pagination, operations, post_code, post_name, status_select, button_perms):
 
     query_params = dict(
         post_code=post_code,
@@ -63,12 +64,12 @@ def get_post_table_data(search_click, pagination, operations, post_code, post_na
                         'content': '修改',
                         'type': 'link',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:post:edit' in button_perms else {},
                     {
                         'content': '删除',
                         'type': 'link',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:post:remove' in button_perms else {},
                 ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
@@ -290,7 +291,7 @@ def post_delete_modal(delete_click, button_click,
                 return dash.no_update
 
         return [
-            f'是否确认删除岗位编号为{post_ids}的用户？',
+            f'是否确认删除岗位编号为{post_ids}的岗位？',
             True,
             {'post_ids': post_ids}
         ]

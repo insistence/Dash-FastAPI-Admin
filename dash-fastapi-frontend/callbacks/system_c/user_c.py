@@ -45,11 +45,12 @@ def get_search_dept_tree(dept_input):
     [State('user-user_name-input', 'value'),
      State('user-phone_number-input', 'value'),
      State('user-status-select', 'value'),
-     State('user-create_time-range', 'value')],
+     State('user-create_time-range', 'value'),
+     State('user-button-perms-container', 'data')],
     prevent_initial_call=True
 )
 def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, pagination, operations,
-                                     user_name, phone_number, status_select, create_time_range):
+                                     user_name, phone_number, status_select, create_time_range, button_perms):
     dept_id = None
     create_time_start = None
     create_time_end = None
@@ -101,15 +102,15 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
                     {
                         'title': '修改',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:user:edit' in button_perms else None,
                     {
                         'title': '删除',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:user:remove' in button_perms else None,
                     {
                         'title': '重置密码',
                         'icon': 'antd-key'
-                    }
+                    } if 'system:user:resetPwd' in button_perms else None
                 ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]

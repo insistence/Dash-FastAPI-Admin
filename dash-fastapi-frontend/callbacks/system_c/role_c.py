@@ -22,10 +22,11 @@ from api.menu import get_menu_tree_api
     [State('role-role_name-input', 'value'),
      State('role-role_key-input', 'value'),
      State('role-status-select', 'value'),
-     State('role-create_time-range', 'value')],
+     State('role-create_time-range', 'value'),
+     State('role-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_role_table_data(search_click, pagination, operations, role_name, role_key, status_select, create_time_range):
+def get_role_table_data(search_click, pagination, operations, role_name, role_key, status_select, create_time_range, button_perms):
 
     create_time_start = None
     create_time_end = None
@@ -74,12 +75,12 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
                         'content': '修改',
                         'type': 'link',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:role:edit' in button_perms else {},
                     {
                         'content': '删除',
                         'type': 'link',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:role:remove' in button_perms else {},
                 ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
@@ -143,8 +144,8 @@ def fold_unfold_role_menu(fold_unfold, menu_info):
 
 
 @app.callback(
-     Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
-     Input('role-menu-perms-radio-all-none', 'checked'),
+    Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
+    Input('role-menu-perms-radio-all-none', 'checked'),
     State('role-menu-store', 'data'),
     prevent_initial_call=True
 )
@@ -164,15 +165,27 @@ def all_none_role_menu_mode(all_none, menu_info):
 
 
 @app.callback(
-    Output('role-menu-perms', 'checkStrictly'),
+    [Output('role-menu-perms', 'checkStrictly'),
+     Output('role-menu-perms', 'checkedKeys', allow_duplicate=True)],
     Input('role-menu-perms-radio-parent-children', 'checked'),
+    State('current-role-menu-store', 'data'),
     prevent_initial_call=True
 )
-def change_role_menu_mode(parent_children):
+def change_role_menu_mode(parent_children, current_role_menu):
     if parent_children:
-        return False
+        checked_menu = []
+        for item in current_role_menu:
+            has_children = False
+            for other_item in current_role_menu:
+                if other_item['parent_id'] == item['menu_id']:
+                    has_children = True
+                    break
+            if not has_children:
+                checked_menu.append(str(item.get('menu_id')))
+        return [False, checked_menu]
     else:
-        return True
+        checked_menu = [str(item.get('menu_id')) for item in current_role_menu if item] or []
+        return [True, checked_menu]
 
 
 @app.callback(
@@ -186,6 +199,7 @@ def change_role_menu_mode(parent_children):
      Output('role-menu-perms', 'expandedKeys', allow_duplicate=True),
      Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
      Output('role-menu-store', 'data'),
+     Output('current-role-menu-store', 'data'),
      Output('role-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('role-add', 'nClicks'),
@@ -219,6 +233,7 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                     None,
                     tree_data[1],
                     None,
+                    None,
                     {'timestamp': time.time()},
                     None,
                     None,
@@ -233,7 +248,15 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                 role_info_res = get_role_detail_api(role_id=role_id)
                 if role_info_res['code'] == 200:
                     role_info = role_info_res['data']
-                    checked_menu = [str(item.get('menu_id')) for item in role_info.get('menu') if item] or []
+                    checked_menu = []
+                    for item in role_info.get('menu'):
+                        has_children = False
+                        for other_item in role_info.get('menu'):
+                            if other_item['parent_id'] == item['menu_id']:
+                                has_children = True
+                                break
+                        if not has_children:
+                            checked_menu.append(str(item.get('menu_id')))
                     return [
                         True,
                         '编辑角色',
@@ -245,6 +268,7 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         [],
                         checked_menu,
                         tree_data[1],
+                        role_info.get('menu'),
                         role_info.get('role').get('remark'),
                         {'timestamp': time.time()},
                         None,
@@ -253,9 +277,9 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         {'type': 'edit'}
                     ]
                     
-        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 12 + [{'timestamp': time.time()}, None, None, None, None]
 
-    return [dash.no_update] * 12 + [None, None, None, None]
+    return [dash.no_update] * 13 + [None, None, None, None]
 
 
 @app.callback(
@@ -277,12 +301,14 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
      State('role-role_sort', 'value'),
      State('role-status', 'value'),
      State('role-menu-perms', 'checkedKeys'),
+     State('role-menu-perms', 'halfCheckedKeys'),
      State('role-remark', 'value')],
     prevent_initial_call=True
 )
-def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_perms, remark):
+def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_checked_keys, menu_half_checked_eys, remark):
     if confirm_trigger:
         if all([role_name, role_key, role_sort]):
+            menu_perms = menu_half_checked_eys + menu_checked_keys
             params_add = dict(role_name=role_name, role_key=role_key, role_sort=role_sort, menu_id=','.join(menu_perms) if menu_perms else None, status=status, remark=remark)
             params_edit = dict(role_id=cur_role_info.get('role_id') if cur_role_info else None, role_name=role_name, role_key=role_key, role_sort=role_sort, 
                                menu_id=','.join(menu_perms) if menu_perms else '', status=status, remark=remark)
@@ -407,7 +433,7 @@ def role_delete_modal(delete_click, button_click,
                 return dash.no_update
 
         return [
-            f'是否确认删除角色编号为{role_ids}的用户？',
+            f'是否确认删除角色编号为{role_ids}的角色？',
             True,
             {'role_ids': role_ids}
         ]
