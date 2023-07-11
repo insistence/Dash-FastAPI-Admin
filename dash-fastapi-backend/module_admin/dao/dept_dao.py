@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.vo.dept_vo import DeptModel, DeptResponse, CrudDeptResponse
-from module_admin.utils.time_format_util import list_format_datetime
+from utils.time_format_util import list_format_datetime
 
 
 def get_dept_by_id(db: Session, dept_id: int):

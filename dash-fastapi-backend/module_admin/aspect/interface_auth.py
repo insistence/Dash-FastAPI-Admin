@@ -1,7 +1,7 @@
 from fastapi import Depends
 from module_admin.entity.vo.user_vo import *
 from module_admin.service.login_service import get_current_user
-from module_admin.utils.response_util import AuthException
+from utils.response_util import AuthException
 
 
 class CheckUserInterfaceAuth:

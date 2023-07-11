@@ -4,8 +4,8 @@ from module_admin.dao.user_dao import *
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from config.env import JwtConfig
-from module_admin.utils.response_util import *
-from module_admin.utils.log_util import *
+from utils.response_util import *
+from utils.log_util import *
 from datetime import datetime, timedelta
 from fastapi import Request
 from fastapi import Depends, Header

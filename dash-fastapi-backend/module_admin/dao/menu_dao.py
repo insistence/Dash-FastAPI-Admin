@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.menu_vo import MenuModel, MenuResponse, CrudMenuResponse
-from module_admin.utils.time_format_util import list_format_datetime
+from utils.time_format_util import list_format_datetime
 
 
 def get_menu_detail_by_id(db: Session, menu_id: int):

@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from module_admin.entity.do.role_do import SysRole, SysRoleMenu
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
-from module_admin.utils.time_format_util import list_format_datetime, object_format_datetime
-from module_admin.utils.page_util import get_page_info
+from utils.time_format_util import list_format_datetime, object_format_datetime
+from utils.page_util import get_page_info
 from datetime import datetime, time
 
 

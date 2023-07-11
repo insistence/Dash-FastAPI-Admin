@@ -7,8 +7,8 @@ from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserPageObject, \
     UserPageObjectResponse, CrudUserResponse
-from module_admin.utils.time_format_util import list_format_datetime, format_datetime_dict_list
-from module_admin.utils.page_util import get_page_info
+from utils.time_format_util import list_format_datetime, format_datetime_dict_list
+from utils.page_util import get_page_info
 from datetime import datetime, time
 
 

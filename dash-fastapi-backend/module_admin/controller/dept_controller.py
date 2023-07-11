@@ -5,8 +5,8 @@ from module_admin.service.login_service import get_current_user
 from module_admin.service.dept_service import *
 from module_admin.entity.vo.dept_vo import *
 from module_admin.dao.dept_dao import *
-from module_admin.utils.response_util import *
-from module_admin.utils.log_util import *
+from utils.response_util import *
+from utils.log_util import *
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 

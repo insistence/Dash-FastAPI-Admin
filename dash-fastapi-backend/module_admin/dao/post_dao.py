@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.vo.post_vo import PostModel, PostPageObject, PostPageObjectResponse, CrudPostResponse
-from module_admin.utils.time_format_util import list_format_datetime
-from module_admin.utils.page_util import get_page_info
+from utils.time_format_util import list_format_datetime
+from utils.page_util import get_page_info
 
 
 def get_post_by_id(db: Session, post_id: int):
