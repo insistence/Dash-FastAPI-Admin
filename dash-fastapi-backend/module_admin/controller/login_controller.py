@@ -6,6 +6,7 @@ from module_admin.dao.login_dao import *
 from config.env import JwtConfig
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from datetime import timedelta
 
 
@@ -45,7 +46,7 @@ async def login(request: Request, user: UserLogin, query_db: Session = Depends(g
         return response_500(data="", message="接口异常")
 
 
-@loginController.post("/getLoginUserInfo", response_model=CurrentUserInfoServiceResponse, dependencies=[Depends(get_current_user)])
+@loginController.post("/getLoginUserInfo", response_model=CurrentUserInfoServiceResponse, dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
 async def get_login_user_info(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -56,7 +57,7 @@ async def get_login_user_info(request: Request, token: Optional[str] = Header(..
         return response_500(data="", message="接口异常")
 
 
-@loginController.post("/logout", dependencies=[Depends(get_current_user)])
+@loginController.post("/logout", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
 async def logout(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)

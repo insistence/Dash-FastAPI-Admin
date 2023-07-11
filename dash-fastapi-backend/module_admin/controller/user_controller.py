@@ -7,12 +7,13 @@ from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 
 userController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@userController.post("/user/get", response_model=UserPageObjectResponse)
+@userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
 async def get_system_user_list(user_query: UserPageObject, query_db: Session = Depends(get_db)):
     try:
         user_query_result = get_user_list_services(query_db, user_query)
@@ -23,7 +24,7 @@ async def get_system_user_list(user_query: UserPageObject, query_db: Session = D
         return response_500(data="", message="接口异常")
 
 
-@userController.post("/user/add", response_model=CrudUserResponse)
+@userController.post("/user/add", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:add'))])
 async def add_system_user(request: Request, add_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -41,7 +42,7 @@ async def add_system_user(request: Request, add_user: AddUserModel, token: Optio
         return response_500(data="", message="接口异常")
 
 
-@userController.patch("/user/edit", response_model=CrudUserResponse)
+@userController.patch("/user/edit", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 async def edit_system_user(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -59,7 +60,7 @@ async def edit_system_user(request: Request, edit_user: AddUserModel, token: Opt
         return response_500(data="", message="接口异常")
 
 
-@userController.post("/user/delete", response_model=CrudUserResponse)
+@userController.post("/user/delete", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:delete'))])
 async def delete_system_user(request: Request, delete_user: DeleteUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -77,7 +78,7 @@ async def delete_system_user(request: Request, delete_user: DeleteUserModel, tok
         return response_500(data="", message="接口异常")
 
 
-@userController.get("/user/{user_id}", response_model=UserDetailModel)
+@userController.get("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 async def query_detail_system_user(user_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_user_result = detail_user_services(query_db, user_id)

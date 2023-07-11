@@ -7,12 +7,13 @@ from module_admin.entity.vo.dept_vo import *
 from module_admin.dao.dept_dao import *
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 
 deptController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@deptController.post("/dept/tree", response_model=DeptTree)
+@deptController.post("/dept/tree", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_dept_tree(dept_query: DeptModel, query_db: Session = Depends(get_db)):
     try:
         dept_query_result = get_dept_tree_services(query_db, dept_query)
@@ -23,7 +24,7 @@ async def get_system_dept_tree(dept_query: DeptModel, query_db: Session = Depend
         return response_500(data="", message="接口异常")
 
 
-@deptController.post("/dept/forEditOption", response_model=DeptTree)
+@deptController.post("/dept/forEditOption", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_dept_tree_for_edit_option(dept_query: DeptModel, query_db: Session = Depends(get_db)):
     try:
         dept_query_result = get_dept_tree_for_edit_option_services(query_db, dept_query)
@@ -34,7 +35,7 @@ async def get_system_dept_tree_for_edit_option(dept_query: DeptModel, query_db: 
         return response_500(data="", message="接口异常")
 
 
-@deptController.post("/dept/get", response_model=DeptResponse)
+@deptController.post("/dept/get", response_model=DeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:list'))])
 async def get_system_dept_list(dept_query: DeptModel, query_db: Session = Depends(get_db)):
     try:
         dept_query_result = get_dept_list_services(query_db, dept_query)
@@ -45,7 +46,7 @@ async def get_system_dept_list(dept_query: DeptModel, query_db: Session = Depend
         return response_500(data="", message="接口异常")
 
 
-@deptController.post("/dept/add", response_model=CrudDeptResponse)
+@deptController.post("/dept/add", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:add'))])
 async def add_system_dept(request: Request, add_dept: DeptModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -62,7 +63,7 @@ async def add_system_dept(request: Request, add_dept: DeptModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@deptController.patch("/dept/edit", response_model=CrudDeptResponse)
+@deptController.patch("/dept/edit", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:edit'))])
 async def edit_system_dept(request: Request, edit_dept: DeptModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -80,7 +81,7 @@ async def edit_system_dept(request: Request, edit_dept: DeptModel, token: Option
         return response_500(data="", message="接口异常")
 
 
-@deptController.post("/dept/delete", response_model=CrudDeptResponse)
+@deptController.post("/dept/delete", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:delete'))])
 async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -98,7 +99,7 @@ async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, tok
         return response_500(data="", message="接口异常")
 
 
-@deptController.get("/dept/{dept_id}", response_model=DeptModel)
+@deptController.get("/dept/{dept_id}", response_model=DeptModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:edit'))])
 async def query_detail_system_dept(dept_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dept_result = detail_dept_services(query_db, dept_id)

@@ -16,7 +16,7 @@ from server import app, logger
 )
 def check_api_response(data):
 
-    if session.get('code') == 401:
+    if session.get('code') == 401 and 'token' in session.get('message'):
         return [True, fuc.FefferyFancyNotification(session.get('message'), type='error', autoClose=2000)]
 
     elif session.get('code') == 200:

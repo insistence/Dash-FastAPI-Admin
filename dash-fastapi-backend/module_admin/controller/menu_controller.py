@@ -7,12 +7,13 @@ from module_admin.entity.vo.menu_vo import *
 from module_admin.dao.menu_dao import *
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 
 menuController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@menuController.post("/menu/tree", response_model=MenuTree)
+@menuController.post("/menu/tree", response_model=MenuTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_menu_tree(menu_query: MenuTreeModel, query_db: Session = Depends(get_db)):
     try:
         menu_query_result = get_menu_tree_services(query_db, menu_query)
@@ -23,7 +24,7 @@ async def get_system_menu_tree(menu_query: MenuTreeModel, query_db: Session = De
         return response_500(data="", message="接口异常")
 
 
-@menuController.post("/menu/forEditOption", response_model=MenuTree)
+@menuController.post("/menu/forEditOption", response_model=MenuTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_menu_tree_for_edit_option(menu_query: MenuModel, query_db: Session = Depends(get_db)):
     try:
         menu_query_result = get_menu_tree_for_edit_option_services(query_db, menu_query)
@@ -34,7 +35,7 @@ async def get_system_menu_tree_for_edit_option(menu_query: MenuModel, query_db: 
         return response_500(data="", message="接口异常")
 
 
-@menuController.post("/menu/get", response_model=MenuResponse)
+@menuController.post("/menu/get", response_model=MenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:list'))])
 async def get_system_menu_list(menu_query: MenuModel, query_db: Session = Depends(get_db)):
     try:
         menu_query_result = get_menu_list_services(query_db, menu_query)
@@ -45,7 +46,7 @@ async def get_system_menu_list(menu_query: MenuModel, query_db: Session = Depend
         return response_500(data="", message="接口异常")
 
 
-@menuController.post("/menu/add", response_model=CrudMenuResponse)
+@menuController.post("/menu/add", response_model=CrudMenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:add'))])
 async def add_system_menu(request: Request, add_menu: MenuModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -62,7 +63,7 @@ async def add_system_menu(request: Request, add_menu: MenuModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@menuController.patch("/menu/edit", response_model=CrudMenuResponse)
+@menuController.patch("/menu/edit", response_model=CrudMenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:edit'))])
 async def edit_system_menu(request: Request, edit_menu: MenuModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -80,7 +81,7 @@ async def edit_system_menu(request: Request, edit_menu: MenuModel, token: Option
         return response_500(data="", message="接口异常")
 
 
-@menuController.post("/menu/delete", response_model=CrudMenuResponse)
+@menuController.post("/menu/delete", response_model=CrudMenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:delete'))])
 async def delete_system_menu(delete_menu: DeleteMenuModel, query_db: Session = Depends(get_db)):
     try:
         delete_menu_result = delete_menu_services(query_db, delete_menu)
@@ -95,7 +96,7 @@ async def delete_system_menu(delete_menu: DeleteMenuModel, query_db: Session = D
         return response_500(data="", message="接口异常")
 
 
-@menuController.get("/menu/{menu_id}", response_model=MenuModel)
+@menuController.get("/menu/{menu_id}", response_model=MenuModel, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:edit'))])
 async def query_detail_system_menu(menu_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_menu_result = detail_menu_services(query_db, menu_id)

@@ -6,12 +6,13 @@ from module_admin.service.post_service import *
 from module_admin.entity.vo.post_vo import *
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 
 postController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@postController.post("/post/forSelectOption", response_model=PostSelectOptionResponseModel)
+@postController.post("/post/forSelectOption", response_model=PostSelectOptionResponseModel, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_post_select(query_db: Session = Depends(get_db)):
     try:
         role_query_result = get_post_select_option_services(query_db)
@@ -22,7 +23,7 @@ async def get_system_post_select(query_db: Session = Depends(get_db)):
         return response_500(data="", message="接口异常")
 
 
-@postController.post("/post/get", response_model=PostPageObjectResponse)
+@postController.post("/post/get", response_model=PostPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))])
 async def get_system_post_list(post_query: PostPageObject, query_db: Session = Depends(get_db)):
     try:
         post_query_result = get_post_list_services(query_db, post_query)
@@ -33,7 +34,7 @@ async def get_system_post_list(post_query: PostPageObject, query_db: Session = D
         return response_500(data="", message="接口异常")
 
 
-@postController.post("/post/add", response_model=CrudPostResponse)
+@postController.post("/post/add", response_model=CrudPostResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:add'))])
 async def add_system_post(request: Request, add_post: PostModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -50,7 +51,7 @@ async def add_system_post(request: Request, add_post: PostModel, token: Optional
         return response_500(data="", message="接口异常")
 
 
-@postController.patch("/post/edit", response_model=CrudPostResponse)
+@postController.patch("/post/edit", response_model=CrudPostResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:edit'))])
 async def edit_system_post(request: Request, edit_post: PostModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -68,7 +69,7 @@ async def edit_system_post(request: Request, edit_post: PostModel, token: Option
         return response_500(data="", message="接口异常")
 
 
-@postController.post("/post/delete", response_model=CrudPostResponse)
+@postController.post("/post/delete", response_model=CrudPostResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:delete'))])
 async def delete_system_post(delete_post: DeletePostModel, query_db: Session = Depends(get_db)):
     try:
         delete_post_result = delete_post_services(query_db, delete_post)
@@ -83,7 +84,7 @@ async def delete_system_post(delete_post: DeletePostModel, query_db: Session = D
         return response_500(data="", message="接口异常")
 
 
-@postController.get("/post/{post_id}", response_model=PostModel)
+@postController.get("/post/{post_id}", response_model=PostModel, dependencies=[Depends(CheckUserInterfaceAuth('system:post:edit'))])
 async def query_detail_system_post(post_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_post_result = detail_post_services(query_db, post_id)

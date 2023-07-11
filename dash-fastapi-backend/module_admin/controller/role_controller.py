@@ -6,12 +6,13 @@ from module_admin.service.role_service import *
 from module_admin.entity.vo.role_vo import *
 from module_admin.utils.response_util import *
 from module_admin.utils.log_util import *
+from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 
 
 roleController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@roleController.post("/role/forSelectOption", response_model=RoleSelectOptionResponseModel)
+@roleController.post("/role/forSelectOption", response_model=RoleSelectOptionResponseModel, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_role_select(query_db: Session = Depends(get_db)):
     try:
         role_query_result = get_role_select_option_services(query_db)
@@ -22,7 +23,7 @@ async def get_system_role_select(query_db: Session = Depends(get_db)):
         return response_500(data="", message="接口异常")
     
     
-@roleController.post("/role/get", response_model=RolePageObjectResponse)
+@roleController.post("/role/get", response_model=RolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:list'))])
 async def get_system_role_list(role_query: RolePageObject, query_db: Session = Depends(get_db)):
     try:
         role_query_result = get_role_list_services(query_db, role_query)
@@ -33,7 +34,7 @@ async def get_system_role_list(role_query: RolePageObject, query_db: Session = D
         return response_500(data="", message="接口异常")
     
     
-@roleController.post("/role/add", response_model=CrudRoleResponse)
+@roleController.post("/role/add", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:add'))])
 async def add_system_role(request: Request, add_role: AddRoleModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -50,7 +51,7 @@ async def add_system_role(request: Request, add_role: AddRoleModel, token: Optio
         return response_500(data="", message="接口异常")
     
     
-@roleController.patch("/role/edit", response_model=CrudRoleResponse)
+@roleController.patch("/role/edit", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
 async def edit_system_role(request: Request, edit_role: AddRoleModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -68,7 +69,7 @@ async def edit_system_role(request: Request, edit_role: AddRoleModel, token: Opt
         return response_500(data="", message="接口异常")
     
     
-@roleController.post("/role/delete", response_model=CrudRoleResponse)
+@roleController.post("/role/delete", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:delete'))])
 async def delete_system_role(request: Request, delete_role: DeleteRoleModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
@@ -86,7 +87,7 @@ async def delete_system_role(request: Request, delete_role: DeleteRoleModel, tok
         return response_500(data="", message="接口异常")
     
     
-@roleController.get("/role/{role_id}", response_model=RoleDetailModel)
+@roleController.get("/role/{role_id}", response_model=RoleDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
 async def query_detail_system_role(role_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_role_result = detail_role_services(query_db, role_id)
