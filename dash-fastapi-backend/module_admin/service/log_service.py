@@ -44,6 +44,22 @@ def delete_operation_log_services(result_db: Session, page_object: DeleteOperLog
     return CrudLogResponse(**result)
 
 
+def clear_operation_log_services(result_db: Session, page_object: ClearOperLogModel):
+    """
+    清除操作日志信息service
+    :param result_db: orm对象
+    :param page_object: 清除操作日志对象
+    :return: 清除操作日志校验结果
+    """
+    if page_object.oper_type == 'clear':
+        clear_operation_log_dao(result_db)
+        result = dict(is_success=True, message='清除成功')
+    else:
+        result = dict(is_success=False, message='清除标识不合法')
+
+    return CrudLogResponse(**result)
+
+
 def detail_operation_log_services(result_db: Session, oper_id: int):
     """
     获取操作日志详细信息service
@@ -87,12 +103,16 @@ def delete_login_log_services(result_db: Session, page_object: DeleteLoginLogMod
     :param page_object: 删除操作日志对象
     :return: 删除操作日志校验结果
     """
-    if page_object.info_ids.split(','):
-        info_id_list = page_object.info_ids.split(',')
-        for info_id in info_id_list:
-            info_id_dict = dict(info_id=info_id)
-            delete_login_log_dao(result_db, LogininforModel(**info_id_dict))
-        result = dict(is_success=True, message='删除成功')
+    if page_object.oper_type == 'clear':
+        clear_operation_log_dao(result_db)
+        result = dict(is_success=True, message='清除成功')
     else:
-        result = dict(is_success=False, message='传入登录日志id为空')
+        if page_object.info_ids.split(','):
+            info_id_list = page_object.info_ids.split(',')
+            for info_id in info_id_list:
+                info_id_dict = dict(info_id=info_id)
+                delete_login_log_dao(result_db, LogininforModel(**info_id_dict))
+            result = dict(is_success=True, message='删除成功')
+        else:
+            result = dict(is_success=False, message='传入登录日志id为空')
     return CrudLogResponse(**result)

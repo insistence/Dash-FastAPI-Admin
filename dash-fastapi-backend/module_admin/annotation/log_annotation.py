@@ -32,7 +32,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
             # 处理文件路径，去除项目根路径部分
             relative_path = os.path.relpath(file_path, start=project_root)[0:-2].replace('\\', '.')
             # 获取当前被装饰函数所在路径
-            func_path = f'{relative_path}{func.__name__}'
+            func_path = f'{relative_path}{func.__name__}()'
             # 获取上下文信息
             request: Request = kwargs.get('request')
             token = request.headers.get('token')
@@ -79,24 +79,24 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 else:
                     error_msg = result_dict.get('message')
                 if log_type == 'login':
-                    print(request.headers)
-                    # user_agent_info = parse(user_agent)
-                    # browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
-                    # system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'
-                    # user = kwargs.get('user')
-                    # user_name = user.user_name
-                    # login_log = dict(
-                    #     user_name=user_name,
-                    #     ipaddr=oper_ip,
-                    #     login_location=oper_location,
-                    #     browser=browser,
-                    #     os=system_os,
-                    #     status=str(status),
-                    #     msg=result_dict.get('message'),
-                    #     login_time=oper_time
-                    # )
-                    #
-                    # add_login_log_services(query_db, LogininforModel(**login_log))
+                    # print(request.headers)
+                    user_agent_info = parse(user_agent)
+                    browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
+                    system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'
+                    user = kwargs.get('user')
+                    user_name = user.user_name
+                    login_log = dict(
+                        user_name=user_name,
+                        ipaddr=oper_ip,
+                        login_location=oper_location,
+                        browser=browser,
+                        os=system_os,
+                        status=str(status),
+                        msg=result_dict.get('message'),
+                        login_time=oper_time
+                    )
+
+                    add_login_log_services(query_db, LogininforModel(**login_log))
                 else:
                     current_user = await get_current_user(request, token, query_db)
                     oper_name = current_user.user.user_name

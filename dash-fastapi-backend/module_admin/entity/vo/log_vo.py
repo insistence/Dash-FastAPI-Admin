@@ -74,6 +74,13 @@ class DeleteOperLogModel(BaseModel):
     oper_ids: str
 
 
+class ClearOperLogModel(BaseModel):
+    """
+    清除操作日志模型
+    """
+    oper_type: str
+
+
 class LoginLogPageObject(LogininforModel):
     """
     登录日志管理分页查询模型

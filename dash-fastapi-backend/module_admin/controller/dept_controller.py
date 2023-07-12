@@ -37,7 +37,6 @@ async def get_system_dept_tree_for_edit_option(request: Request, dept_query: Dep
 
 
 @deptController.post("/dept/get", response_model=DeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:list'))])
-@log_decorator(title='部门管理', business_type=0)
 async def get_system_dept_list(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db)):
     try:
         dept_query_result = get_dept_list_services(query_db, dept_query)

@@ -15,7 +15,6 @@ userController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
-@log_decorator(title='用户管理', business_type=0)
 async def get_system_user_list(request: Request, user_query: UserPageObject, query_db: Session = Depends(get_db)):
     try:
         user_query_result = get_user_list_services(query_db, user_query)

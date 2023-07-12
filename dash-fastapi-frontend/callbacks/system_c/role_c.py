@@ -15,6 +15,7 @@ from api.menu import get_menu_tree_api
     [Output('role-list-table', 'data', allow_duplicate=True),
      Output('role-list-table', 'pagination', allow_duplicate=True),
      Output('role-list-table', 'key'),
+     Output('role-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('role-search', 'nClicks'),
      Input('role-list-table', 'pagination'),
@@ -83,11 +84,11 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
                     } if 'system:role:remove' in button_perms else {},
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 5
 
 
 @app.callback(

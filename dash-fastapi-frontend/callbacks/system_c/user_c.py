@@ -37,6 +37,7 @@ def get_search_dept_tree(dept_input):
     [Output('user-list-table', 'data', allow_duplicate=True),
      Output('user-list-table', 'pagination', allow_duplicate=True),
      Output('user-list-table', 'key'),
+     Output('user-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('dept-tree', 'selectedKeys'),
      Input('user-search', 'nClicks'),
@@ -113,11 +114,11 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
                     } if 'system:user:resetPwd' in button_perms else None
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 5
 
 
 @app.callback(

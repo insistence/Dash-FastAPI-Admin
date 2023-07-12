@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from module_admin.entity.do.log_do import SysOperLog, SysLogininfor
 from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel, OperLogPageObject, OperLogPageObjectResponse, \
     LoginLogPageObject, LoginLogPageObjectResponse, CrudLogResponse
-from utils.time_format_util import list_format_datetime
+from utils.time_format_util import object_format_datetime, list_format_datetime
 from utils.page_util import get_page_info
 from datetime import datetime, time
 
@@ -12,7 +12,7 @@ def get_operation_log_detail_by_id(db: Session, oper_id: int):
         .filter(SysOperLog.oper_id == oper_id) \
         .first()
 
-    return operation_log_info
+    return object_format_datetime(operation_log_info)
 
 
 def get_operation_log_list(db: Session, page_object: OperLogPageObject):
@@ -89,6 +89,17 @@ def delete_operation_log_dao(db: Session, operation_log: OperLogModel):
     db.commit()  # 提交保存到数据库中
 
 
+def clear_operation_log_dao(db: Session):
+    """
+    清除操作日志数据库操作
+    :param db: orm对象
+    :return:
+    """
+    db.query(SysOperLog) \
+        .delete()
+    db.commit()  # 提交保存到数据库中
+
+
 def get_login_log_list(db: Session, page_object: LoginLogPageObject):
     """
     根据查询参数获取登录日志列表信息
@@ -157,5 +168,16 @@ def delete_login_log_dao(db: Session, login_log: LogininforModel):
     """
     db.query(SysLogininfor) \
         .filter(SysLogininfor.info_id == login_log.info_id) \
+        .delete()
+    db.commit()  # 提交保存到数据库中
+
+
+def clear_login_log_dao(db: Session):
+    """
+    清除登录日志数据库操作
+    :param db: orm对象
+    :return:
+    """
+    db.query(SysLogininfor) \
         .delete()
     db.commit()  # 提交保存到数据库中

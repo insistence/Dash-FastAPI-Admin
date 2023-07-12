@@ -25,7 +25,6 @@ async def get_system_post_select(request: Request, query_db: Session = Depends(g
 
 
 @postController.post("/post/get", response_model=PostPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))])
-@log_decorator(title='岗位管理', business_type=0)
 async def get_system_post_list(request: Request, post_query: PostPageObject, query_db: Session = Depends(get_db)):
     try:
         post_query_result = get_post_list_services(query_db, post_query)

@@ -25,7 +25,6 @@ async def get_system_role_select(request: Request, query_db: Session = Depends(g
     
     
 @roleController.post("/role/get", response_model=RolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:list'))])
-@log_decorator(title='角色管理', business_type=0)
 async def get_system_role_list(request: Request, role_query: RolePageObject, query_db: Session = Depends(get_db)):
     try:
         role_query_result = get_role_list_services(query_db, role_query)

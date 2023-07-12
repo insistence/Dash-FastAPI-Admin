@@ -14,6 +14,7 @@ from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_
     [Output('post-list-table', 'data', allow_duplicate=True),
      Output('post-list-table', 'pagination', allow_duplicate=True),
      Output('post-list-table', 'key'),
+     Output('post-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('post-search', 'nClicks'),
      Input('post-list-table', 'pagination'),
@@ -72,11 +73,11 @@ def get_post_table_data(search_click, pagination, operations, post_code, post_na
                     } if 'system:post:remove' in button_perms else {},
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 5
 
 
 @app.callback(

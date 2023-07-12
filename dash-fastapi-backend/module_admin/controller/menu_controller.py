@@ -37,7 +37,6 @@ async def get_system_menu_tree_for_edit_option(request: Request, menu_query: Men
 
 
 @menuController.post("/menu/get", response_model=MenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:list'))])
-@log_decorator(title='菜单管理', business_type=0)
 async def get_system_menu_list(request: Request, menu_query: MenuModel, query_db: Session = Depends(get_db)):
     try:
         menu_query_result = get_menu_list_services(query_db, menu_query)
