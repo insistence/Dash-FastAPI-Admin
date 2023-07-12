@@ -35,7 +35,7 @@ def login_auth(nClicks, username, password, captcha, input_captcha):
 
             if captcha == input_captcha:
                 try:
-                    user_params = dict(user_name=username, password=password, user_request=str(request.headers))
+                    user_params = dict(user_name=username, password=password)
                     userinfo_result = login_api(user_params)
                     if userinfo_result['code'] == 200:
                         token = userinfo_result['data']['token']

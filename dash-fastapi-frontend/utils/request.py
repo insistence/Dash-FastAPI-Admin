@@ -9,9 +9,11 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
                 json: Optional[dict] = None, timeout: Optional[int] = None):
     api_url = ApiBaseUrlConfig.BaseUrl + url
     method = method.lower().strip()
-    api_headers = None
+    user_agent = request.headers.get('User-Agent')
     if is_headers:
-        api_headers = {'token': 'Bearer' + session.get('token')}
+        api_headers = {'token': 'Bearer' + session.get('token'), 'remote_addr': request.remote_addr, 'User-Agent': user_agent}
+    else:
+        api_headers = {'remote_addr': request.remote_addr, 'User-Agent': user_agent}
     try:
         if method == 'get':
             response = requests.get(url=api_url, params=params, data=data, json=json, headers=api_headers,

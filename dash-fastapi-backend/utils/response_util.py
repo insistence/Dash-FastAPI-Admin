@@ -23,7 +23,7 @@ def response_200(*, data: Union[list, dict, str], message="获取成功") -> Res
 def response_400(*, data: str = None, message: str = "获取失败") -> Response:
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
-        content=(
+        content=jsonable_encoder(
             {
                 'code': 400,
                 'message': message,
@@ -38,7 +38,7 @@ def response_400(*, data: str = None, message: str = "获取失败") -> Response
 def response_401(*, data: str = None, message: str = "获取失败") -> Response:
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        content=(
+        content=jsonable_encoder(
             {
                 'code': 401,
                 'message': message,
@@ -53,7 +53,7 @@ def response_401(*, data: str = None, message: str = "获取失败") -> Response
 def response_500(*, data: str = None, message: str = "接口异常") -> Response:
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content=(
+        content=jsonable_encoder(
             {
                 'code': 500,
                 'message': message,

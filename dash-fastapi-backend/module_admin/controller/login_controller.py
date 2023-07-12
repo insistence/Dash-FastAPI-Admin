@@ -7,6 +7,7 @@ from config.env import JwtConfig
 from utils.response_util import *
 from utils.log_util import *
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
+from module_admin.annotation.log_annotation import log_decorator
 from datetime import timedelta
 
 
@@ -14,6 +15,7 @@ loginController = APIRouter()
 
 
 @loginController.post("/loginByAccount", response_model=Token)
+@log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
         result = authenticate_user(query_db, user.user_name, user.password)

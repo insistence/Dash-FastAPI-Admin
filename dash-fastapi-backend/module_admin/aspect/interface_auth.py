@@ -1,5 +1,5 @@
 from fastapi import Depends
-from module_admin.entity.vo.user_vo import *
+from module_admin.entity.vo.user_vo import CurrentUserInfoServiceResponse
 from module_admin.service.login_service import get_current_user
 from utils.response_util import AuthException
 
