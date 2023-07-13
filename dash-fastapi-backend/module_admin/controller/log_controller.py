@@ -92,3 +92,19 @@ async def delete_system_login_log(request: Request, delete_login_log: DeleteLogi
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")
+
+
+@logController.post("/login/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
+@log_decorator(title='操作日志管理', business_type=9)
+async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLogModel, query_db: Session = Depends(get_db)):
+    try:
+        clear_login_log_result = clear_login_log_services(query_db, clear_login_log)
+        if clear_login_log_result.is_success:
+            logger.info(clear_login_log_result.message)
+            return response_200(data=clear_login_log_result, message=clear_login_log_result.message)
+        else:
+            logger.warning(clear_login_log_result.message)
+            return response_400(data="", message=clear_login_log_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")

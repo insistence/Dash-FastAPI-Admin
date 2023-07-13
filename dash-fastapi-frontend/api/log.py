@@ -29,3 +29,8 @@ def get_login_log_list_api(page_obj: dict):
 def delete_login_log_api(page_obj: dict):
 
     return api_request(method='post', url='/system/log/login/delete', is_headers=True, json=page_obj)
+
+
+def clear_login_log_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/log/login/clear', is_headers=True, json=page_obj)

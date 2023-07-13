@@ -109,6 +109,13 @@ class DeleteLoginLogModel(BaseModel):
     info_ids: str
 
 
+class ClearLoginLogModel(BaseModel):
+    """
+    清除登录日志模型
+    """
+    oper_type: str
+
+
 class CrudLogResponse(BaseModel):
     """
     操作各类日志响应模型

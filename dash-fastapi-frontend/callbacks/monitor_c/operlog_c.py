@@ -200,7 +200,7 @@ def change_operation_log_delete_button_status(table_rows_selected):
     State('operation_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def post_delete_modal(delete_click, clear_click, selected_row_keys):
+def operation_log_delete_modal(delete_click, clear_click, selected_row_keys):
     if delete_click or clear_click:
         trigger_id = dash.ctx.triggered_id
         if trigger_id == 'operation_log-delete':
