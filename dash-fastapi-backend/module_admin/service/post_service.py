@@ -64,7 +64,7 @@ def delete_post_services(result_db: Session, page_object: DeletePostModel):
             delete_post_dao(result_db, PostModel(**post_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
-        result = dict(is_success=False, message='传入用户id为空')
+        result = dict(is_success=False, message='传入岗位id为空')
     return CrudPostResponse(**result)
 
 

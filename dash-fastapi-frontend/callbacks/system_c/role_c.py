@@ -175,14 +175,15 @@ def all_none_role_menu_mode(all_none, menu_info):
 def change_role_menu_mode(parent_children, current_role_menu):
     if parent_children:
         checked_menu = []
-        for item in current_role_menu:
-            has_children = False
-            for other_item in current_role_menu:
-                if other_item['parent_id'] == item['menu_id']:
-                    has_children = True
-                    break
-            if not has_children:
-                checked_menu.append(str(item.get('menu_id')))
+        if current_role_menu[0]:
+            for item in current_role_menu:
+                has_children = False
+                for other_item in current_role_menu:
+                    if other_item['parent_id'] == item['menu_id']:
+                        has_children = True
+                        break
+                if not has_children:
+                    checked_menu.append(str(item.get('menu_id')))
         return [False, checked_menu]
     else:
         checked_menu = [str(item.get('menu_id')) for item in current_role_menu if item] or []
@@ -250,14 +251,15 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                 if role_info_res['code'] == 200:
                     role_info = role_info_res['data']
                     checked_menu = []
-                    for item in role_info.get('menu'):
-                        has_children = False
-                        for other_item in role_info.get('menu'):
-                            if other_item['parent_id'] == item['menu_id']:
-                                has_children = True
-                                break
-                        if not has_children:
-                            checked_menu.append(str(item.get('menu_id')))
+                    if role_info.get('menu')[0]:
+                        for item in role_info.get('menu'):
+                            has_children = False
+                            for other_item in role_info.get('menu'):
+                                if other_item['parent_id'] == item['menu_id']:
+                                    has_children = True
+                                    break
+                            if not has_children:
+                                checked_menu.append(str(item.get('menu_id')))
                     return [
                         True,
                         '编辑角色',

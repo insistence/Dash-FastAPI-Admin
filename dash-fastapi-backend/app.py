@@ -11,6 +11,7 @@ from module_admin.controller.menu_controller import menuController
 from module_admin.controller.dept_controller import deptController
 from module_admin.controller.role_controller import roleController
 from module_admin.controller.post_controler import postController
+from module_admin.controller.dict_controller import dictController
 from module_admin.controller.log_controller import logController
 from config.env import RedisConfig
 from utils.response_util import response_401, AuthException
@@ -76,6 +77,7 @@ app.include_router(menuController, prefix="/system", tags=['system/menu'])
 app.include_router(deptController, prefix="/system", tags=['system/dept'])
 app.include_router(roleController, prefix="/system", tags=['system/role'])
 app.include_router(postController, prefix="/system", tags=['system/post'])
+app.include_router(dictController, prefix="/system", tags=['system/dict'])
 app.include_router(logController, prefix="/system", tags=['system/log'])
 
 

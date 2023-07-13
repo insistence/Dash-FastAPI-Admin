@@ -59,6 +59,13 @@ def render_store_container():
             dcc.Store(id='post-edit-id-store'),
             # 岗位管理模块删除操作行key存储容器
             dcc.Store(id='post-delete-ids-store'),
+            # 字典管理模块操作类型存储容器
+            dcc.Store(id='dict_type-operations-store'),
+            dcc.Store(id='dict_type-operations-store-bk'),
+            # 字典管理模块修改操作行key存储容器
+            dcc.Store(id='dict_type-edit-id-store'),
+            # 字典管理模块删除操作行key存储容器
+            dcc.Store(id='dict_type-delete-ids-store'),
             # 操作日志管理模块操作类型存储容器
             dcc.Store(id='operation_log-operations-store'),
             # 操作日志管理模块删除操作行key存储容器

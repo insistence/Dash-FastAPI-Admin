@@ -95,7 +95,7 @@ async def delete_system_login_log(request: Request, delete_login_log: DeleteLogi
 
 
 @logController.post("/login/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
-@log_decorator(title='操作日志管理', business_type=9)
+@log_decorator(title='登录日志管理', business_type=9)
 async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLogModel, query_db: Session = Depends(get_db)):
     try:
         clear_login_log_result = clear_login_log_services(query_db, clear_login_log)

@@ -86,7 +86,7 @@ def delete_menu_services(result_db: Session, page_object: DeleteMenuModel):
             delete_menu_dao(result_db, MenuModel(**menu_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
-        result = dict(is_success=False, message='传入用户id为空')
+        result = dict(is_success=False, message='传入菜单id为空')
     return CrudMenuResponse(**result)
 
 

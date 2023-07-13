@@ -102,7 +102,7 @@ def delete_dept_services(result_db: Session, page_object: DeleteDeptModel):
             delete_dept_dao(result_db, DeptModel(**dept_id_dict))
         result = dict(is_success=True, message='删除成功')
     else:
-        result = dict(is_success=False, message='传入用户id为空')
+        result = dict(is_success=False, message='传入部门id为空')
     return CrudDeptResponse(**result)
 
 
