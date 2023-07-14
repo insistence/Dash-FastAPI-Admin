@@ -24,6 +24,17 @@ async def get_system_dict_type_list(request: Request, dict_type_query: DictTypeP
         return response_500(data="", message="接口异常")
 
 
+@dictController.post("/dictType/all", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
+async def get_system_all_dict_type(request: Request, dict_type_query: DictTypePageObject, query_db: Session = Depends(get_db)):
+    try:
+        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_query)
+        logger.info('获取成功')
+        return response_200(data=dict_type_query_result, message="获取成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
 @dictController.post("/dictType/add", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:add'))])
 @log_decorator(title='字典管理', business_type=1)
 async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):

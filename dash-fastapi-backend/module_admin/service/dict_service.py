@@ -9,7 +9,10 @@ def get_dict_type_list_services(result_db: Session, page_object: DictTypePageObj
     :param page_object: 分页查询参数对象
     :return: 字典类型列表信息对象
     """
-    dict_type_list_result = get_dict_type_list(result_db, page_object)
+    if page_object.page_num and page_object.page_size:
+        dict_type_list_result = get_dict_type_list(result_db, page_object)
+    else:
+        dict_type_list_result = get_all_dict_type(result_db)
 
     return dict_type_list_result
 

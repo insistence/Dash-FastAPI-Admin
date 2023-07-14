@@ -15,6 +15,12 @@ def get_dict_type_detail_by_id(db: Session, dict_id: int):
     return dict_type_info
 
 
+def get_all_dict_type(db: Session):
+    dict_type_info = db.query(SysDictType).all()
+
+    return list_format_datetime(dict_type_info)
+
+
 def get_dict_type_list(db: Session, page_object: DictTypePageObject):
     """
     根据查询参数获取字典类型列表信息

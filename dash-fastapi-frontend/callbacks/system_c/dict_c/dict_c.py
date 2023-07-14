@@ -7,7 +7,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.dict import get_dict_type_list_api, get_dict_type_detail_api, add_dict_type_api, edit_dict_type_api, delete_dict_type_api
+from api.dict import get_dict_type_list_api, get_all_dict_type_api, get_dict_type_detail_api, add_dict_type_api, edit_dict_type_api, delete_dict_type_api
 
 
 @app.callback(
@@ -70,12 +70,10 @@ def get_dict_type_table_data(search_click, pagination, operations, dict_name, di
                 else:
                     item['status'] = dict(tag='停用', color='volcano')
                 item['key'] = str(item['dict_id'])
-                item['dict_type'] = [
-                    {
-                        'content': item['dict_type'],
-                        'type': 'link',
-                    }
-                ]
+                item['dict_type'] = {
+                    'content': item['dict_type'],
+                    'type': 'link',
+                }
                 item['operation'] = [
                     {
                         'content': '修改',
@@ -331,3 +329,46 @@ def dict_type_delete_confirm(delete_confirm, dict_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('dict_type_to_dict_data-modal', 'visible'),
+     Output('dict_type_to_dict_data-modal', 'title'),
+     Output('dict_data-dict_type-select', 'options'),
+     Output('dict_data-dict_type-select', 'value', allow_duplicate=True),
+     Output('dict_data-search', 'nClicks'),
+     Output('api-check-token', 'data', allow_duplicate=True)],
+    Input('dict_type-list-table', 'nClicksButton'),
+    [State('dict_type-list-table', 'clickedContent'),
+     State('dict_type-list-table', 'recentlyButtonClickedRow'),
+     State('dict_data-search', 'nClicks')],
+    prevent_initial_call=True
+)
+def dict_type_to_dict_data_modal(button_click, clicked_content, recently_button_clicked_row, dict_data_search_nclick):
+
+    if button_click and clicked_content == recently_button_clicked_row.get('dict_type').get('content'):
+        all_dict_type_info = get_all_dict_type_api({})
+        if all_dict_type_info.get('code') == 200:
+            all_dict_type = all_dict_type_info.get('data')
+            dict_data_options = [dict(label=item.get('dict_name'), value=item.get('dict_type')) for item in all_dict_type]
+
+            return [
+                True,
+                '字典数据',
+                dict_data_options,
+                recently_button_clicked_row.get('dict_type').get('content'),
+                dict_data_search_nclick + 1 if dict_data_search_nclick else 1,
+                {'timestamp': time.time()},
+            ]
+
+        return [
+                True,
+                '字典数据',
+                [],
+                recently_button_clicked_row.get('dict_type').get('content'),
+                dict_data_search_nclick + 1 if dict_data_search_nclick else 1,
+                {'timestamp': time.time()},
+            ]
+
+    return [dash.no_update] * 6
+
