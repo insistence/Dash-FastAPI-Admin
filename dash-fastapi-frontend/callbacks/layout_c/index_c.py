@@ -141,6 +141,21 @@ def get_current_breadcrumbs(active_key, menu_info):
                 '/'
             ]
 
+        elif active_key == '个人资料':
+            return [
+                [
+                    {
+                        'title': '首页',
+                        'icon': 'antd-dashboard',
+                        'href': '/'
+                    },
+                    {
+                        'title': '个人资料',
+                    }
+                ],
+                '/user/profile'
+            ]
+
         else:
             result = find_parents(menu_info.get('menu_info'), active_key)
             # 去除result的重复项
