@@ -70,7 +70,8 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'user-list-table':
         query_params = dict(
             dept_id=dept_id,
             user_name=user_name,

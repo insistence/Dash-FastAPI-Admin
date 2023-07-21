@@ -42,7 +42,8 @@ def get_dict_type_table_data(search_click, pagination, operations, dict_name, di
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'dict_type-list-table':
         query_params = dict(
             dict_name=dict_name,
             dict_type=dict_type,

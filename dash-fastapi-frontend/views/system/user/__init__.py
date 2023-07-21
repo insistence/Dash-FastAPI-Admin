@@ -1,7 +1,7 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 
-import callbacks.system_c.user_c
+from . import profile
 from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
 

@@ -82,9 +82,6 @@ def router(pathname, trigger):
             current_user_result = get_current_user_info_api()
             if current_user_result['code'] == 200:
                 current_user = current_user_result['data']
-                user_name = current_user['user']['user_name']
-                nick_name = current_user['user']['nick_name']
-                phone_number = current_user['user']['phonenumber']
                 menu_list = current_user['menu']
                 user_menu_list = [item for item in menu_list if item.get('visible') == '0']
                 menu_info = deal_user_menu_info(0, menu_list)
@@ -94,7 +91,7 @@ def router(pathname, trigger):
                 session['role_info'] = current_user['role']
                 session['post_info'] = current_user['post']
                 valid_href_list = find_node_values(menu_info, 'href')
-                valid_href_list.append('/')
+                valid_href_list = valid_href_list + RouterConfig.STATIC_VALID_PATHNAME
                 if pathname in valid_href_list:
                     current_key = find_key_by_href(menu_info, pathname)
                     if trigger == 'load':
@@ -102,6 +99,8 @@ def router(pathname, trigger):
                         # 根据pathname控制渲染行为
                         if pathname == '/':
                             current_key = '首页'
+                        if pathname == '/user/profile':
+                            current_key = '个人资料'
                         if pathname == '/login' or pathname == '/forget':
                             # 重定向到主页面
                             return [
@@ -119,7 +118,7 @@ def router(pathname, trigger):
 
                         # 否则正常渲染主页面
                         return [
-                            views.layout.render_content(user_name, nick_name, phone_number, user_menu_info),
+                            views.layout.render_content(user_menu_info),
                             None,
                             fuc.FefferyFancyNotification('进入主页面', type='success', autoClose=2000),
                             {'timestamp': time.time()},
@@ -132,6 +131,8 @@ def router(pathname, trigger):
                     else:
                         if pathname == '/':
                             current_key = '首页'
+                        if pathname == '/user/profile':
+                            current_key = '个人资料'
                         return [
                             dash.no_update,
                             None,

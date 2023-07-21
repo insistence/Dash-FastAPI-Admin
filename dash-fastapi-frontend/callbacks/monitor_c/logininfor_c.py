@@ -42,7 +42,8 @@ def get_login_log_table_data(search_click, pagination, operations, ipaddr, user_
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'login_log-list-table':
         query_params = dict(
             ipaddr=ipaddr,
             user_name=user_name,

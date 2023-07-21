@@ -34,7 +34,8 @@ def get_post_table_data(search_click, pagination, operations, post_code, post_na
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'post-list-table':
         query_params = dict(
             post_code=post_code,
             post_name=post_name,

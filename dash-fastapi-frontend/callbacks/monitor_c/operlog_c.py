@@ -44,7 +44,8 @@ def get_operation_log_table_data(search_click, pagination, operations, title, op
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'operation_log-list-table':
         query_params = dict(
             title=title,
             oper_name=oper_name,

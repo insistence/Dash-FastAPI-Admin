@@ -14,6 +14,9 @@ class RouterConfig:
         '/', '/login', '/forget'
     ]
 
+    # 静态路由列表
+    STATIC_VALID_PATHNAME = ['/', '/user/profile']
+
 
 class ApiBaseUrlConfig:
 

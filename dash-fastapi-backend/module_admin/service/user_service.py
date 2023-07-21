@@ -1,5 +1,6 @@
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
+from module_admin.service.login_service import verify_password
 
 
 def get_user_list_services(result_db: Session, page_object: UserPageObject):
@@ -47,13 +48,13 @@ def edit_user_services(result_db: Session, page_object: AddUserModel):
     :return: 编辑用户校验结果
     """
     edit_user = page_object.dict(exclude_unset=True)
-    if page_object.type != 'status':
+    if page_object.type != 'status' and page_object.type != 'avatar':
         del edit_user['role_id']
         del edit_user['post_id']
-    if page_object.type == 'status':
+    if page_object.type == 'status' or page_object.type == 'avatar':
         del edit_user['type']
     edit_user_result = edit_user_dao(result_db, edit_user)
-    if edit_user_result.is_success and page_object.type != 'status':
+    if edit_user_result.is_success and page_object.type != 'status' and page_object.type != 'avatar':
         user_id_dict = dict(user_id=page_object.user_id)
         delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
         delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
@@ -106,3 +107,21 @@ def detail_user_services(result_db: Session, user_id: int):
         role=user.user_role_info,
         post=user.user_post_info
     )
+
+
+def reset_user_services(result_db: Session, page_object: ResetUserModel):
+    """
+    重置用户密码service
+    :param result_db: orm对象
+    :param page_object: 重置用户对象
+    :return: 重置用户校验结果
+    """
+    user = get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
+    if not verify_password(page_object.old_password, user.password):
+        result = CrudUserResponse(**dict(is_success=False, message='旧密码不正确'))
+    else:
+        reset_user = page_object.dict(exclude_unset=True)
+        del reset_user['old_password']
+        result = edit_user_dao(result_db, reset_user)
+
+    return result

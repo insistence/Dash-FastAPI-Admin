@@ -5,12 +5,11 @@ import feffery_antd_components as fac
 from views.layout.components.head import render_head_content
 from views.layout.components.content import render_main_content
 from views.layout.components.aside import render_aside_content
-# import callbacks.index_c
 import callbacks.layout_c.fold_side_menu
 import callbacks.layout_c.index_c
 
 
-def render_content(user_name, nick_name, phone_number, menu_info):
+def render_content(menu_info):
 
     return fuc.FefferyTopProgress(
         html.Div(
@@ -21,46 +20,18 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                 html.Div(id='idle-placeholder-container'),
 
                 # 注入相关modal
-                html.Div(
-                    [
-                        # 个人资料面板
-                        fac.AntdModal(
-                            [
-                                fac.AntdForm(
-                                    [
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                user_name,
-                                                copyable=True
-                                            ),
-                                            label='账号'
-                                        ),
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                nick_name,
-                                                copyable=True
-                                            ),
-                                            label='姓名'
-                                        ),
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                phone_number,
-                                                copyable=True
-                                            ),
-                                            label='电话'
-                                        )
-                                    ],
-                                    labelCol={
-                                        'span': 4
-                                    }
-                                )
-                            ],
-                            id='index-personal-info-modal',
-                            title='个人资料',
-                            mask=False
-                        ),
-                    ]
-                ),
+                # html.Div(
+                #     [
+                #         # 个人资料面板
+                #         fac.AntdModal(
+                #             render_user_profile(),
+                #             id='index-personal-info-modal',
+                #             title='个人资料',
+                #             width=1000,
+                #             mask=False
+                #         )
+                #     ]
+                # ),
 
                 # 退出登录对话框提示
                 fac.AntdModal(
@@ -105,7 +76,7 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                         fac.AntdCol(
                             [
                                 fac.AntdRow(
-                                    render_head_content(user_name),
+                                    render_head_content(),
                                     style={
                                         'height': '50px',
                                         'boxShadow': 'rgb(240 241 242) 0px 2px 14px',
@@ -117,7 +88,7 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                                     }
                                 ),
                                 fac.AntdRow(
-                                    render_main_content(user_name, nick_name, phone_number),
+                                    render_main_content(),
                                     wrap=False
                                 )
                             ],

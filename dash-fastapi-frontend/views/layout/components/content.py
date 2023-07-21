@@ -2,7 +2,7 @@ from dash import html
 import feffery_antd_components as fac
 
 
-def render_main_content(user_name, nick_name, phone_number):
+def render_main_content():
     return [
         # 右侧主体内容区域
         fac.AntdCol(
@@ -26,7 +26,8 @@ def render_main_content(user_name, nick_name, phone_number):
                         # defaultActiveKey='首页',
                         style={
                             'width': '100%',
-                            'paddingLeft': '15px'
+                            'paddingLeft': '15px',
+                            'paddingRight': '15px'
                         }
                     ),
                     # id='index-main-content-container',

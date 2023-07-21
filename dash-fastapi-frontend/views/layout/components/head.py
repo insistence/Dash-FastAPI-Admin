@@ -1,10 +1,10 @@
-from dash import html
+from dash import html, dcc
 import feffery_antd_components as fac
-
+from flask import session
 import callbacks.layout_c.head_c
 
 
-def render_head_content(user_name):
+def render_head_content():
     return [
         # 页首左侧折叠按钮区域
         fac.AntdCol(
@@ -57,14 +57,12 @@ def render_head_content(user_name):
                 [
                     fac.AntdTooltip(
                         fac.AntdAvatar(
-                            mode='text',
-                            size=36,
-                            text=user_name,
-                            style={
-                                'background': 'gold'
-                            }
+                            id='avatar-info',
+                            mode='image',
+                            src=session.get('user_info').get('avatar'),
+                            size=36
                         ),
-                        title='当前用户：' + user_name,
+                        title='当前用户：' + session.get('user_info').get('user_name'),
                         placement='bottom'
                     ),
 

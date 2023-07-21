@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends, Header
+import base64
 from config.get_db import get_db
+from config.env import CachePathConfig
 from module_admin.service.login_service import get_current_user, get_password_hash
 from module_admin.service.user_service import *
 from module_admin.entity.vo.user_vo import *
@@ -88,6 +90,81 @@ async def query_detail_system_user(request: Request, user_id: int, query_db: Ses
         delete_user_result = detail_user_services(query_db, user_id)
         logger.info(f'获取user_id为{user_id}的信息成功')
         return response_200(data=delete_user_result, message='获取成功')
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@userController.patch("/user/profile/changeAvatar", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+async def change_system_user_profile_avatar(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
+    try:
+        current_user = await get_current_user(request, token, query_db)
+        avatar = edit_user.avatar
+        # 去除 base64 字符串中的头部信息（data:image/jpeg;base64, 等等）
+        base64_string = avatar.split(',', 1)[1]
+        # 解码 base64 字符串
+        file_data = base64.b64decode(base64_string)
+        dir_path = os.path.join(CachePathConfig.PATH, 'avatar')
+        try:
+            os.makedirs(dir_path)
+        except FileExistsError:
+            pass
+        filepath = os.path.join(dir_path, f'{current_user.user.user_name}_avatar.jpeg')
+        with open(filepath, 'wb') as f:
+            f.write(file_data)
+        edit_user.user_id = current_user.user.user_id
+        edit_user.avatar = f'{request.base_url}common/{CachePathConfig.PATHSTR}?taskId=avatar&filename={current_user.user.user_name}_avatar.jpeg'
+        edit_user.update_by = current_user.user.user_name
+        edit_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        edit_user_result = edit_user_services(query_db, edit_user)
+        if edit_user_result.is_success:
+            logger.info(edit_user_result.message)
+            return response_200(data=edit_user_result, message=edit_user_result.message)
+        else:
+            logger.warning(edit_user_result.message)
+            return response_400(data="", message=edit_user_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@userController.patch("/user/profile/changeInfo", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@log_decorator(title='个人信息', business_type=2)
+async def change_system_user_profile_info(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
+    try:
+        current_user = await get_current_user(request, token, query_db)
+        edit_user.user_id = current_user.user.user_id
+        edit_user.update_by = current_user.user.user_name
+        edit_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        edit_user_result = edit_user_services(query_db, edit_user)
+        if edit_user_result.is_success:
+            logger.info(edit_user_result.message)
+            return response_200(data=edit_user_result, message=edit_user_result.message)
+        else:
+            logger.warning(edit_user_result.message)
+            return response_400(data="", message=edit_user_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@userController.patch("/user/profile/resetPwd", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@log_decorator(title='个人信息', business_type=2)
+async def reset_system_user_password(request: Request, reset_user: ResetUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
+    try:
+        current_user = await get_current_user(request, token, query_db)
+        if not reset_user.user_id:
+            reset_user.user_id = current_user.user.user_id
+        reset_user.password = get_password_hash(reset_user.password)
+        reset_user.update_by = current_user.user.user_name
+        reset_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        reset_user_result = reset_user_services(query_db, reset_user)
+        if reset_user_result.is_success:
+            logger.info(reset_user_result.message)
+            return response_200(data=reset_user_result, message=reset_user_result.message)
+        else:
+            logger.warning(reset_user_result.message)
+            return response_400(data="", message=reset_user_result.message)
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

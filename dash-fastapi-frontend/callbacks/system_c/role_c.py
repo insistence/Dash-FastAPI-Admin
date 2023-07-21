@@ -43,7 +43,8 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'role-list-table':
         query_params = dict(
             role_name=role_name,
             role_key=role_key,

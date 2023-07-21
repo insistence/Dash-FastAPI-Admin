@@ -1,6 +1,7 @@
 import dash
 from dash import dcc
 from flask import session
+import time
 from dash.dependencies import Input, Output, State
 
 from server import app
@@ -9,7 +10,7 @@ from api.login import logout_api
 
 # 页首右侧个人中心选项卡回调
 @app.callback(
-    [Output('index-personal-info-modal', 'visible'),
+    [Output('dcc-url', 'pathname', allow_duplicate=True),
      Output('logout-modal', 'visible')],
     Input('index-header-dropdown', 'nClicks'),
     State('index-header-dropdown', 'clickedKey'),
@@ -18,17 +19,17 @@ from api.login import logout_api
 def index_dropdown_click(nClicks, clickedKey):
     if clickedKey == '退出登录':
         return [
-            False,
+            dash.no_update,
             True
         ]
 
     elif clickedKey == '个人资料':
         return [
-            True,
+            '/user/profile',
             False
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 2
 
 
 # 退出登录回调

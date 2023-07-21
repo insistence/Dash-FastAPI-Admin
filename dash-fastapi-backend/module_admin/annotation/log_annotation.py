@@ -79,7 +79,6 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 else:
                     error_msg = result_dict.get('message')
                 if log_type == 'login':
-                    # print(request.headers)
                     user_agent_info = parse(user_agent)
                     browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
                     system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'

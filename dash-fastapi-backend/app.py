@@ -13,6 +13,7 @@ from module_admin.controller.role_controller import roleController
 from module_admin.controller.post_controler import postController
 from module_admin.controller.dict_controller import dictController
 from module_admin.controller.log_controller import logController
+from module_admin.controller.common_controller import commonController
 from config.env import RedisConfig
 from utils.response_util import response_401, AuthException
 
@@ -22,6 +23,7 @@ app = FastAPI()
 # 前端页面url
 origins = [
     "http://localhost:8088",
+    "http://127.0.0.1:8088",
 ]
 
 # 后台api允许跨域
@@ -79,6 +81,7 @@ app.include_router(roleController, prefix="/system", tags=['system/role'])
 app.include_router(postController, prefix="/system", tags=['system/post'])
 app.include_router(dictController, prefix="/system", tags=['system/dict'])
 app.include_router(logController, prefix="/system", tags=['system/log'])
+app.include_router(commonController, prefix="/common", tags=['common'])
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ loginController = APIRouter()
 
 
 @loginController.post("/loginByAccount", response_model=Token)
-@log_decorator(title='用户登录', business_type=0, log_type='login')
+# @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
         result = authenticate_user(query_db, user.user_name, user.password)

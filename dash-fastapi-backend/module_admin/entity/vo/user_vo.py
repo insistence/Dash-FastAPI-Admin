@@ -207,6 +207,13 @@ class AddUserModel(UserModel):
     type: Optional[str]
 
 
+class ResetUserModel(UserModel):
+    """
+    重置用户密码模型
+    """
+    old_password: Optional[str]
+
+
 class DeleteUserModel(BaseModel):
     """
     删除用户模型

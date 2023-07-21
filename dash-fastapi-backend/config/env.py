@@ -1,3 +1,6 @@
+import os
+
+
 class JwtConfig:
     """
     Jwt配置
@@ -27,3 +30,11 @@ class RedisConfig:
     USERNAME = ''
     PASSWORD = ''
     DB = 2
+
+
+class CachePathConfig:
+    """
+    缓存目录配置
+    """
+    PATH = os.path.join(os.path.abspath(os.getcwd()), 'caches')
+    PATHSTR = 'caches'

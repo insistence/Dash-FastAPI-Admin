@@ -34,7 +34,8 @@ def get_dict_data_table_data(search_click, pagination, operations, dict_type, di
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'dict_data-list-table':
         query_params = dict(
             dict_type=dict_type,
             dict_label=dict_label,
@@ -81,8 +82,7 @@ def get_dict_data_table_data(search_click, pagination, operations, dict_type, di
 
 
 @app.callback(
-    [Output('dict_data-dict_type-select', 'value', allow_duplicate=True),
-     Output('dict_data-dict_label-input', 'value'),
+    [Output('dict_data-dict_label-input', 'value'),
      Output('dict_data-status-select', 'value'),
      Output('dict_data-operations-store', 'data')],
     Input('dict_data-reset', 'nClicks'),
@@ -90,9 +90,9 @@ def get_dict_data_table_data(search_click, pagination, operations, dict_type, di
 )
 def reset_dict_data_query_params(reset_click):
     if reset_click:
-        return [None, None, None, {'type': 'reset'}]
+        return [None, None, {'type': 'reset'}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 3
 
 
 @app.callback(

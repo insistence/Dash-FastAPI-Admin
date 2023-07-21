@@ -49,10 +49,15 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
                 currentKey
             ]
 
-        menu_title = find_title_by_key(menu_info.get('menu_info'), currentKey)
-        button_perms = [item.get('perms') for item in menu_list.get('menu_list') if str(item.get('parent_id')) == currentKey]
-        # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
-        menu_modules = find_modules_by_key(menu_info.get('menu_info'), currentKey)
+        if currentKey == '个人资料':
+            menu_title = '个人资料'
+            button_perms = []
+            menu_modules = 'system.user.profile'
+        else:
+            menu_title = find_title_by_key(menu_info.get('menu_info'), currentKey)
+            button_perms = [item.get('perms') for item in menu_list.get('menu_list') if str(item.get('parent_id')) == currentKey]
+            # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
+            menu_modules = find_modules_by_key(menu_info.get('menu_info'), currentKey)
 
         if menu_modules:
             # 否则追加子项返回
@@ -116,7 +121,7 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
 # 页首面包屑和hash回调
 @app.callback(
     [Output('header-breadcrumb', 'items'),
-     Output('dcc-url', 'pathname')],
+     Output('dcc-url', 'pathname', allow_duplicate=True)],
     Input('tabs-container', 'activeKey'),
     State('menu-info-store-container', 'data'),
     prevent_initial_call=True
