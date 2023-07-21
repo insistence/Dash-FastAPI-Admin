@@ -5,6 +5,8 @@ from . import profile
 from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
 
+import callbacks.system_c.user_c.user_c
+
 
 def render(button_perms):
     dept_params = dict(dept_name='')
