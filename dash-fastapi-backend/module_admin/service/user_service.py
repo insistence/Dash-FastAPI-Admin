@@ -3,14 +3,26 @@ from module_admin.dao.user_dao import *
 from module_admin.service.login_service import verify_password
 
 
-def get_user_list_services(result_db: Session, page_object: UserPageObject):
+# def get_user_list_services(result_db: Session, page_object: UserPageObject):
+#     """
+#     获取用户列表信息service
+#     :param result_db: orm对象
+#     :param page_object: 分页查询参数对象
+#     :return: 用户列表信息对象
+#     """
+#     user_list_result = get_user_list(result_db, page_object)
+#
+#     return user_list_result
+
+
+def get_user_list_services(result_db: Session, user_object: UserModel):
     """
     获取用户列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param user_object: 分页查询参数对象
     :return: 用户列表信息对象
     """
-    user_list_result = get_user_list(result_db, page_object)
+    user_list_result = get_user_list(result_db, user_object)
 
     return user_list_result
 

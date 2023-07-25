@@ -6,10 +6,11 @@ from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserPageObject, \
-    UserPageObjectResponse, CrudUserResponse
+    UserPageObjectResponse, CrudUserResponse, UserInfoJoinDept
 from utils.time_format_util import list_format_datetime, format_datetime_dict_list
 from utils.page_util import get_page_info
 from datetime import datetime, time
+from typing import Union, List
 
 
 def get_user_by_name(db: Session, user_name: str):
@@ -110,51 +111,112 @@ def get_user_detail_by_id(db: Session, user_id: int):
     return CurrentUserInfo(**results)
 
 
-def get_user_list(db: Session, page_object: UserPageObject):
+# def get_user_list(db: Session, page_object: UserPageObject):
+#     """
+#     根据查询参数获取用户列表信息
+#     :param db: orm对象
+#     :param page_object: 分页查询参数对象
+#     :return: 用户列表信息对象
+#     """
+#     count = db.query(SysUser, SysDept) \
+#         .filter(SysUser.del_flag == 0,
+#                 SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
+#                 SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
+#                 SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
+#                 SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
+#                 SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
+#                 SysUser.status == page_object.status if page_object.status else True,
+#                 SysUser.sex == page_object.sex if page_object.sex else True,
+#                 SysUser.create_time.between(
+#                     datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+#                     datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+#                 if page_object.create_time_start and page_object.create_time_end else True
+#                 ) \
+#         .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+#         .distinct().count()
+#     offset_com = (page_object.page_num - 1) * page_object.page_size
+#     page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
+#     user_list = db.query(SysUser, SysDept) \
+#         .filter(SysUser.del_flag == 0,
+#                 SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
+#                 SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
+#                 SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
+#                 SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
+#                 SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
+#                 SysUser.status == page_object.status if page_object.status else True,
+#                 SysUser.sex == page_object.sex if page_object.sex else True,
+#                 SysUser.create_time.between(
+#                     datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+#                     datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+#                 if page_object.create_time_start and page_object.create_time_end else True
+#                 ) \
+#         .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+#         .offset(page_info.offset) \
+#         .limit(page_object.page_size) \
+#         .distinct().all()
+#
+#     result_list = []
+#     if user_list:
+#         for item in user_list:
+#             obj = dict(
+#                 user_id=item[0].user_id,
+#                 dept_id=item[0].dept_id,
+#                 dept_name=item[1].dept_name if item[1] else '',
+#                 user_name=item[0].user_name,
+#                 nick_name=item[0].nick_name,
+#                 user_type=item[0].user_type,
+#                 email=item[0].email,
+#                 phonenumber=item[0].phonenumber,
+#                 sex=item[0].sex,
+#                 avatar=item[0].avatar,
+#                 status=item[0].status,
+#                 del_flag=item[0].del_flag,
+#                 login_ip=item[0].login_ip,
+#                 login_date=item[0].login_date,
+#                 create_by=item[0].create_by,
+#                 create_time=item[0].create_time,
+#                 update_by=item[0].update_by,
+#                 update_time=item[0].update_time,
+#                 remark=item[0].remark
+#             )
+#             result_list.append(obj)
+#
+#     result = dict(
+#         rows=format_datetime_dict_list(result_list),
+#         page_num=page_info.page_num,
+#         page_size=page_info.page_size,
+#         total=page_info.total,
+#         has_next=page_info.has_next
+#     )
+#
+#     return UserPageObjectResponse(**result)
+
+
+def get_user_list(db: Session, user_object: UserModel):
     """
     根据查询参数获取用户列表信息
     :param db: orm对象
-    :param page_object: 分页查询参数对象
+    :param user_object: 分页查询参数对象
     :return: 用户列表信息对象
     """
-    count = db.query(SysUser, SysDept) \
-        .filter(SysUser.del_flag == 0,
-                SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
-                SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
-                SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
-                SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
-                SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
-                SysUser.status == page_object.status if page_object.status else True,
-                SysUser.sex == page_object.sex if page_object.sex else True,
-                SysUser.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                if page_object.create_time_start and page_object.create_time_end else True
-                ) \
-        .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
-        .distinct().count()
-    offset_com = (page_object.page_num - 1) * page_object.page_size
-    page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
     user_list = db.query(SysUser, SysDept) \
         .filter(SysUser.del_flag == 0,
-                SysUser.dept_id == page_object.dept_id if page_object.dept_id else True,
-                SysUser.user_name.like(f'%{page_object.user_name}%') if page_object.user_name else True,
-                SysUser.nick_name.like(f'%{page_object.nick_name}%') if page_object.nick_name else True,
-                SysUser.email.like(f'%{page_object.email}%') if page_object.email else True,
-                SysUser.phonenumber.like(f'%{page_object.phonenumber}%') if page_object.phonenumber else True,
-                SysUser.status == page_object.status if page_object.status else True,
-                SysUser.sex == page_object.sex if page_object.sex else True,
+                SysUser.dept_id == user_object.dept_id if user_object.dept_id else True,
+                SysUser.user_name.like(f'%{user_object.user_name}%') if user_object.user_name else True,
+                SysUser.nick_name.like(f'%{user_object.nick_name}%') if user_object.nick_name else True,
+                SysUser.email.like(f'%{user_object.email}%') if user_object.email else True,
+                SysUser.phonenumber.like(f'%{user_object.phonenumber}%') if user_object.phonenumber else True,
+                SysUser.status == user_object.status if user_object.status else True,
+                SysUser.sex == user_object.sex if user_object.sex else True,
                 SysUser.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                if page_object.create_time_start and page_object.create_time_end else True
+                    datetime.combine(datetime.strptime(user_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+                    datetime.combine(datetime.strptime(user_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+                if user_object.create_time_start and user_object.create_time_end else True
                 ) \
         .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
-        .offset(page_info.offset) \
-        .limit(page_object.page_size) \
         .distinct().all()
 
-    result_list = []
+    result_list: List[Union[UserInfoJoinDept, None]] = []
     if user_list:
         for item in user_list:
             obj = dict(
@@ -180,15 +242,7 @@ def get_user_list(db: Session, page_object: UserPageObject):
             )
             result_list.append(obj)
 
-    result = dict(
-        rows=format_datetime_dict_list(result_list),
-        page_num=page_info.page_num,
-        page_size=page_info.page_size,
-        total=page_info.total,
-        has_next=page_info.has_next
-    )
-
-    return UserPageObjectResponse(**result)
+    return result_list
 
 
 def add_user_dao(db: Session, user: UserModel):

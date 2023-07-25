@@ -32,6 +32,8 @@ class UserModel(BaseModel):
     update_by: Optional[str]
     update_time: Optional[str]
     remark: Optional[str]
+    create_time_start: Optional[str]
+    create_time_end: Optional[str]
 
     class Config:
         orm_mode = True
@@ -156,8 +158,6 @@ class UserPageObject(UserModel):
     """
     用户管理分页查询模型
     """
-    create_time_start: Optional[str]
-    create_time_end: Optional[str]
     page_num: int
     page_size: int
 
