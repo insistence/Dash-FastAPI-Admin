@@ -2,17 +2,25 @@ from module_admin.entity.vo.dict_vo import *
 from module_admin.dao.dict_dao import *
 
 
-def get_dict_type_list_services(result_db: Session, page_object: DictTypePageObject):
+def get_dict_type_list_services(result_db: Session, query_object: DictTypePageObject):
     """
     获取字典类型列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 字典类型列表信息对象
     """
-    if page_object.page_num and page_object.page_size:
-        dict_type_list_result = get_dict_type_list(result_db, page_object)
-    else:
-        dict_type_list_result = get_all_dict_type(result_db)
+    dict_type_list_result = get_dict_type_list(result_db, query_object)
+
+    return dict_type_list_result
+
+
+def get_all_dict_type_services(result_db: Session):
+    """
+    获取字所有典类型列表信息service
+    :param result_db: orm对象
+    :return: 字典类型列表信息对象
+    """
+    dict_type_list_result = get_all_dict_type(result_db)
 
     return dict_type_list_result
 
@@ -72,14 +80,14 @@ def detail_dict_type_services(result_db: Session, dict_id: int):
     return dict_type
 
 
-def get_dict_data_list_services(result_db: Session, page_object: DictDataPageObject):
+def get_dict_data_list_services(result_db: Session, query_object: DictDataPageObject):
     """
     获取字典数据列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 字典数据列表信息对象
     """
-    dict_data_list_result = get_dict_data_list(result_db, page_object)
+    dict_data_list_result = get_dict_data_list(result_db, query_object)
 
     return dict_data_list_result
 

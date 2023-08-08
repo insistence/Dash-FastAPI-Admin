@@ -24,18 +24,21 @@ def render(button_perms):
             else:
                 item['status'] = dict(checked=False)
             item['key'] = str(item['role_id'])
-            item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                } if 'system:role:edit' in button_perms else {},
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'system:role:remove' in button_perms else {},
-            ]
+            if item['role_id'] == 1:
+                item['operation'] = []
+            else:
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:role:edit' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:role:remove' in button_perms else {},
+                ]
 
     return [
         dcc.Store(id='role-button-perms-container', data=button_perms),

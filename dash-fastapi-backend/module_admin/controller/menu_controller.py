@@ -15,9 +15,10 @@ menuController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @menuController.post("/menu/tree", response_model=MenuTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
-async def get_system_menu_tree(request: Request, menu_query: MenuTreeModel, query_db: Session = Depends(get_db)):
+async def get_system_menu_tree(request: Request, menu_query: MenuTreeModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
-        menu_query_result = get_menu_tree_services(query_db, menu_query)
+        current_user = await get_current_user(request, token, query_db)
+        menu_query_result = get_menu_tree_services(query_db, menu_query, current_user)
         logger.info('获取成功')
         return response_200(data=menu_query_result, message="获取成功")
     except Exception as e:
@@ -26,9 +27,10 @@ async def get_system_menu_tree(request: Request, menu_query: MenuTreeModel, quer
 
 
 @menuController.post("/menu/forEditOption", response_model=MenuTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
-async def get_system_menu_tree_for_edit_option(request: Request, menu_query: MenuModel, query_db: Session = Depends(get_db)):
+async def get_system_menu_tree_for_edit_option(request: Request, menu_query: MenuModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
-        menu_query_result = get_menu_tree_for_edit_option_services(query_db, menu_query)
+        current_user = await get_current_user(request, token, query_db)
+        menu_query_result = get_menu_tree_for_edit_option_services(query_db, menu_query, current_user)
         logger.info('获取成功')
         return response_200(data=menu_query_result, message="获取成功")
     except Exception as e:
@@ -37,9 +39,10 @@ async def get_system_menu_tree_for_edit_option(request: Request, menu_query: Men
 
 
 @menuController.post("/menu/get", response_model=MenuResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:list'))])
-async def get_system_menu_list(request: Request, menu_query: MenuModel, query_db: Session = Depends(get_db)):
+async def get_system_menu_list(request: Request, menu_query: MenuModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
-        menu_query_result = get_menu_list_services(query_db, menu_query)
+        current_user = await get_current_user(request, token, query_db)
+        menu_query_result = get_menu_list_services(query_db, menu_query, current_user)
         logger.info('获取成功')
         return response_200(data=menu_query_result, message="获取成功")
     except Exception as e:

@@ -6,6 +6,7 @@ from module_admin.service.dict_service import *
 from module_admin.entity.vo.dict_vo import *
 from utils.response_util import *
 from utils.log_util import *
+from utils.page_util import get_page_obj
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -14,11 +15,14 @@ dictController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @dictController.post("/dictType/get", response_model=DictTypePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
-async def get_system_dict_type_list(request: Request, dict_type_query: DictTypePageObject, query_db: Session = Depends(get_db)):
+async def get_system_dict_type_list(request: Request, dict_type_page_query: DictTypePageObject, query_db: Session = Depends(get_db)):
     try:
-        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_query)
+        # 获取全量数据
+        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_page_query)
+        # 分页操作
+        dict_type_page_query_result = get_page_obj(dict_type_query_result, dict_type_page_query.page_num, dict_type_page_query.page_size)
         logger.info('获取成功')
-        return response_200(data=dict_type_query_result, message="获取成功")
+        return response_200(data=dict_type_page_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")
@@ -27,7 +31,7 @@ async def get_system_dict_type_list(request: Request, dict_type_query: DictTypeP
 @dictController.post("/dictType/all", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_all_dict_type(request: Request, dict_type_query: DictTypePageObject, query_db: Session = Depends(get_db)):
     try:
-        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_query)
+        dict_type_query_result = get_all_dict_type_services(query_db)
         logger.info('获取成功')
         return response_200(data=dict_type_query_result, message="获取成功")
     except Exception as e:
@@ -100,11 +104,14 @@ async def query_detail_system_dict_type(request: Request, dict_id: int, query_db
 
 
 @dictController.post("/dictData/get", response_model=DictDataPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
-async def get_system_dict_data_list(request: Request, dict_data_query: DictDataPageObject, query_db: Session = Depends(get_db)):
+async def get_system_dict_data_list(request: Request, dict_data_page_query: DictDataPageObject, query_db: Session = Depends(get_db)):
     try:
-        dict_data_query_result = get_dict_data_list(query_db, dict_data_query)
+        # 获取全量数据
+        dict_data_query_result = get_dict_data_list_services(query_db, dict_data_page_query)
+        # 分页操作
+        dict_data_page_query_result = get_page_obj(dict_data_query_result, dict_data_page_query.page_num, dict_data_page_query.page_size)
         logger.info('获取成功')
-        return response_200(data=dict_data_query_result, message="获取成功")
+        return response_200(data=dict_data_page_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

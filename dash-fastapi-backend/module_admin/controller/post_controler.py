@@ -6,6 +6,7 @@ from module_admin.service.post_service import *
 from module_admin.entity.vo.post_vo import *
 from utils.response_util import *
 from utils.log_util import *
+from utils.page_util import get_page_obj
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -25,11 +26,14 @@ async def get_system_post_select(request: Request, query_db: Session = Depends(g
 
 
 @postController.post("/post/get", response_model=PostPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))])
-async def get_system_post_list(request: Request, post_query: PostPageObject, query_db: Session = Depends(get_db)):
+async def get_system_post_list(request: Request, post_page_query: PostPageObject, query_db: Session = Depends(get_db)):
     try:
-        post_query_result = get_post_list_services(query_db, post_query)
+        # 获取全量数据
+        post_query_result = get_post_list_services(query_db, post_page_query)
+        # 分页操作
+        post_page_query_result = get_page_obj(post_query_result, post_page_query.page_num, post_page_query.page_size)
         logger.info('获取成功')
-        return response_200(data=post_query_result, message="获取成功")
+        return response_200(data=post_page_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

@@ -72,18 +72,21 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
                 else:
                     item['status'] = dict(checked=False)
                 item['key'] = str(item['role_id'])
-                item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    } if 'system:role:edit' in button_perms else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    } if 'system:role:remove' in button_perms else {},
-                ]
+                if item['role_id'] == 1:
+                    item['operation'] = []
+                else:
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:role:edit' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:role:remove' in button_perms else {},
+                    ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 

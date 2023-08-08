@@ -49,7 +49,18 @@ def get_dept_table_data(search_click, operations, fold_click, dept_name, status_
                     item['status'] = dict(tag='停用', color='volcano')
                 item['key'] = str(item['dept_id'])
                 if item['parent_id'] == 0:
-                    item['operation'] = []
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:dept:edit' in button_perms else {},
+                        {
+                            'content': '新增',
+                            'type': 'link',
+                            'icon': 'antd-plus'
+                        } if 'system:dept:add' in button_perms else {},
+                    ]
                 else:
                     item['operation'] = [
                         {
@@ -98,6 +109,7 @@ def reset_dept_query_params(reset_click):
 @app.callback(
     [Output('dept-modal', 'visible', allow_duplicate=True),
      Output('dept-modal', 'title'),
+     Output('dept-parent_id-div', 'hidden'),
      Output('dept-parent_id', 'treeData'),
      Output('dept-parent_id', 'value'),
      Output('dept-dept_name', 'value'),
@@ -130,6 +142,7 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                 return [
                     True,
                     '新增部门',
+                    False,
                     tree_data,
                     None,
                     None,
@@ -147,6 +160,7 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                 return [
                     True,
                     '新增部门',
+                    False,
                     tree_data,
                     str(recently_button_clicked_row['key']),
                     None,
@@ -165,22 +179,42 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                 dept_info_res = get_dept_detail_api(dept_id=dept_id)
                 if dept_info_res['code'] == 200:
                     dept_info = dept_info_res['data']
-                    return [
-                        True,
-                        '编辑部门',
-                        tree_data,
-                        str(dept_info.get('parent_id')),
-                        dept_info.get('dept_name'),
-                        dept_info.get('order_num'),
-                        dept_info.get('leader'),
-                        dept_info.get('phone'),
-                        dept_info.get('email'),
-                        dept_info.get('status'),
-                        {'timestamp': time.time()},
-                        None,
-                        dept_info,
-                        {'type': 'edit'}
-                    ]
+                    if dept_info.get('parent_id') == 0:
+                        return [
+                            True,
+                            '编辑部门',
+                            True,
+                            tree_data,
+                            str(dept_info.get('parent_id')),
+                            dept_info.get('dept_name'),
+                            dept_info.get('order_num'),
+                            dept_info.get('leader'),
+                            dept_info.get('phone'),
+                            dept_info.get('email'),
+                            dept_info.get('status'),
+                            {'timestamp': time.time()},
+                            None,
+                            dept_info,
+                            {'type': 'edit'}
+                        ]
+                    else:
+                        return [
+                            True,
+                            '编辑部门',
+                            False,
+                            tree_data,
+                            str(dept_info.get('parent_id')),
+                            dept_info.get('dept_name'),
+                            dept_info.get('order_num'),
+                            dept_info.get('leader'),
+                            dept_info.get('phone'),
+                            dept_info.get('email'),
+                            dept_info.get('status'),
+                            {'timestamp': time.time()},
+                            None,
+                            dept_info,
+                            {'type': 'edit'}
+                        ]
 
         return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None, None]
 

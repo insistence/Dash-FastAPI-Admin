@@ -31,20 +31,23 @@ def render(button_perms):
             else:
                 item['status'] = dict(checked=False)
             item['key'] = str(item['user_id'])
-            item['operation'] = [
-                {
-                    'title': '修改',
-                    'icon': 'antd-edit'
-                } if 'system:user:edit' in button_perms else None,
-                {
-                    'title': '删除',
-                    'icon': 'antd-delete'
-                } if 'system:user:remove' in button_perms else None,
-                {
-                    'title': '重置密码',
-                    'icon': 'antd-key'
-                } if 'system:user:resetPwd' in button_perms else None
-            ]
+            if item['user_id'] == 1:
+                item['operation'] = []
+            else:
+                item['operation'] = [
+                    {
+                        'title': '修改',
+                        'icon': 'antd-edit'
+                    } if 'system:user:edit' in button_perms else None,
+                    {
+                        'title': '删除',
+                        'icon': 'antd-delete'
+                    } if 'system:user:remove' in button_perms else None,
+                    {
+                        'title': '重置密码',
+                        'icon': 'antd-key'
+                    } if 'system:user:resetPwd' in button_perms else None
+                ]
 
     return [
         dcc.Store(id='user-button-perms-container', data=button_perms),
@@ -836,20 +839,24 @@ def render(button_perms):
 
         # 重置密码modal
         fac.AntdModal(
-            fac.AntdForm(
-                [
-                    fac.AntdFormItem(
-                        fac.AntdInput(
-                            id='reset-password-input',
-                            mode='password'
+            [
+                fac.AntdForm(
+                    [
+                        fac.AntdFormItem(
+                            fac.AntdInput(
+                                id='reset-password-input',
+                                mode='password'
+                            ),
+                            label='请输入新密码'
                         ),
-                    ),
-                ],
-                layout='vertical'
-            ),
+                    ],
+                    layout='vertical'
+                ),
+                dcc.Store(id='reset-password-row-key-store')
+            ],
             id='user-reset-password-confirm-modal',
             visible=False,
-            title='提示',
+            title='重置密码',
             renderFooter=True,
             centered=True
         ),

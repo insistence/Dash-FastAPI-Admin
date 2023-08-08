@@ -21,47 +21,25 @@ def get_all_dict_type(db: Session):
     return list_format_datetime(dict_type_info)
 
 
-def get_dict_type_list(db: Session, page_object: DictTypePageObject):
+def get_dict_type_list(db: Session, query_object: DictTypePageObject):
     """
     根据查询参数获取字典类型列表信息
     :param db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 字典类型列表信息对象
     """
-    count = db.query(SysDictType) \
-        .filter(SysDictType.dict_name.like(f'%{page_object.dict_name}%') if page_object.dict_name else True,
-                SysDictType.dict_type.like(f'%{page_object.dict_type}%') if page_object.dict_type else True,
-                SysDictType.status == page_object.status if page_object.status else True,
-                SysDictType.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                            if page_object.create_time_start and page_object.create_time_end else True
-                )\
-        .distinct().count()
-    offset_com = (page_object.page_num - 1) * page_object.page_size
-    page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
     dict_type_list = db.query(SysDictType) \
-        .filter(SysDictType.dict_name.like(f'%{page_object.dict_name}%') if page_object.dict_name else True,
-                SysDictType.dict_type.like(f'%{page_object.dict_type}%') if page_object.dict_type else True,
-                SysDictType.status == page_object.status if page_object.status else True,
+        .filter(SysDictType.dict_name.like(f'%{query_object.dict_name}%') if query_object.dict_name else True,
+                SysDictType.dict_type.like(f'%{query_object.dict_type}%') if query_object.dict_type else True,
+                SysDictType.status == query_object.status if query_object.status else True,
                 SysDictType.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                            if page_object.create_time_start and page_object.create_time_end else True
+                    datetime.combine(datetime.strptime(query_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+                    datetime.combine(datetime.strptime(query_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+                            if query_object.create_time_start and query_object.create_time_end else True
                 )\
-        .offset(page_info.offset) \
-        .limit(page_object.page_size) \
         .distinct().all()
 
-    result = dict(
-        rows=list_format_datetime(dict_type_list),
-        page_num=page_info.page_num,
-        page_size=page_info.page_size,
-        total=page_info.total,
-        has_next=page_info.has_next
-    )
-
-    return DictTypePageObjectResponse(**result)
+    return list_format_datetime(dict_type_list)
 
 
 def add_dict_type_dao(db: Session, dict_type: DictTypeModel):
@@ -121,41 +99,22 @@ def get_dict_data_detail_by_id(db: Session, dict_code: int):
     return dict_data_info
 
 
-def get_dict_data_list(db: Session, page_object: DictDataPageObject):
+def get_dict_data_list(db: Session, query_object: DictDataPageObject):
     """
     根据查询参数获取字典数据列表信息
     :param db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 字典数据列表信息对象
     """
-    count = db.query(SysDictData) \
-        .filter(SysDictData.dict_type == page_object.dict_type if page_object.dict_type else True,
-                SysDictData.dict_label.like(f'%{page_object.dict_label}%') if page_object.dict_label else True,
-                SysDictData.status == page_object.status if page_object.status else True
-                )\
-        .order_by(SysDictData.dict_sort)\
-        .distinct().count()
-    offset_com = (page_object.page_num - 1) * page_object.page_size
-    page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
     dict_data_list = db.query(SysDictData) \
-        .filter(SysDictData.dict_type == page_object.dict_type if page_object.dict_type else True,
-                SysDictData.dict_label.like(f'%{page_object.dict_label}%') if page_object.dict_label else True,
-                SysDictData.status == page_object.status if page_object.status else True
+        .filter(SysDictData.dict_type == query_object.dict_type if query_object.dict_type else True,
+                SysDictData.dict_label.like(f'%{query_object.dict_label}%') if query_object.dict_label else True,
+                SysDictData.status == query_object.status if query_object.status else True
                 )\
         .order_by(SysDictData.dict_sort)\
-        .offset(page_info.offset) \
-        .limit(page_object.page_size) \
         .distinct().all()
 
-    result = dict(
-        rows=list_format_datetime(dict_data_list),
-        page_num=page_info.page_num,
-        page_size=page_info.page_size,
-        total=page_info.total,
-        has_next=page_info.has_next
-    )
-
-    return DictDataPageObjectResponse(**result)
+    return list_format_datetime(dict_data_list)
 
 
 def add_dict_data_dao(db: Session, dict_data: DictDataModel):

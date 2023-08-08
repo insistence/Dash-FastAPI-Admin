@@ -20,10 +20,8 @@ userController = APIRouter(dependencies=[Depends(get_current_user)])
 @userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
 async def get_system_user_list(request: Request, user_page_query: UserPageObject, query_db: Session = Depends(get_db)):
     try:
-        # 拆分user_query = 分页类 + UserModel
-        user_query = UserModel(**user_page_query.dict())
         # 获取全量数据
-        user_query_result = get_user_list_services(query_db, user_query)
+        user_query_result = get_user_list_services(query_db, user_page_query)
         # 分页操作
         user_page_query_result = get_page_obj(user_query_result, user_page_query.page_num, user_page_query.page_size)
         logger.info('获取成功')
@@ -90,7 +88,7 @@ async def delete_system_user(request: Request, delete_user: DeleteUserModel, tok
         return response_500(data="", message="接口异常")
 
 
-@userController.post("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@userController.get("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 async def query_detail_system_user(request: Request, user_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_user_result = detail_user_services(query_db, user_id)
@@ -111,7 +109,6 @@ async def query_detail_system_user(request: Request, user_id: int, query_db: Ses
     # except Exception as e:
         # logger.exception(e)
         # return response_500(data="", message="接口异常")
-
 
 
 @userController.patch("/user/profile/changeAvatar", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])

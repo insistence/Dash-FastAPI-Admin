@@ -15,14 +15,14 @@ from module_admin.service.login_service import verify_password
 #     return user_list_result
 
 
-def get_user_list_services(result_db: Session, user_object: UserModel):
+def get_user_list_services(result_db: Session, query_object: UserPageObject):
     """
     获取用户列表信息service
     :param result_db: orm对象
-    :param user_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 用户列表信息对象
     """
-    user_list_result = get_user_list(result_db, user_object)
+    user_list_result = get_user_list(result_db, query_object)
 
     return user_list_result
 
@@ -129,11 +129,15 @@ def reset_user_services(result_db: Session, page_object: ResetUserModel):
     :return: 重置用户校验结果
     """
     user = get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
-    if not verify_password(page_object.old_password, user.password):
-        result = CrudUserResponse(**dict(is_success=False, message='旧密码不正确'))
+    if page_object.old_password:
+        if not verify_password(page_object.old_password, user.password):
+            result = CrudUserResponse(**dict(is_success=False, message='旧密码不正确'))
+        else:
+            reset_user = page_object.dict(exclude_unset=True)
+            del reset_user['old_password']
+            result = edit_user_dao(result_db, reset_user)
     else:
         reset_user = page_object.dict(exclude_unset=True)
-        del reset_user['old_password']
         result = edit_user_dao(result_db, reset_user)
 
     return result

@@ -4,7 +4,6 @@ from module_admin.entity.do.role_do import SysRole, SysRoleMenu
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
 from utils.time_format_util import list_format_datetime, object_format_datetime
-from utils.page_util import get_page_info
 from datetime import datetime, time
 
 
@@ -57,57 +56,33 @@ def get_role_detail_by_id(db: Session, role_id: int):
 
 def get_role_select_option_dao(db: Session):
     role_info = db.query(SysRole) \
-        .filter(SysRole.status == 0, SysRole.del_flag == 0) \
+        .filter(SysRole.role_id != 1, SysRole.status == 0, SysRole.del_flag == 0) \
         .all()
 
     return role_info
 
 
-def get_role_list(db: Session, page_object: RolePageObject):
+def get_role_list(db: Session, query_object: RolePageObject):
     """
     根据查询参数获取角色列表信息
     :param db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 角色列表信息对象
     """
-    count = db.query(SysRole) \
-        .filter(SysRole.del_flag == 0,
-                SysRole.role_name.like(f'%{page_object.role_name}%') if page_object.role_name else True,
-                SysRole.role_key.like(f'%{page_object.role_key}%') if page_object.role_key else True,
-                SysRole.status == page_object.status if page_object.status else True,
-                SysRole.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                if page_object.create_time_start and page_object.create_time_end else True
-                )\
-        .order_by(SysRole.role_sort)\
-        .distinct().count()
-    offset_com = (page_object.page_num - 1) * page_object.page_size
-    page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
     role_list = db.query(SysRole) \
         .filter(SysRole.del_flag == 0,
-                SysRole.role_name.like(f'%{page_object.role_name}%') if page_object.role_name else True,
-                SysRole.role_key.like(f'%{page_object.role_key}%') if page_object.role_key else True,
-                SysRole.status == page_object.status if page_object.status else True,
+                SysRole.role_name.like(f'%{query_object.role_name}%') if query_object.role_name else True,
+                SysRole.role_key.like(f'%{query_object.role_key}%') if query_object.role_key else True,
+                SysRole.status == query_object.status if query_object.status else True,
                 SysRole.create_time.between(
-                    datetime.combine(datetime.strptime(page_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
-                    datetime.combine(datetime.strptime(page_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                if page_object.create_time_start and page_object.create_time_end else True
+                    datetime.combine(datetime.strptime(query_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
+                    datetime.combine(datetime.strptime(query_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
+                if query_object.create_time_start and query_object.create_time_end else True
                 ) \
         .order_by(SysRole.role_sort) \
-        .offset(page_info.offset) \
-        .limit(page_object.page_size) \
         .distinct().all()
 
-    result = dict(
-        rows=list_format_datetime(role_list),
-        page_num=page_info.page_num,
-        page_size=page_info.page_size,
-        total=page_info.total,
-        has_next=page_info.has_next
-    )
-
-    return RolePageObjectResponse(**result)
+    return list_format_datetime(role_list)
 
 
 def add_role_dao(db: Session, role: RoleModel):

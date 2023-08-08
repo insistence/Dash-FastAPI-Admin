@@ -90,17 +90,17 @@ def router(pathname, trigger):
                 session['dept_info'] = current_user['dept']
                 session['role_info'] = current_user['role']
                 session['post_info'] = current_user['post']
-                valid_href_list = find_node_values(menu_info, 'href')
-                valid_href_list = valid_href_list + RouterConfig.STATIC_VALID_PATHNAME
+                dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
+                valid_href_list = dynamic_valid_pathname_list + RouterConfig.STATIC_VALID_PATHNAME
                 if pathname in valid_href_list:
                     current_key = find_key_by_href(menu_info, pathname)
+                    if pathname == '/':
+                        current_key = '首页'
+                    if pathname == '/user/profile':
+                        current_key = '个人资料'
                     if trigger == 'load':
 
                         # 根据pathname控制渲染行为
-                        if pathname == '/':
-                            current_key = '首页'
-                        if pathname == '/user/profile':
-                            current_key = '个人资料'
                         if pathname == '/login' or pathname == '/forget':
                             # 重定向到主页面
                             return [
@@ -129,10 +129,6 @@ def router(pathname, trigger):
 
                     # elif trigger == 'pushstate':
                     else:
-                        if pathname == '/':
-                            current_key = '首页'
-                        if pathname == '/user/profile':
-                            current_key = '个人资料'
                         return [
                             dash.no_update,
                             None,

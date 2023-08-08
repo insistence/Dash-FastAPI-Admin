@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.vo.post_vo import PostModel, PostPageObject, PostPageObjectResponse, CrudPostResponse
 from utils.time_format_util import list_format_datetime
-from utils.page_util import get_page_info
 
 
 def get_post_by_id(db: Session, post_id: int):
@@ -30,41 +29,22 @@ def get_post_select_option_dao(db: Session):
     return post_info
 
 
-def get_post_list(db: Session, page_object: PostPageObject):
+def get_post_list(db: Session, query_object: PostPageObject):
     """
     根据查询参数获取岗位列表信息
     :param db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 岗位列表信息对象
     """
-    count = db.query(SysPost) \
-        .filter(SysPost.post_code.like(f'%{page_object.post_code}%') if page_object.post_code else True,
-                SysPost.post_name.like(f'%{page_object.post_name}%') if page_object.post_name else True,
-                SysPost.status == page_object.status if page_object.status else True
-                )\
-        .order_by(SysPost.post_sort)\
-        .distinct().count()
-    offset_com = (page_object.page_num - 1) * page_object.page_size
-    page_info = get_page_info(offset_com, page_object.page_num, page_object.page_size, count)
     post_list = db.query(SysPost) \
-        .filter(SysPost.post_code.like(f'%{page_object.post_code}%') if page_object.post_code else True,
-                SysPost.post_name.like(f'%{page_object.post_name}%') if page_object.post_name else True,
-                SysPost.status == page_object.status if page_object.status else True
+        .filter(SysPost.post_code.like(f'%{query_object.post_code}%') if query_object.post_code else True,
+                SysPost.post_name.like(f'%{query_object.post_name}%') if query_object.post_name else True,
+                SysPost.status == query_object.status if query_object.status else True
                 ) \
         .order_by(SysPost.post_sort) \
-        .offset(page_info.offset) \
-        .limit(page_object.page_size) \
         .distinct().all()
 
-    result = dict(
-        rows=list_format_datetime(post_list),
-        page_num=page_info.page_num,
-        page_size=page_info.page_size,
-        total=page_info.total,
-        has_next=page_info.has_next
-    )
-
-    return PostPageObjectResponse(**result)
+    return list_format_datetime(post_list)
 
 
 def add_post_dao(db: Session, post: PostModel):

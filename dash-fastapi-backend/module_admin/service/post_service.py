@@ -13,14 +13,14 @@ def get_post_select_option_services(result_db: Session):
     return post_list_result
 
 
-def get_post_list_services(result_db: Session, page_object: PostPageObject):
+def get_post_list_services(result_db: Session, query_object: PostPageObject):
     """
     获取岗位列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 岗位列表信息对象
     """
-    post_list_result = get_post_list(result_db, page_object)
+    post_list_result = get_post_list(result_db, query_object)
 
     return post_list_result
 

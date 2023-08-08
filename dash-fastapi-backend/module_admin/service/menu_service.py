@@ -1,16 +1,18 @@
 from module_admin.entity.vo.menu_vo import *
 from module_admin.dao.menu_dao import *
+from module_admin.entity.vo.user_vo import CurrentUserInfoServiceResponse
 
 
-def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel):
+def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel, current_user: Optional[CurrentUserInfoServiceResponse] = None):
     """
     获取菜单树信息service
     :param result_db: orm对象
     :param page_object: 查询参数对象
+    :param current_user: 当前用户对象
     :return: 菜单树信息对象
     """
     menu_tree_option = []
-    menu_list_result = get_menu_list_for_tree(result_db, MenuModel(**page_object.dict()))
+    menu_list_result = get_menu_list_for_tree(result_db, MenuModel(**page_object.dict()), current_user.user.user_id, current_user.role)
     menu_tree_result = get_menu_tree(0, MenuTree(menu_tree=menu_list_result))
     if page_object.type != 'role':
         menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
@@ -20,29 +22,31 @@ def get_menu_tree_services(result_db: Session, page_object: MenuTreeModel):
     return menu_tree_option
 
 
-def get_menu_tree_for_edit_option_services(result_db: Session, page_object: MenuModel):
+def get_menu_tree_for_edit_option_services(result_db: Session, page_object: MenuModel, current_user: Optional[CurrentUserInfoServiceResponse] = None):
     """
     获取菜单编辑菜单树信息service
     :param result_db: orm对象
     :param page_object: 查询参数对象
+    :param current_user: 当前用户
     :return: 菜单树信息对象
     """
     menu_tree_option = []
-    menu_list_result = get_menu_info_for_edit_option(result_db, page_object)
+    menu_list_result = get_menu_info_for_edit_option(result_db, page_object, current_user.user.user_id, current_user.role)
     menu_tree_result = get_menu_tree(0, MenuTree(menu_tree=menu_list_result))
     menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
 
     return menu_tree_option
 
 
-def get_menu_list_services(result_db: Session, page_object: MenuModel):
+def get_menu_list_services(result_db: Session, page_object: MenuModel, current_user: Optional[CurrentUserInfoServiceResponse] = None):
     """
     获取菜单列表信息service
     :param result_db: orm对象
     :param page_object: 分页查询参数对象
+    :param current_user: 当前用户对象
     :return: 菜单列表信息对象
     """
-    menu_list_result = get_menu_list(result_db, page_object)
+    menu_list_result = get_menu_list(result_db, page_object, current_user.user.user_id, current_user.role)
 
     return menu_list_result
 

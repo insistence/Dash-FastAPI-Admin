@@ -20,7 +20,18 @@ def render(button_perms):
                 item['status'] = dict(tag='停用', color='volcano')
             item['key'] = str(item['dept_id'])
             if item['parent_id'] == 0:
-                item['operation'] = []
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:dept:edit' in button_perms else {},
+                    {
+                        'content': '新增',
+                        'type': 'link',
+                        'icon': 'antd-plus'
+                    } if 'system:dept:add' in button_perms else {},
+                ]
             else:
                 item['operation'] = [
                     {
@@ -250,25 +261,31 @@ def render(button_perms):
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdFormItem(
-                                        fac.AntdTreeSelect(
-                                            id='dept-parent_id',
-                                            placeholder='请选择上级部门',
-                                            treeData=[],
-                                            treeNodeFilterProp='title',
-                                            style={
-                                                'width': '100%'
-                                            }
-                                        ),
-                                        label='上级部门',
-                                        required=True,
-                                        id='dept-parent_id-form-item',
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                    html.Div(
+                                        [
+                                            fac.AntdFormItem(
+                                                fac.AntdTreeSelect(
+                                                    id='dept-parent_id',
+                                                    placeholder='请选择上级部门',
+                                                    treeData=[],
+                                                    treeNodeFilterProp='title',
+                                                    style={
+                                                        'width': '100%'
+                                                    }
+                                                ),
+                                                label='上级部门',
+                                                required=True,
+                                                id='dept-parent_id-form-item',
+                                                labelCol={
+                                                    'span': 4
+                                                },
+                                                wrapperCol={
+                                                    'span': 20
+                                                }
+                                            ),
+                                        ],
+                                        id='dept-parent_id-div',
+                                        hidden=False
                                     ),
                                     span=24
                                 ),

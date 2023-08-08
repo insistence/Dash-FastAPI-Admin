@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from server import app
 from api.dept import get_dept_tree_api
-from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api
+from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api
 from api.role import get_role_select_option_api
 from api.post import get_post_select_option_api
 
@@ -100,20 +100,23 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
                 else:
                     item['status'] = dict(checked=False)
                 item['key'] = str(item['user_id'])
-                item['operation'] = [
-                    {
-                        'title': '修改',
-                        'icon': 'antd-edit'
-                    } if 'system:user:edit' in button_perms else None,
-                    {
-                        'title': '删除',
-                        'icon': 'antd-delete'
-                    } if 'system:user:remove' in button_perms else None,
-                    {
-                        'title': '重置密码',
-                        'icon': 'antd-key'
-                    } if 'system:user:resetPwd' in button_perms else None
-                ]
+                if item['user_id'] == 1:
+                    item['operation'] = []
+                else:
+                    item['operation'] = [
+                        {
+                            'title': '修改',
+                            'icon': 'antd-edit'
+                        } if 'system:user:edit' in button_perms else None,
+                        {
+                            'title': '删除',
+                            'icon': 'antd-delete'
+                        } if 'system:user:remove' in button_perms else None,
+                        {
+                            'title': '重置密码',
+                            'icon': 'antd-key'
+                        } if 'system:user:resetPwd' in button_perms else None
+                    ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
@@ -489,6 +492,62 @@ def user_delete_confirm(delete_confirm, user_ids_data):
             dash.no_update,
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('删除失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-reset-password-confirm-modal', 'visible'),
+     Output('reset-password-row-key-store', 'data'),
+     Output('reset-password-input', 'value')],
+    Input('user-list-table', 'nClicksDropdownItem'),
+    [State('user-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('user-list-table', 'recentlyDropdownItemClickedRow')],
+    prevent_initial_call=True
+)
+def user_reset_password_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    if dropdown_click:
+        if recently_clicked_dropdown_item_title == '重置密码':
+            user_id = recently_dropdown_item_clicked_row['key']
+        else:
+            return [dash.no_update] * 3
+
+        return [
+            True,
+            {'user_id': user_id},
+            None
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-reset-password-confirm-modal', 'okCounts'),
+    [State('reset-password-row-key-store', 'data'),
+     State('reset-password-input', 'value')],
+    prevent_initial_call=True
+)
+def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
+    if reset_confirm:
+
+        user_id_data['password'] = reset_password
+        params = user_id_data
+        reset_button_info = reset_user_password_api(params)
+        if reset_button_info['code'] == 200:
+            return [
+                {'type': 'reset-password'},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('重置成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('重置失败', type='error')
         ]
 
     return [dash.no_update] * 3

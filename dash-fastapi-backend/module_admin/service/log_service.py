@@ -2,14 +2,14 @@ from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
 
 
-def get_operation_log_list_services(result_db: Session, page_object: OperLogPageObject):
+def get_operation_log_list_services(result_db: Session, query_object: OperLogPageObject):
     """
     获取操作日志列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 操作日志列表信息对象
     """
-    operation_log_list_result = get_operation_log_list(result_db, page_object)
+    operation_log_list_result = get_operation_log_list(result_db, query_object)
 
     return operation_log_list_result
 
@@ -72,14 +72,14 @@ def detail_operation_log_services(result_db: Session, oper_id: int):
     return operation_log
 
 
-def get_login_log_list_services(result_db: Session, page_object: LoginLogPageObject):
+def get_login_log_list_services(result_db: Session, query_object: LoginLogPageObject):
     """
     获取登录日志列表信息service
     :param result_db: orm对象
-    :param page_object: 分页查询参数对象
+    :param query_object: 查询参数对象
     :return: 登录日志列表信息对象
     """
-    operation_log_list_result = get_login_log_list(result_db, page_object)
+    operation_log_list_result = get_login_log_list(result_db, query_object)
 
     return operation_log_list_result
 

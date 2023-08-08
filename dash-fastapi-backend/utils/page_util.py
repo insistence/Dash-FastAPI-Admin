@@ -3,8 +3,6 @@ from typing import List
 
 from pydantic import BaseModel
 
-from utils.time_format_util import format_datetime_dict_list
-
 
 class PageModel(BaseModel):
     """
@@ -71,10 +69,10 @@ def get_page_obj(data_list: List, page_num: int, page_size: int):
 
     # 根据计算得到的起始索引和结束索引对数据列表进行切片
     paginated_data = data_list[start:end]
-    has_next = True if math.ceil(len(data_list) / page_size) > page_num else False;
+    has_next = True if math.ceil(len(data_list) / page_size) > page_num else False
 
     result = dict(
-        rows=format_datetime_dict_list(paginated_data),
+        rows=paginated_data,
         page_num=page_num,
         page_size=page_size,
         total=len(data_list),
