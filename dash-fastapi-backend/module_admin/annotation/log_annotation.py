@@ -65,6 +65,8 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
             finally:
                 payload = await request.body()
                 oper_param = json.dumps(json.loads(str(payload, 'utf-8')), ensure_ascii=False)
+                if len(oper_param) > 2000:
+                    oper_param = '请求参数过长'
 
                 # 调用原始函数
                 oper_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

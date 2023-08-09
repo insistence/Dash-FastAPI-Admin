@@ -13,6 +13,7 @@ from module_admin.controller.dept_controller import deptController
 from module_admin.controller.role_controller import roleController
 from module_admin.controller.post_controler import postController
 from module_admin.controller.dict_controller import dictController
+from module_admin.controller.notice_controller import noticeController
 from module_admin.controller.log_controller import logController
 from module_admin.controller.common_controller import commonController
 from config.env import RedisConfig
@@ -82,6 +83,7 @@ app.include_router(deptController, prefix="/system", tags=['system/dept'])
 app.include_router(roleController, prefix="/system", tags=['system/role'])
 app.include_router(postController, prefix="/system", tags=['system/post'])
 app.include_router(dictController, prefix="/system", tags=['system/dict'])
+app.include_router(noticeController, prefix="/system", tags=['system/notice'])
 app.include_router(logController, prefix="/system", tags=['system/log'])
 app.include_router(commonController, prefix="/common", tags=['common'])
 

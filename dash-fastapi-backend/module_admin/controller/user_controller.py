@@ -112,6 +112,7 @@ async def query_detail_system_user(request: Request, user_id: int, query_db: Ses
 
 
 @userController.patch("/user/profile/changeAvatar", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@log_decorator(title='个人信息', business_type=2)
 async def change_system_user_profile_avatar(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
         current_user = await get_current_user(request, token, query_db)
