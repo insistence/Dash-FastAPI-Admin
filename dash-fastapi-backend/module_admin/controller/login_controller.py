@@ -18,8 +18,8 @@ loginController = APIRouter()
 # @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
-        result = authenticate_user(query_db, user.user_name, user.password)
-        if result == '用户不存在' or result == '密码错误' or result == '用户已停用':
+        result = await authenticate_user(request, query_db, user)
+        if result in ['用户不存在', '密码错误', '用户已停用', '验证码已失效', '验证码错误']:
             logger.warning(result)
             return response_400(data="", message=result)
 
@@ -30,8 +30,10 @@ async def login(request: Request, user: UserLogin, query_db: Session = Depends(g
                 access_token = create_access_token(
                     data={"user_id": str(result.user_id), "session_id": session_id}, expires_delta=access_token_expires
                 )
-                await request.app.state.redis.set(f'{result.user_id}_access_token', access_token, ex=timedelta(minutes=30))
-                await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
+                await request.app.state.redis.set(f'access_token:{session_id}', access_token, ex=timedelta(minutes=30))
+                # 此方法可实现同一账号同一时间只能登录一次
+                # await request.app.state.redis.set(f'{result.user_id}_access_token', access_token, ex=timedelta(minutes=30))
+                # await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
                 logger.info('登录成功')
                 return response_200(
                     data={
@@ -62,8 +64,9 @@ async def get_login_user_info(request: Request, token: Optional[str] = Header(..
 @loginController.post("/logout", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
 async def logout(request: Request, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
     try:
-        current_user = await get_current_user(request, token, query_db)
-        await logout_services(request, current_user)
+        payload = jwt.decode(token[6:], JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
+        session_id: str = payload.get("session_id")
+        await logout_services(request, session_id)
         logger.info('退出成功')
         return response_200(data="", message="退出成功")
     except Exception as e:

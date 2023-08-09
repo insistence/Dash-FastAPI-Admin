@@ -1,4 +1,5 @@
 from module_admin.entity.vo.user_vo import *
+from module_admin.entity.vo.login_vo import UserLogin
 from module_admin.dao.login_dao import *
 from module_admin.dao.user_dao import *
 from jose import JWTError, jwt
@@ -29,6 +30,7 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
     try:
         payload = jwt.decode(token[6:], JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
         user_id: str = payload.get("user_id")
+        session_id: str = payload.get("session_id")
         if user_id is None:
             logger.warning("用户token不合法")
             raise AuthException(data="", message="用户token不合法")
@@ -40,18 +42,17 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
     if user is None:
         logger.warning("用户token不合法")
         raise AuthException(data="", message="用户token不合法")
-    redis_token = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_access_token')
-    redis_session = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_session_id')
+    redis_token = await request.app.state.redis.get(f'access_token:{session_id}')
+    # 此方法可实现同一账号同一时间只能登录一次
+    # redis_token = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_access_token')
+    # redis_session = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_session_id')
     if token[6:] == redis_token:
-        await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_access_token', redis_token,
+        await request.app.state.redis.set(f'access_token:{session_id}', redis_token,
                                           ex=timedelta(minutes=30))
-        await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_session_id', redis_session,
-                                          ex=timedelta(minutes=30))
-        # user_dept_info = deal_user_dept_info(result_db, DeptInfo(dept_id=user.user_dept_info[0].dept_id,
-        #                                                          dept_name=user.user_dept_info[0].dept_name,
-        #                                                          ancestors=user.user_dept_info[0].ancestors))
-        # user_role_info = deal_user_role_info(RoleInfo(role_info=user.user_role_info))
-        # user_menu_info = deal_user_menu_info(0, MenuList(menu_info=user.user_menu_info))
+        # await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_access_token', redis_token,
+        #                                   ex=timedelta(minutes=30))
+        # await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_session_id', redis_session,
+        #                                   ex=timedelta(minutes=30))
 
         return CurrentUserInfoServiceResponse(
             user=user.user_basic_info[0],
@@ -65,15 +66,16 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
         raise AuthException(data="", message="用户token已失效，请重新登录")
 
 
-async def logout_services(request: Request, current_user: CurrentUserInfoServiceResponse):
+async def logout_services(request: Request, session_id: str):
     """
     退出登录services
     :param request: Request对象
-    :param current_user: 用户用户
+    :param session_id: 会话编号
     :return: 退出登录结果
     """
-    await request.app.state.redis.delete(f'{current_user.user.user_id}_access_token')
-    await request.app.state.redis.delete(f'{current_user.user.user_id}_session_id')
+    await request.app.state.redis.delete(f'access_token:{session_id}')
+    # await request.app.state.redis.delete(f'{current_user.user.user_id}_access_token')
+    # await request.app.state.redis.delete(f'{current_user.user.user_id}_session_id')
 
     return True
 
@@ -97,18 +99,23 @@ def get_password_hash(input_password):
     return pwd_context.hash(input_password)
 
 
-def authenticate_user(query_db: Session, user_name: str, input_password: str):
+async def authenticate_user(request: Request, query_db: Session, login_user: UserLogin):
     """
     根据用户名密码校验用户登录
+    :param request: Request对象
     :param query_db: orm对象
-    :param user_name: 用户名
-    :param input_password: 用户密码
+    :param login_user: 登录用户对象
     :return: 校验结果
     """
-    user = login_by_account(query_db, user_name)
+    user = login_by_account(query_db, login_user.user_name)
+    captcha_value = await request.app.state.redis.get(f'captcha_codes:{login_user.session_id}')
+    if not captcha_value:
+        return '验证码已失效'
+    if login_user.captcha != str(captcha_value):
+        return '验证码错误'
     if not user:
         return '用户不存在'
-    if not verify_password(input_password, user.password):
+    if not verify_password(login_user.password, user.password):
         return '密码错误'
     if user.status == '1':
         return '用户已停用'

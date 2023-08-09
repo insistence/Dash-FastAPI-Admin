@@ -1,5 +1,5 @@
 import dash
-from dash import html
+from dash import html, dcc
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -7,8 +7,10 @@ import callbacks.login_c
 
 
 def render_content():
+
     return html.Div(
         [
+            dcc.Store(id='captcha_image-session_id-container'),
             html.Div(
                 [
                     html.Div(
@@ -94,14 +96,20 @@ def render_content():
                                         id='login-captcha-form-item'
                                     ),
                                     fac.AntdFormItem(
-                                        fuc.FefferyCaptcha(
-                                            id='login-captcha',
-                                            charNum=4,
-                                            height=30,
-                                            bgColor='white',
+                                        html.Div(
+                                            [
+                                                fac.AntdImage(
+                                                    id='login-captcha-image',
+                                                    src='',
+                                                    height=37,
+                                                    width=100,
+                                                    preview=False
+                                                )
+                                            ],
+                                            id='login-captcha-image-container',
+                                            n_clicks=1,
                                             style={
-                                                'marginBottom': 0,
-                                                'paddingBottom': 0
+                                                'border': '1px solid #ccc'
                                             }
                                         )
                                     )
