@@ -1,12 +1,15 @@
 import dash
 import time
 import uuid
+import re
 from dash import html
+from flask import session
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
+from config.global_config import ApiBaseUrlConfig
 from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, delete_notice_api, get_notice_detail_api
 
 
@@ -26,7 +29,8 @@ from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, del
      State('notice-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_notice_table_data(search_click, pagination, operations, notice_title, update_by, notice_type, create_time_range, button_perms):
+def get_notice_table_data(search_click, pagination, operations, notice_title, update_by, notice_type, create_time_range,
+                          button_perms):
     create_time_start = None
     create_time_end = None
     if create_time_range:
@@ -129,12 +133,14 @@ def change_notice_edit_delete_button_status(table_rows_selected):
 
 @app.callback(
     Output('notice-init-editor', 'jsString'),
-    Input('notice-add', 'nClicks'),
+    Input('notice-written-editor-store', 'data'),
     prevent_initial_call=True
 )
-def init_render_editor(add_click):
+def init_render_editor(html_string):
+    url = f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor'
+    token = 'Bearer' + session.get('token')
 
-    return '''
+    js_string = '''
             const { i18nChangeLanguage, createEditor, createToolbar } = window.wangEditor
             
             // 切换至中文
@@ -144,14 +150,61 @@ def init_render_editor(add_click):
                 placeholder: '请输入...',
                 onChange(editor) {
                   const html = editor.getHtml()
-                  console.log(html)
                   sessionStorage.setItem('notice-content', JSON.stringify({html: html}))
                 },
-                // 图片上传转存base64参数配置
+                // 图片和视频上传参数配置
                 MENU_CONF: {
                     uploadImage: {
-                        // 小于该值就插入 base64 格式（而不上传），默认为0
-                        base64LimitSize: 1024 * 1024 // 以1M为例
+                        server: '% s',
+                        // form-data fieldName ，默认值 'editor-uploaded-file'
+                        fieldName: 'file',
+                        // 单个文件的最大体积限制，默认为 2M
+                        maxFileSize: 10 * 1024 * 1024, // 10M
+                        // 最多可上传几个文件，默认为 100
+                        maxNumberOfFiles: 10,
+                        // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
+                        allowedFileTypes: ['image/*'],
+                        // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
+                        meta: {
+                            uploadId: '% s',
+                        },
+                        // 将 meta 拼接到 url 参数中，默认 false
+                        metaWithUrl: true,
+                        // 自定义增加 http  header
+                        headers: {
+                            token: '% s'
+                        },
+                        // 跨域是否传递 cookie ，默认为 false
+                        withCredentials: true,
+                        // 超时时间，默认为 10 秒
+                        timeout: 5 * 1000, // 5 秒
+                        // 小于该值就插入 base64 格式（而不上传），默认为 0
+                        base64LimitSize: 500 * 1024 // 500KB
+                    },
+                    uploadVideo: {
+                        server: '% s',
+                        // form-data fieldName ，默认值 'wangeditor-uploaded-video'
+                        fieldName: 'file',
+                        // 单个文件的最大体积限制，默认为 10M
+                        maxFileSize: 100 * 1024 * 1024, // 100M
+                        // 最多可上传几个文件，默认为 5
+                        maxNumberOfFiles: 3,
+                        // 选择文件时的类型限制，默认为 ['video/*'] 。如不想限制，则设置为 []
+                        allowedFileTypes: ['video/*'],
+                        // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
+                        meta: {
+                            uploadId: '% s',
+                        },
+                        // 将 meta 拼接到 url 参数中，默认 false
+                        metaWithUrl: true,
+                        // 自定义增加 http  header
+                        headers: {
+                            token: '% s'
+                        },
+                        // 跨域是否传递 cookie ，默认为 false
+                        withCredentials: true,
+                        // 超时时间，默认为 30 秒
+                        timeout: 15 * 1000, // 15 秒
                     }
                 }
             }
@@ -159,7 +212,7 @@ def init_render_editor(add_click):
             
             const editor = createEditor({
                 selector: '#notice-notice_content-editor-container',
-                html: '<p><br></p>',
+                html: '% s',
                 config: editorConfig,
                 mode: 'default'
             })
@@ -172,7 +225,9 @@ def init_render_editor(add_click):
                 config: toolbarConfig,
                 mode: 'default'
             })
-            '''
+            ''' % (url, str(uuid.uuid4()), token, url, str(uuid.uuid4()), token, html_string)
+
+    return js_string
 
 
 @app.callback(
@@ -181,9 +236,9 @@ def init_render_editor(add_click):
      Output('notice-notice_title', 'value'),
      Output('notice-notice_type', 'value'),
      Output('notice-status', 'value'),
-     Output('notice-written-editor', 'jsString'),
+     Output('notice-written-editor-store', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('notice-add', 'nClicks'),
+     Output('notice-add', 'nClicks', allow_duplicate=True),
      Output('notice-edit', 'nClicks'),
      Output('notice-edit-id-store', 'data'),
      Output('notice-operations-store-bk', 'data')],
@@ -195,7 +250,8 @@ def init_render_editor(add_click):
      State('notice-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content,
+                          recently_button_clicked_row):
     if add_click or edit_click or button_click:
         if add_click:
             return [
@@ -204,7 +260,7 @@ def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys
                 None,
                 None,
                 '0',
-                None,
+                '<p><br></p>',
                 {'timestamp': time.time()},
                 None,
                 None,
@@ -219,51 +275,15 @@ def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys
             notice_info_res = get_notice_detail_api(notice_id=notice_id)
             if notice_info_res['code'] == 200:
                 notice_info = notice_info_res['data']
+                notice_content = notice_info.get('notice_content')
+
                 return [
                     True,
                     '编辑通知公告',
                     notice_info.get('notice_title'),
                     notice_info.get('notice_type'),
                     notice_info.get('status'),
-                    """
-                    const { i18nChangeLanguage, createEditor, createToolbar } = window.wangEditor
-            
-                    // 切换至中文
-                    i18nChangeLanguage('zh-CN')
-                    
-                    const editorConfig = {
-                        placeholder: '请输入...',
-                        onChange(editor) {
-                          const html = editor.getHtml()
-                          console.log(html)
-                          sessionStorage.setItem('notice-content', JSON.stringify({html: html}))
-                        },
-                        // 图片上传转存base64参数配置
-                        MENU_CONF: {
-                            uploadImage: {
-                                // 小于该值就插入 base64 格式（而不上传），默认为0
-                                base64LimitSize: 1024 * 1024 // 以1M为例
-                            }
-                        }
-                    }
-                    
-                    
-                    const editor = createEditor({
-                        selector: '#notice-notice_content-editor-container',
-                        html: '% s',
-                        config: editorConfig,
-                        mode: 'default'
-                    })
-                    
-                    const toolbarConfig = {}
-                    
-                    const toolbar = createToolbar({
-                        editor,
-                        selector: '#notice-notice_content-toolbar-container',
-                        config: toolbarConfig,
-                        mode: 'default'
-                    })
-                    """ % notice_info.get('notice_content'),
+                    re.sub(r"\n", "", notice_content),
                     {'timestamp': time.time()},
                     None,
                     None,
@@ -297,8 +317,10 @@ def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys
 def notice_confirm(confirm_trigger, operation_type, cur_notice_info, notice_title, notice_type, status, notice_content):
     if confirm_trigger:
         if all([notice_title, notice_type]):
-            params_add = dict(notice_title=notice_title, notice_type=notice_type, status=status, notice_content=notice_content.get('html'))
-            params_edit = dict(notice_id=cur_notice_info.get('notice_id') if cur_notice_info else None, notice_title=notice_title,
+            params_add = dict(notice_title=notice_title, notice_type=notice_type, status=status,
+                              notice_content=notice_content.get('html'))
+            params_edit = dict(notice_id=cur_notice_info.get('notice_id') if cur_notice_info else None,
+                               notice_title=notice_title,
                                notice_type=notice_type, status=status, notice_content=notice_content.get('html'))
             api_res = {}
             operation_type = operation_type.get('type')
@@ -367,7 +389,7 @@ def notice_confirm(confirm_trigger, operation_type, cur_notice_info, notice_titl
     prevent_initial_call=True
 )
 def notice_delete_modal(delete_click, button_click,
-                      selected_row_keys, clicked_content, recently_button_clicked_row):
+                        selected_row_keys, clicked_content, recently_button_clicked_row):
     if delete_click or button_click:
         trigger_id = dash.ctx.triggered_id
 

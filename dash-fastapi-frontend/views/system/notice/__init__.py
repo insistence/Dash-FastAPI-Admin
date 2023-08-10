@@ -310,6 +310,7 @@ def render(button_perms):
         fuc.FefferyExecuteJs(
             id='notice-written-editor'
         ),
+        dcc.Store(id='notice-written-editor-store'),
         # 监听富文本编辑器内容并取回
         fuc.FefferySessionStorage(
             id='notice-content'

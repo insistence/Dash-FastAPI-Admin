@@ -84,7 +84,7 @@ def render_content():
                                     fac.AntdFormItem(
                                         fac.AntdInput(
                                             placeholder='请输入验证码',
-                                            id='input-demo',
+                                            id='login-captcha',
                                             size='large',
                                             prefix=fac.AntdIcon(
                                                 icon='antd-check-circle'

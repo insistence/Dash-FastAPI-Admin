@@ -15,17 +15,19 @@ from api.login import login_api, get_captcha_image_api
      Output('login-username-form-item', 'help'),
      Output('login-password-form-item', 'help'),
      Output('login-captcha-form-item', 'help'),
+     Output('login-captcha-image-container', 'n_clicks'),
      Output('login-submit', 'loading'),
      Output('redirect-container', 'children', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('login-submit', 'nClicks'),
     [State('login-username', 'value'),
      State('login-password', 'value'),
-     State('input-demo', 'value'),
-     State('captcha_image-session_id-container', 'data')],
+     State('login-captcha', 'value'),
+     State('captcha_image-session_id-container', 'data'),
+     State('login-captcha-image-container', 'n_clicks'),],
     prevent_initial_call=True
 )
-def login_auth(nClicks, username, password, input_captcha, session_id):
+def login_auth(nClicks, username, password, input_captcha, session_id, image_click):
     if nClicks:
         # 校验全部输入值是否不为空
         if all([username, password, input_captcha]):
@@ -46,7 +48,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                         None,
                         None,
                         None,
-                        # True,
+                        dash.no_update,
                         True,
                         dcc.Location(
                             pathname='/',
@@ -64,7 +66,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                         '用户不存在',
                         None,
                         None,
-                        # True,
+                        image_click + 1,
                         False,
                         None,
                         None
@@ -79,7 +81,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                         None,
                         '密码错误',
                         None,
-                        # True,
+                        image_click + 1,
                         False,
                         None,
                         None
@@ -89,12 +91,12 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
 
                     return [
                         None,
+                        None,
                         'error',
                         None,
                         None,
-                        None,
                         '验证码已失效',
-                        # True,
+                        image_click + 1,
                         False,
                         None,
                         None
@@ -109,7 +111,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                         None,
                         None,
                         '验证码错误',
-                        # True,
+                        image_click + 1,
                         False,
                         None,
                         None
@@ -124,7 +126,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                         None,
                         None,
                         None,
-                        # True,
+                        image_click + 1,
                         False,
                         None,
                         fuc.FefferyFancyMessage(userinfo_result['message'], type='error'),
@@ -138,7 +140,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
                     None,
                     None,
                     None,
-                    # True,
+                    image_click + 1,
                     False,
                     None,
                     fuc.FefferyFancyMessage('接口异常', type='error'),
@@ -151,13 +153,13 @@ def login_auth(nClicks, username, password, input_captcha, session_id):
             None if username else '请输入用户名！',
             None if password else '请输入密码！',
             None if input_captcha else '请输入验证码！',
-            # True,
+            dash.no_update,
             False,
             None,
             None
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 6 + [image_click + 1] + [dash.no_update] * 3
 
 
 @app.callback(

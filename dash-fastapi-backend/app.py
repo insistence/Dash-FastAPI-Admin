@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from module_admin.controller.login_controller import loginController
-# from module_admin.controller.captcha_controller import captchaController
+from module_admin.controller.captcha_controller import captchaController
 from module_admin.controller.user_controller import userController
 from module_admin.controller.menu_controller import menuController
 from module_admin.controller.dept_controller import deptController
@@ -76,7 +76,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 
 app.include_router(loginController, prefix="/login", tags=['login'])
-# app.include_router(captchaController, prefix="/captcha", tags=['captcha'])
+app.include_router(captchaController, prefix="/captcha", tags=['captcha'])
 app.include_router(userController, prefix="/system", tags=['system/user'])
 app.include_router(menuController, prefix="/system", tags=['system/menu'])
 app.include_router(deptController, prefix="/system", tags=['system/dept'])

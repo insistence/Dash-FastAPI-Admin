@@ -7,7 +7,7 @@ import base64
 
 def create_captcha_image_service():
     # 创建空白图像
-    image = Image.new('RGB', (400, 300), color='white')
+    image = Image.new('RGB', (400, 300), color='#EAEAEA')
 
     # 创建绘图对象
     draw = ImageDraw.Draw(image)
@@ -20,18 +20,17 @@ def create_captcha_image_service():
     num2 = random.randint(0, 9)
     # 从运算符列表中随机选择一个
     operational_character_list = ['+', '-', '*']
-    operational_character = operational_character_list[random.randint(0, 2)]
+    operational_character = random.choice(operational_character_list)
     # 根据选择的运算符进行计算
-    result = 0
     if operational_character == '+':
         result = num1 + num2
     elif operational_character == '-':
         result = num1 - num2
-    elif operational_character == '*':
+    else:
         result = num1 * num2
     # 绘制文本
     text = f"{num1} {operational_character} {num2} = ?"
-    draw.text((10, 120), text, fill='black', font=font)
+    draw.text((10, 120), text, fill='blue', font=font)
 
     # 将图像数据保存到内存中
     buffer = io.BytesIO()

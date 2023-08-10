@@ -27,6 +27,39 @@ async def common_upload(request: Request, uploadId: str = Form(), file: UploadFi
         return response_500(data="", message="接口异常")
 
 
+@commonController.post("/uploadForEditor", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
+async def editor_upload(request: Request, uploadId: str = Form(), file: UploadFile = File(...)):
+    try:
+        try:
+            os.makedirs(os.path.join(CachePathConfig.PATH, uploadId))
+        except FileExistsError:
+            pass
+        upload_service(CachePathConfig.PATH, uploadId, file)
+        logger.info('上传成功')
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder(
+                {
+                    'errno': 0,
+                    'data': {
+                        'url': f'{request.base_url}common/{CachePathConfig.PATHSTR}?taskId={uploadId}&filename={file.filename}'
+                    },
+                }
+            )
+        )
+    except Exception as e:
+        logger.exception(e)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=jsonable_encoder(
+                {
+                    'errno': 1,
+                    'message': str(e),
+                }
+            )
+        )
+
+
 @commonController.get(f"/{CachePathConfig.PATHSTR}")
 def common_download(request: Request, taskId: str, filename: str):
     try:

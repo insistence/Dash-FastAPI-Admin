@@ -65,6 +65,7 @@ def get_user_by_id(db: Session, user_id: int):
                 .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
                 .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
                 .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
+                .order_by(SysMenu.order_num) \
                 .distinct().all()
     results = dict(
         user_basic_info=list_format_datetime(query_user_basic_info),
