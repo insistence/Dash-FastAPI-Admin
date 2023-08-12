@@ -60,19 +60,22 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
             menu_modules = find_modules_by_key(menu_info.get('menu_info'), currentKey)
 
         if menu_modules:
-            # 否则追加子项返回
-            # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
-            return [
-                [
-                    *origin_items,
-                    {
-                        'label': menu_title,
-                        'key': currentKey,
-                        'children': eval('views.' + menu_modules + '.render(button_perms)'),
-                    }
-                ],
-                currentKey
-            ]
+            if menu_modules == 'link':
+                return [dash.no_update] * 2
+            else:
+                # 否则追加子项返回
+                # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
+                return [
+                    [
+                        *origin_items,
+                        {
+                            'label': menu_title,
+                            'key': currentKey,
+                            'children': eval('views.' + menu_modules + '.render(button_perms)'),
+                        }
+                    ],
+                    currentKey
+                ]
 
         return [
             [

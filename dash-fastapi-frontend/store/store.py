@@ -85,5 +85,10 @@ def render_store_container():
             dcc.Store(id='login_log-operations-store'),
             # 操作日志管理模块删除操作行key存储容器
             dcc.Store(id='login_log-delete-ids-store'),
+            # 在线用户模块操作类型存储容器
+            dcc.Store(id='online-operations-store'),
+            dcc.Store(id='online-operations-store-bk'),
+            # 在线用户模块删除操作行key存储容器
+            dcc.Store(id='online-delete-ids-store'),
         ]
     )

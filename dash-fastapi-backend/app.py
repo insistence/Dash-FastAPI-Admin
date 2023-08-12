@@ -15,6 +15,7 @@ from module_admin.controller.post_controler import postController
 from module_admin.controller.dict_controller import dictController
 from module_admin.controller.notice_controller import noticeController
 from module_admin.controller.log_controller import logController
+from module_admin.controller.online_controller import onlineController
 from module_admin.controller.common_controller import commonController
 from config.env import RedisConfig
 from utils.response_util import response_401, AuthException
@@ -75,17 +76,18 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-app.include_router(loginController, prefix="/login", tags=['login'])
-app.include_router(captchaController, prefix="/captcha", tags=['captcha'])
-app.include_router(userController, prefix="/system", tags=['system/user'])
-app.include_router(menuController, prefix="/system", tags=['system/menu'])
-app.include_router(deptController, prefix="/system", tags=['system/dept'])
-app.include_router(roleController, prefix="/system", tags=['system/role'])
-app.include_router(postController, prefix="/system", tags=['system/post'])
-app.include_router(dictController, prefix="/system", tags=['system/dict'])
-app.include_router(noticeController, prefix="/system", tags=['system/notice'])
-app.include_router(logController, prefix="/system", tags=['system/log'])
-app.include_router(commonController, prefix="/common", tags=['common'])
+app.include_router(loginController, prefix="/login", tags=['登录模块'])
+app.include_router(captchaController, prefix="/captcha", tags=['验证码模块'])
+app.include_router(userController, prefix="/system", tags=['系统管理-用户管理'])
+app.include_router(menuController, prefix="/system", tags=['系统管理-菜单管理'])
+app.include_router(deptController, prefix="/system", tags=['系统管理-部门管理'])
+app.include_router(roleController, prefix="/system", tags=['系统管理-角色管理'])
+app.include_router(postController, prefix="/system", tags=['系统管理-岗位管理'])
+app.include_router(dictController, prefix="/system", tags=['系统管理-字典管理'])
+app.include_router(noticeController, prefix="/system", tags=['系统管理-通知公告管理'])
+app.include_router(logController, prefix="/system", tags=['系统管理-日志管理'])
+app.include_router(onlineController, prefix="/monitor", tags=['系统监控-在线用户'])
+app.include_router(commonController, prefix="/common", tags=['通用模块'])
 
 
 if __name__ == '__main__':

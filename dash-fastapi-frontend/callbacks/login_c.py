@@ -3,6 +3,7 @@ from dash import dcc
 import feffery_utils_components as fuc
 from dash.dependencies import Input, Output, State
 from flask import session
+import time
 
 from server import app, logger
 from api.login import login_api, get_captcha_image_api
@@ -165,6 +166,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
 @app.callback(
     [Output('login-captcha-image', 'src'),
      Output('captcha_image-session_id-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('login-captcha-image-container', 'n_clicks'),
     prevent_initial_call=True
@@ -180,13 +182,21 @@ def change_login_captcha_image(captcha_click):
                 return [
                     captcha_image,
                     session_id,
+                    dash.no_update,
+                    dash.no_update
+                ]
+            else:
+                return [
+                    dash.no_update,
+                    dash.no_update,
+                    {'timestamp': time.time()},
                     dash.no_update
                 ]
         except Exception as e:
 
-            return [dash.no_update, dash.no_update, fuc.FefferyFancyMessage('接口异常', type='error')]
+            return [dash.no_update, dash.no_update, {'timestamp': time.time()}, fuc.FefferyFancyMessage('接口异常', type='error')]
 
-    return [dash.no_update] * 3
+    return [dash.no_update] * 4
 
 
 @app.callback(

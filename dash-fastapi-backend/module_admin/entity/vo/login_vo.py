@@ -7,6 +7,7 @@ class UserLogin(BaseModel):
     password: str
     captcha: str
     session_id: Optional[str]
+    login_info: Optional[dict]
 
 
 class Token(BaseModel):

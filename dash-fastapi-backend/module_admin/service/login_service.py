@@ -113,11 +113,11 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
         return '验证码已失效'
     if login_user.captcha != str(captcha_value):
         return '验证码错误'
-    if not user:
+    if not user[0]:
         return '用户不存在'
-    if not verify_password(login_user.password, user.password):
+    if not verify_password(login_user.password, user[0].password):
         return '密码错误'
-    if user.status == '1':
+    if user[0].status == '1':
         return '用户已停用'
     return user
 

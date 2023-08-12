@@ -65,7 +65,7 @@ def find_href_by_key(data, key):
             if result is not None:
                 return result
         elif 'key' in item['props'] and item['props']['key'] == key:
-            return item['props']['href']
+            return item['props'].get('href')
     return None
 
 
@@ -82,7 +82,7 @@ def find_modules_by_key(data, key):
             if result is not None:
                 return result
         elif 'key' in item['props'] and item['props']['key'] == key:
-            return item['props']['modules']
+            return item['props'].get('modules')
     return None
 
 
@@ -135,10 +135,11 @@ def deal_user_menu_info(pid: int, permission_list: list):
                 antd_menu_list_data['props'] = {
                     'key': str(permission['menu_id']),
                     'title': permission['menu_name'],
-                    'icon': permission['icon']
+                    'icon': permission['icon'],
+                    'modules': permission['component']
                 }
                 antd_menu_list_data['children'] = children
-            elif children and permission['menu_type'] == 'C':
+            elif permission['menu_type'] == 'C':
                 antd_menu_list_data['component'] = 'Item'
                 antd_menu_list_data['props'] = {
                     'key': str(permission['menu_id']),
@@ -155,6 +156,16 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'title': permission['menu_name'],
                     'icon': permission['icon']
                 }
+            elif permission['is_frame'] == 0:
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                    'target': '_blank',
+                    'modules': 'link'
+                }
             else:
                 antd_menu_list_data['component'] = 'Item'
                 antd_menu_list_data['props'] = {
@@ -162,6 +173,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'title': permission['menu_name'],
                     'icon': permission['icon'],
                     'href': permission['path'],
+                    'modules': permission['component']
                 }
             menu_list.append(antd_menu_list_data)
 

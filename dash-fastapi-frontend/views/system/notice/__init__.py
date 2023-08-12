@@ -307,9 +307,6 @@ def render(button_perms):
             id='notice-init-editor'
         ),
         # 回写内容到富文本编辑器
-        fuc.FefferyExecuteJs(
-            id='notice-written-editor'
-        ),
         dcc.Store(id='notice-written-editor-store'),
         # 监听富文本编辑器内容并取回
         fuc.FefferySessionStorage(

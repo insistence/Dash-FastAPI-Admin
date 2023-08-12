@@ -15,7 +15,7 @@ loginController = APIRouter()
 
 
 @loginController.post("/loginByAccount", response_model=Token)
-# @log_decorator(title='用户登录', business_type=0, log_type='login')
+@log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
         result = await authenticate_user(request, query_db, user)
@@ -28,7 +28,14 @@ async def login(request: Request, user: UserLogin, query_db: Session = Depends(g
             try:
                 session_id = str(uuid.uuid4())
                 access_token = create_access_token(
-                    data={"user_id": str(result.user_id), "session_id": session_id}, expires_delta=access_token_expires
+                    data={
+                        "user_id": str(result[0].user_id),
+                        "user_name": result[0].user_name,
+                        "dept_name": result[1].dept_name,
+                        "session_id": session_id,
+                        "login_info": user.login_info
+                    },
+                    expires_delta=access_token_expires
                 )
                 await request.app.state.redis.set(f'access_token:{session_id}', access_token, ex=timedelta(minutes=30))
                 # 此方法可实现同一账号同一时间只能登录一次

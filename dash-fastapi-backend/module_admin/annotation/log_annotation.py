@@ -68,8 +68,21 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 if len(oper_param) > 2000:
                     oper_param = '请求参数过长'
 
-                # 调用原始函数
                 oper_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                login_log = {}
+                if log_type == 'login':
+                    user_agent_info = parse(user_agent)
+                    browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
+                    system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'
+                    login_log = dict(
+                        ipaddr=oper_ip,
+                        login_location=oper_location,
+                        browser=browser,
+                        os=system_os,
+                        login_time=oper_time
+                    )
+                    kwargs['user'].login_info = login_log
+                # 调用原始函数
                 result = await func(*args, **kwargs)
                 cost_time = float(time.time() - start_time) * 100
                 result_dict = json.loads(str(result.body, 'utf-8'))
@@ -81,21 +94,11 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 else:
                     error_msg = result_dict.get('message')
                 if log_type == 'login':
-                    user_agent_info = parse(user_agent)
-                    browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
-                    system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'
                     user = kwargs.get('user')
                     user_name = user.user_name
-                    login_log = dict(
-                        user_name=user_name,
-                        ipaddr=oper_ip,
-                        login_location=oper_location,
-                        browser=browser,
-                        os=system_os,
-                        status=str(status),
-                        msg=result_dict.get('message'),
-                        login_time=oper_time
-                    )
+                    login_log['user_name'] = user_name
+                    login_log['status'] = str(status)
+                    login_log['msg'] = result_dict.get('message')
 
                     add_login_log_services(query_db, LogininforModel(**login_log))
                 else:
