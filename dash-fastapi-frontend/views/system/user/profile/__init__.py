@@ -137,7 +137,6 @@ def render(button_perms):
                                 }
                             ),
                         ],
-                        'size="small"',
                         title='个人信息',
                         size='small',
                         style={

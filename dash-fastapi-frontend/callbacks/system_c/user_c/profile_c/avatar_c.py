@@ -62,7 +62,6 @@ def edit_user_avatar(src_data):
                 // var image = document.getElementById('user-avatar-image');
                 var previewImage = document.getElementById('user-avatar-image-preview');
                 // 创建新的 Cropper 实例
-                console.log(cropper)
                 var cropper = new Cropper(newImage, {
                   viewMode: 1,
                   dragMode: 'none',
@@ -84,7 +83,6 @@ def edit_user_avatar(src_data):
                     // 当需要获取裁剪后的数据时
                     var croppedDataUrl = cropper.getCroppedCanvas().toDataURL("image/jpeg", 1);
                     sessionStorage.setItem('cropper-avatar-base64', JSON.stringify({avatarBase64: croppedDataUrl}))
-                    console.log(croppedDataUrl)
                   }
                 });
                 // 获取旋转按钮的引用

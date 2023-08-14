@@ -65,11 +65,10 @@ def render_content(menu_info):
                                     }
                                 ),
                             ),
-                            # flex='1',
                             id='left-side-menu-container',
-                            style={
-                                'flex': '1'
-                            }
+                            # style={
+                            #     'flex': '1'
+                            # }
                         ),
 
                         # 右侧区域
@@ -92,7 +91,6 @@ def render_content(menu_info):
                                     wrap=False
                                 )
                             ],
-                            # flex='5',
                             style={
                                 'flex': '6',
                                 'width': '300px'

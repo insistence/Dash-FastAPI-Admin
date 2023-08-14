@@ -16,12 +16,18 @@ from module_admin.controller.dict_controller import dictController
 from module_admin.controller.notice_controller import noticeController
 from module_admin.controller.log_controller import logController
 from module_admin.controller.online_controller import onlineController
+from module_admin.controller.server_controller import serverController
+from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
 from config.env import RedisConfig
 from utils.response_util import response_401, AuthException
 
 
-app = FastAPI()
+app = FastAPI(
+    title='Dash-FastAPI',
+    description='Dash-FastAPI接口文档',
+    version='1.0.0',
+)
 
 # 前端页面url
 origins = [
@@ -60,8 +66,8 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await app.state.redis.close()
-    
-    
+
+
 # 自定义token检验异常
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException):
@@ -87,6 +93,8 @@ app.include_router(dictController, prefix="/system", tags=['系统管理-字典�
 app.include_router(noticeController, prefix="/system", tags=['系统管理-通知公告管理'])
 app.include_router(logController, prefix="/system", tags=['系统管理-日志管理'])
 app.include_router(onlineController, prefix="/monitor", tags=['系统监控-在线用户'])
+app.include_router(serverController, prefix="/monitor", tags=['系统监控-服务监控'])
+app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓存监控'])
 app.include_router(commonController, prefix="/common", tags=['通用模块'])
 
 

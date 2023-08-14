@@ -19,6 +19,8 @@ app.title = '通用后台管理系统'
 
 # 配置密钥
 app.server.secret_key = 'Dash-FastAPI'
+app.server.config['COMPRESS_ALGORITHM'] = 'br'
+app.server.config['COMPRESS_BR_LEVEL'] = 8
 
 log_time = time.strftime("%Y%m%d", time.localtime())
 sys_log_file_path = os.path.join(PathConfig.ABS_ROOT_PATH, 'log', 'sys_log', f'sys_request_log_{log_time}.log')
