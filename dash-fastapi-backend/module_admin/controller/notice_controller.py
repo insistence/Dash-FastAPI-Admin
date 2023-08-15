@@ -17,8 +17,9 @@ noticeController = APIRouter(dependencies=[Depends(get_current_user)])
 @noticeController.post("/notice/get", response_model=NoticePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:notice:list'))])
 async def get_system_notice_list(request: Request, notice_page_query: NoticePageObject, query_db: Session = Depends(get_db)):
     try:
+        notice_query = NoticeQueryModel(**notice_page_query.dict())
         # 获取全量数据
-        notice_query_result = get_notice_list_services(query_db, notice_page_query)
+        notice_query_result = get_notice_list_services(query_db, notice_query)
         # 分页操作
         notice_page_query_result = get_page_obj(notice_query_result, notice_page_query.page_num, notice_page_query.page_size)
         logger.info('获取成功')

@@ -28,7 +28,8 @@ async def get_system_role_select(request: Request, query_db: Session = Depends(g
 @roleController.post("/role/get", response_model=RolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:list'))])
 async def get_system_role_list(request: Request, role_page_query: RolePageObject, query_db: Session = Depends(get_db)):
     try:
-        role_query_result = get_role_list_services(query_db, role_page_query)
+        role_query = RoleQueryModel(**role_page_query.dict())
+        role_query_result = get_role_list_services(query_db, role_query)
         # 分页操作
         role_page_query_result = get_page_obj(role_query_result, role_page_query.page_num, role_page_query.page_size)
         logger.info('获取成功')

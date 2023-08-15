@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.log_do import SysOperLog, SysLogininfor
-from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel, OperLogPageObject, OperLogPageObjectResponse, \
-    LoginLogPageObject, LoginLogPageObjectResponse, CrudLogResponse
+from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel, OperLogQueryModel, LoginLogQueryModel, CrudLogResponse
 from utils.time_format_util import object_format_datetime, list_format_datetime
 from datetime import datetime, time
 
@@ -14,7 +13,7 @@ def get_operation_log_detail_by_id(db: Session, oper_id: int):
     return object_format_datetime(operation_log_info)
 
 
-def get_operation_log_list(db: Session, query_object: OperLogPageObject):
+def get_operation_log_list(db: Session, query_object: OperLogQueryModel):
     """
     根据查询参数获取操作日志列表信息
     :param db: orm对象
@@ -76,7 +75,7 @@ def clear_operation_log_dao(db: Session):
     db.commit()  # 提交保存到数据库中
 
 
-def get_login_log_list(db: Session, query_object: LoginLogPageObject):
+def get_login_log_list(db: Session, query_object: LoginLogQueryModel):
     """
     根据查询参数获取登录日志列表信息
     :param db: orm对象

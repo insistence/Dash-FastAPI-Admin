@@ -28,8 +28,9 @@ async def get_system_post_select(request: Request, query_db: Session = Depends(g
 @postController.post("/post/get", response_model=PostPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))])
 async def get_system_post_list(request: Request, post_page_query: PostPageObject, query_db: Session = Depends(get_db)):
     try:
+        post_query = PostModel(**post_page_query.dict())
         # 获取全量数据
-        post_query_result = get_post_list_services(query_db, post_page_query)
+        post_query_result = get_post_list_services(query_db, post_query)
         # 分页操作
         post_page_query_result = get_page_obj(post_query_result, post_page_query.page_num, post_page_query.page_size)
         logger.info('获取成功')

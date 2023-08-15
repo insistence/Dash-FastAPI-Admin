@@ -46,14 +46,20 @@ class LogininforModel(BaseModel):
         orm_mode = True
 
 
-class OperLogPageObject(OperLogModel):
+class OperLogQueryModel(OperLogModel):
     """
-    操作日志管理分页查询模型
+    操作日志管理不分页查询模型
     """
     oper_time_start: Optional[str]
     oper_time_end: Optional[str]
-    page_num: Optional[int]
-    page_size: Optional[int]
+
+
+class OperLogPageObject(OperLogQueryModel):
+    """
+    操作日志管理分页查询模型
+    """
+    page_num: int
+    page_size: int
 
 
 class OperLogPageObjectResponse(BaseModel):
@@ -81,14 +87,20 @@ class ClearOperLogModel(BaseModel):
     oper_type: str
 
 
-class LoginLogPageObject(LogininforModel):
+class LoginLogQueryModel(LogininforModel):
     """
-    登录日志管理分页查询模型
+    登录日志管理不分页查询模型
     """
     login_time_start: Optional[str]
     login_time_end: Optional[str]
-    page_num: Optional[int]
-    page_size: Optional[int]
+
+
+class LoginLogPageObject(LoginLogQueryModel):
+    """
+    登录日志管理分页查询模型
+    """
+    page_num: int
+    page_size: int
 
 
 class LoginLogPageObjectResponse(BaseModel):

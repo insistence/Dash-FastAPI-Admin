@@ -2,7 +2,7 @@ from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
 
 
-def get_operation_log_list_services(result_db: Session, query_object: OperLogPageObject):
+def get_operation_log_list_services(result_db: Session, query_object: OperLogQueryModel):
     """
     获取操作日志列表信息service
     :param result_db: orm对象
@@ -72,7 +72,7 @@ def detail_operation_log_services(result_db: Session, oper_id: int):
     return operation_log
 
 
-def get_login_log_list_services(result_db: Session, query_object: LoginLogPageObject):
+def get_login_log_list_services(result_db: Session, query_object: LoginLogQueryModel):
     """
     获取登录日志列表信息service
     :param result_db: orm对象

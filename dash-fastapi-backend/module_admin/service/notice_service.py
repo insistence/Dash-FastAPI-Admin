@@ -2,7 +2,7 @@ from module_admin.entity.vo.notice_vo import *
 from module_admin.dao.notice_dao import *
 
 
-def get_notice_list_services(result_db: Session, query_object: NoticePageObject):
+def get_notice_list_services(result_db: Session, query_object: NoticeQueryModel):
     """
     获取通知公告列表信息service
     :param result_db: orm对象

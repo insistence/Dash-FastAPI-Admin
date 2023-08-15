@@ -2,7 +2,7 @@ from module_admin.entity.vo.dict_vo import *
 from module_admin.dao.dict_dao import *
 
 
-def get_dict_type_list_services(result_db: Session, query_object: DictTypePageObject):
+def get_dict_type_list_services(result_db: Session, query_object: DictTypeQueryModel):
     """
     获取字典类型列表信息service
     :param result_db: orm对象
@@ -80,7 +80,7 @@ def detail_dict_type_services(result_db: Session, dict_id: int):
     return dict_type
 
 
-def get_dict_data_list_services(result_db: Session, query_object: DictDataPageObject):
+def get_dict_data_list_services(result_db: Session, query_object: DictDataModel):
     """
     获取字典数据列表信息service
     :param result_db: orm对象

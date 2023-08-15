@@ -13,7 +13,7 @@ def get_post_select_option_services(result_db: Session):
     return post_list_result
 
 
-def get_post_list_services(result_db: Session, query_object: PostPageObject):
+def get_post_list_services(result_db: Session, query_object: PostModel):
     """
     获取岗位列表信息service
     :param result_db: orm对象

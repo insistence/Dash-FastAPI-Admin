@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.notice_do import SysNotice
-from module_admin.entity.vo.notice_vo import NoticeModel, NoticePageObject, NoticePageObjectResponse, CrudNoticeResponse
+from module_admin.entity.vo.notice_vo import NoticeModel, NoticeQueryModel, CrudNoticeResponse
 from utils.time_format_util import list_format_datetime, object_format_datetime
 from datetime import datetime, time
 
@@ -13,7 +13,7 @@ def get_notice_detail_by_id(db: Session, notice_id: int):
     return object_format_datetime(notice_info)
 
 
-def get_notice_list(db: Session, query_object: NoticePageObject):
+def get_notice_list(db: Session, query_object: NoticeQueryModel):
     """
     根据查询参数获取通知公告列表信息
     :param db: orm对象

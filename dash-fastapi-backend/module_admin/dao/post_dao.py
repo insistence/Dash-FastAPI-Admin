@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.post_do import SysPost
-from module_admin.entity.vo.post_vo import PostModel, PostPageObject, PostPageObjectResponse, CrudPostResponse
+from module_admin.entity.vo.post_vo import PostModel, CrudPostResponse
 from utils.time_format_util import list_format_datetime
 
 
@@ -29,7 +29,7 @@ def get_post_select_option_dao(db: Session):
     return post_info
 
 
-def get_post_list(db: Session, query_object: PostPageObject):
+def get_post_list(db: Session, query_object: PostModel):
     """
     根据查询参数获取岗位列表信息
     :param db: orm对象

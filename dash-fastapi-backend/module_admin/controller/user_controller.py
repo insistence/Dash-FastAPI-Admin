@@ -20,8 +20,9 @@ userController = APIRouter(dependencies=[Depends(get_current_user)])
 @userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
 async def get_system_user_list(request: Request, user_page_query: UserPageObject, query_db: Session = Depends(get_db)):
     try:
+        user_query = UserQueryModel(**user_page_query.dict())
         # 获取全量数据
-        user_query_result = get_user_list_services(query_db, user_page_query)
+        user_query_result = get_user_list_services(query_db, user_query)
         # 分页操作
         user_page_query_result = get_page_obj(user_query_result, user_page_query.page_num, user_page_query.page_size)
         logger.info('获取成功')

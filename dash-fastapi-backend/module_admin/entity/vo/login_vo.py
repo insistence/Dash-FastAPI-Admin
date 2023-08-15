@@ -12,7 +12,3 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     token: str
-    account: str
-    phone: str
-    name: str
-

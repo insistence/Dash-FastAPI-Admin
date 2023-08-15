@@ -43,10 +43,7 @@ async def login(request: Request, user: UserLogin, query_db: Session = Depends(g
                 # await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
                 logger.info('登录成功')
                 return response_200(
-                    data={
-                        'token': access_token,
-                        'session_id': session_id,
-                    },
+                    data={'token': access_token},
                     message='登录成功'
                 )
             except Exception as e:

@@ -20,8 +20,8 @@ class OnlinePageObject(OnlineModel):
     """
     在线用户分页查询模型
     """
-    page_num: Optional[int]
-    page_size: Optional[int]
+    page_num: int
+    page_size: int
 
 
 class OnlinePageObjectResponse(BaseModel):

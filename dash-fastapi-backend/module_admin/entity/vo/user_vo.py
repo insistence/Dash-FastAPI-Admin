@@ -152,12 +152,18 @@ class CurrentUserInfoServiceResponse(UserDetailModel):
     menu: Union[List, None]
 
 
-class UserPageObject(UserModel):
+class UserQueryModel(UserModel):
     """
-    用户管理分页查询模型
+    用户管理不分页查询模型
     """
     create_time_start: Optional[str]
     create_time_end: Optional[str]
+
+
+class UserPageObject(UserQueryModel):
+    """
+    用户管理分页查询模型
+    """
     page_num: int
     page_size: int
 

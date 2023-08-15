@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
 from module_admin.entity.do.dict_do import SysDictType, SysDictData
-from module_admin.entity.vo.dict_vo import DictTypeModel, DictTypePageObject, DictTypePageObjectResponse, \
-    DictDataModel, DictDataPageObject, DictDataPageObjectResponse, CrudDictResponse
+from module_admin.entity.vo.dict_vo import DictTypeModel, DictTypeQueryModel, DictDataModel, CrudDictResponse
 from utils.time_format_util import list_format_datetime
-from utils.page_util import get_page_info
 from datetime import datetime, time
 
 
@@ -21,7 +19,7 @@ def get_all_dict_type(db: Session):
     return list_format_datetime(dict_type_info)
 
 
-def get_dict_type_list(db: Session, query_object: DictTypePageObject):
+def get_dict_type_list(db: Session, query_object: DictTypeQueryModel):
     """
     根据查询参数获取字典类型列表信息
     :param db: orm对象
@@ -99,7 +97,7 @@ def get_dict_data_detail_by_id(db: Session, dict_code: int):
     return dict_data_info
 
 
-def get_dict_data_list(db: Session, query_object: DictDataPageObject):
+def get_dict_data_list(db: Session, query_object: DictDataModel):
     """
     根据查询参数获取字典数据列表信息
     :param db: orm对象

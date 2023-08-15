@@ -17,8 +17,9 @@ logController = APIRouter(prefix='/log', dependencies=[Depends(get_current_user)
 @logController.post("/operation/get", response_model=OperLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:list'))])
 async def get_system_operation_log_list(request: Request, operation_log_page_query: OperLogPageObject, query_db: Session = Depends(get_db)):
     try:
+        operation_log_query = OperLogQueryModel(**operation_log_page_query.dict())
         # 获取全量数据
-        operation_log_query_result = get_operation_log_list_services(query_db, operation_log_page_query)
+        operation_log_query_result = get_operation_log_list_services(query_db, operation_log_query)
         # 分页操作
         operation_log_page_query_result = get_page_obj(operation_log_query_result, operation_log_page_query.page_num, operation_log_page_query.page_size)
         logger.info('获取成功')
@@ -74,8 +75,9 @@ async def query_detail_system_operation_log(request: Request, oper_id: int, quer
 @logController.post("/login/get", response_model=LoginLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:list'))])
 async def get_system_login_log_list(request: Request, login_log_page_query: LoginLogPageObject, query_db: Session = Depends(get_db)):
     try:
+        login_log_query = LoginLogQueryModel(**login_log_page_query.dict())
         # 获取全量数据
-        login_log_query_result = get_login_log_list_services(query_db, login_log_page_query)
+        login_log_query_result = get_login_log_list_services(query_db, login_log_query)
         # 分页操作
         login_log_page_query_result = get_page_obj(login_log_query_result, login_log_page_query.page_num, login_log_page_query.page_size)
         logger.info('获取成功')

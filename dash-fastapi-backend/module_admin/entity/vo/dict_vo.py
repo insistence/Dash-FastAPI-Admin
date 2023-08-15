@@ -43,14 +43,20 @@ class DictDataModel(BaseModel):
         orm_mode = True
 
 
-class DictTypePageObject(DictTypeModel):
+class DictTypeQueryModel(DictTypeModel):
     """
-    字典类型管理分页查询模型
+    字典类型管理不分页查询模型
     """
     create_time_start: Optional[str]
     create_time_end: Optional[str]
-    page_num: Optional[int]
-    page_size: Optional[int]
+
+
+class DictTypePageObject(DictTypeQueryModel):
+    """
+    字典类型管理分页查询模型
+    """
+    page_num: int
+    page_size: int
 
 
 class DictTypePageObjectResponse(BaseModel):
@@ -75,8 +81,8 @@ class DictDataPageObject(DictDataModel):
     """
     字典数据管理分页查询模型
     """
-    page_num: Optional[int]
-    page_size: Optional[int]
+    page_num: int
+    page_size: int
 
 
 class DictDataPageObjectResponse(BaseModel):

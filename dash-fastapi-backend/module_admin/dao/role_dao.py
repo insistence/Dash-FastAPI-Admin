@@ -2,7 +2,7 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
 from module_admin.entity.do.role_do import SysRole, SysRoleMenu
 from module_admin.entity.do.menu_do import SysMenu
-from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RolePageObject, RolePageObjectResponse, CrudRoleResponse, RoleDetailModel
+from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RoleQueryModel, CrudRoleResponse, RoleDetailModel
 from utils.time_format_util import list_format_datetime, object_format_datetime
 from datetime import datetime, time
 
@@ -62,7 +62,7 @@ def get_role_select_option_dao(db: Session):
     return role_info
 
 
-def get_role_list(db: Session, query_object: RolePageObject):
+def get_role_list(db: Session, query_object: RoleQueryModel):
     """
     根据查询参数获取角色列表信息
     :param db: orm对象

@@ -17,8 +17,9 @@ dictController = APIRouter(dependencies=[Depends(get_current_user)])
 @dictController.post("/dictType/get", response_model=DictTypePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_type_list(request: Request, dict_type_page_query: DictTypePageObject, query_db: Session = Depends(get_db)):
     try:
+        dict_type_query = DictTypeQueryModel(**dict_type_page_query.dict())
         # 获取全量数据
-        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_page_query)
+        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_query)
         # 分页操作
         dict_type_page_query_result = get_page_obj(dict_type_query_result, dict_type_page_query.page_num, dict_type_page_query.page_size)
         logger.info('获取成功')
@@ -106,8 +107,9 @@ async def query_detail_system_dict_type(request: Request, dict_id: int, query_db
 @dictController.post("/dictData/get", response_model=DictDataPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_data_list(request: Request, dict_data_page_query: DictDataPageObject, query_db: Session = Depends(get_db)):
     try:
+        dict_data_query = DictDataModel(**dict_data_page_query.dict())
         # 获取全量数据
-        dict_data_query_result = get_dict_data_list_services(query_db, dict_data_page_query)
+        dict_data_query_result = get_dict_data_list_services(query_db, dict_data_query)
         # 分页操作
         dict_data_page_query_result = get_page_obj(dict_data_query_result, dict_data_page_query.page_num, dict_data_page_query.page_size)
         logger.info('获取成功')

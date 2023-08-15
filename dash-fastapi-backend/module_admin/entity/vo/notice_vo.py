@@ -21,12 +21,18 @@ class NoticeModel(BaseModel):
         orm_mode = True
 
 
-class NoticePageObject(NoticeModel):
+class NoticeQueryModel(NoticeModel):
     """
-    通知公告管理分页查询模型
+    通知公告管理不分页查询模型
     """
     create_time_start: Optional[str]
     create_time_end: Optional[str]
+
+
+class NoticePageObject(NoticeQueryModel):
+    """
+    通知公告管理分页查询模型
+    """
     page_num: int
     page_size: int
 

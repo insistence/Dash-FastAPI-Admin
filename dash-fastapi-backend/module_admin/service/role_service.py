@@ -13,7 +13,7 @@ def get_role_select_option_services(result_db: Session):
     return role_list_result
 
 
-def get_role_list_services(result_db: Session, query_object: RolePageObject):
+def get_role_list_services(result_db: Session, query_object: RoleQueryModel):
     """
     获取角色列表信息service
     :param result_db: orm对象
