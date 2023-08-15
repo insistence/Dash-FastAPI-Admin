@@ -38,9 +38,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                 userinfo_result = login_api(user_params)
                 if userinfo_result['code'] == 200:
                     token = userinfo_result['data']['token']
-                    session_id = userinfo_result['data']['session_id']
                     session['token'] = token
-                    session['session_id'] = session_id
 
                     return [
                         None,
