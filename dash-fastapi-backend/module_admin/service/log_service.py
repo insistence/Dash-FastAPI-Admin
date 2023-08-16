@@ -1,7 +1,6 @@
-import io
-import pandas as pd
 from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
+from utils.common_util import export_list2excel
 
 
 def get_operation_log_list_services(result_db: Session, query_object: OperLogQueryModel):
@@ -128,10 +127,7 @@ def export_operation_log_list_services(operation_log_list: List):
         else:
             item['business_type'] = '其他'
     new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
-    df = pd.DataFrame(new_data)
-    binary_data = io.BytesIO()
-    df.to_excel(binary_data, index=False, engine='openpyxl')
-    binary_data = binary_data.getvalue()
+    binary_data = export_list2excel(new_data)
 
     return binary_data
 
@@ -221,9 +217,6 @@ def export_login_log_list_services(login_log_list: List):
         else:
             item['status'] = '失败'
     new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
-    df = pd.DataFrame(new_data)
-    binary_data = io.BytesIO()
-    df.to_excel(binary_data, index=False, engine='openpyxl')
-    binary_data = binary_data.getvalue()
+    binary_data = export_list2excel(new_data)
 
     return binary_data

@@ -1,7 +1,6 @@
-import io
-import pandas as pd
 from module_admin.entity.vo.dict_vo import *
 from module_admin.dao.dict_dao import *
+from utils.common_util import export_list2excel
 
 
 def get_dict_type_list_services(result_db: Session, query_object: DictTypeQueryModel):
@@ -109,10 +108,7 @@ def export_dict_type_list_services(dict_type_list: List):
         else:
             item['status'] = '停用'
     new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
-    df = pd.DataFrame(new_data)
-    binary_data = io.BytesIO()
-    df.to_excel(binary_data, index=False, engine='openpyxl')
-    binary_data = binary_data.getvalue()
+    binary_data = export_list2excel(new_data)
 
     return binary_data
 
@@ -220,9 +216,6 @@ def export_dict_data_list_services(dict_data_list: List):
         else:
             item['is_default'] = '否'
     new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
-    df = pd.DataFrame(new_data)
-    binary_data = io.BytesIO()
-    df.to_excel(binary_data, index=False, engine='openpyxl')
-    binary_data = binary_data.getvalue()
+    binary_data = export_list2excel(new_data)
 
     return binary_data

@@ -1,3 +1,8 @@
+import pandas as pd
+import io
+
+
+
 def bytes2human(n, format_str="%(value).1f%(symbol)s"):
     """Used by various scripts. See:
     http://goo.gl/zeJZl
@@ -20,3 +25,17 @@ def bytes2human(n, format_str="%(value).1f%(symbol)s"):
 
 def bytes2file_response(bytes_info):
     yield bytes_info
+
+
+def export_list2excel(list_data: list):
+    """
+    工具方法：将需要导出的list数据转化为对应excel的二进制数据
+    :param list_data: 数据列表
+    :return: 字典信息对应excel的二进制数据
+    """
+    df = pd.DataFrame(list_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

@@ -31,7 +31,7 @@ async def get_system_dict_type_list(request: Request, dict_type_page_query: Dict
 
 
 @dictController.post("/dictType/all", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
-async def get_system_all_dict_type(request: Request, dict_type_query: DictTypePageObject, query_db: Session = Depends(get_db)):
+async def get_system_all_dict_type(request: Request, dict_type_query: DictTypeQueryModel, query_db: Session = Depends(get_db)):
     try:
         dict_type_query_result = get_all_dict_type_services(query_db)
         logger.info('获取成功')
@@ -200,7 +200,7 @@ async def query_detail_system_dict_data(request: Request, dict_code: int, query_
 
 @dictController.post("/dictData/export", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:export'))])
 @log_decorator(title='字典管理', business_type=5)
-async def export_system_dict_type_list(request: Request, dict_data_query: DictDataModel, query_db: Session = Depends(get_db)):
+async def export_system_dict_data_list(request: Request, dict_data_query: DictDataModel, query_db: Session = Depends(get_db)):
     try:
         # 获取全量数据
         dict_data_query_result = get_dict_data_list_services(query_db, dict_data_query)
