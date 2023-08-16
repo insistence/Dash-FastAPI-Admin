@@ -225,7 +225,7 @@ def init_render_editor(html_string):
                 config: toolbarConfig,
                 mode: 'default'
             })
-            ''' % (url, str(uuid.uuid4()), token, url, str(uuid.uuid4()), token, html_string)
+            ''' % (url, 'notice', token, url, 'notice', token, html_string)
 
     return js_string
 
