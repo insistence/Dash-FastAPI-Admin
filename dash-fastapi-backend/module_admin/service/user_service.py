@@ -1,3 +1,5 @@
+import io
+import pandas as pd
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
 from module_admin.service.login_service import verify_password
@@ -129,3 +131,48 @@ def reset_user_services(result_db: Session, page_object: ResetUserModel):
         result = edit_user_dao(result_db, reset_user)
 
     return result
+
+
+def export_user_list_services(user_list: List):
+    """
+    导出用户信息service
+    :param user_list: 用户信息列表
+    :return: 用户信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "user_id": "用户编号",
+        "user_name": "用户名称",
+        "nick_name": "用户昵称",
+        "dept_name": "部门",
+        "email": "邮箱地址",
+        "phonenumber": "手机号码",
+        "sex": "性别",
+        "status": "状态",
+        "create_by": "创建者",
+        "create_time": "创建时间",
+        "update_by": "更新者",
+        "update_time": "更新时间",
+        "remark": "备注",
+    }
+
+    data = user_list
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '正常'
+        else:
+            item['status'] = '停用'
+        if item.get('sex') == '0':
+            item['sex'] = '男'
+        elif item.get('sex') == '1':
+            item['sex'] = '女'
+        else:
+            item['sex'] = '未知'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

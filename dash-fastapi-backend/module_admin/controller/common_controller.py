@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends, UploadFile, File, Form
-from fastapi.responses import StreamingResponse
 from config.env import CachePathConfig
 from module_admin.service.login_service import get_current_user
 from module_admin.service.common_service import *
@@ -67,7 +66,7 @@ def common_download(request: Request, taskId: str, filename: str):
             with open(os.path.join(CachePathConfig.PATH, taskId, filename), 'rb') as response_file:
                 yield from response_file
         logger.info('获取成功')
-        return StreamingResponse(generate_file())
+        return streaming_response_200(data=generate_file())
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

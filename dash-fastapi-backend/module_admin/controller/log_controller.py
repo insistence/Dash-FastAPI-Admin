@@ -7,6 +7,7 @@ from module_admin.entity.vo.log_vo import *
 from utils.response_util import *
 from utils.log_util import *
 from utils.page_util import get_page_obj
+from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -72,6 +73,20 @@ async def query_detail_system_operation_log(request: Request, oper_id: int, quer
         return response_500(data="", message="接口异常")
 
 
+@logController.post("/operation/export", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:export'))])
+@log_decorator(title='操作日志管理', business_type=5)
+async def export_system_operation_log_list(request: Request, operation_log_query: OperLogQueryModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        operation_log_query_result = get_operation_log_list_services(query_db, operation_log_query)
+        operation_log_export_result = export_operation_log_list_services(operation_log_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(operation_log_export_result))
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
 @logController.post("/login/get", response_model=LoginLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:list'))])
 async def get_system_login_log_list(request: Request, login_log_page_query: LoginLogPageObject, query_db: Session = Depends(get_db)):
     try:
@@ -114,6 +129,20 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
         else:
             logger.warning(clear_login_log_result.message)
             return response_400(data="", message=clear_login_log_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@logController.post("/login/export", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:export'))])
+@log_decorator(title='登录日志管理', business_type=5)
+async def export_system_login_log_list(request: Request, login_log_query: LoginLogQueryModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        login_log_query_result = get_login_log_list_services(query_db, login_log_query)
+        login_log_export_result = export_login_log_list_services(login_log_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(login_log_export_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

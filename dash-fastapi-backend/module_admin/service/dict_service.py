@@ -1,3 +1,5 @@
+import io
+import pandas as pd
 from module_admin.entity.vo.dict_vo import *
 from module_admin.dao.dict_dao import *
 
@@ -80,6 +82,41 @@ def detail_dict_type_services(result_db: Session, dict_id: int):
     return dict_type
 
 
+def export_dict_type_list_services(dict_type_list: List):
+    """
+    导出字典类型信息service
+    :param dict_type_list: 字典信息列表
+    :return: 字典信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "dict_id": "字典编号",
+        "dict_name": "字典名称",
+        "dict_type": "字典类型",
+        "status": "状态",
+        "create_by": "创建者",
+        "create_time": "创建时间",
+        "update_by": "更新者",
+        "update_time": "更新时间",
+        "remark": "备注",
+    }
+
+    data = [DictTypeModel(**vars(row)).dict() for row in dict_type_list]
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '正常'
+        else:
+            item['status'] = '停用'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data
+
+
 def get_dict_data_list_services(result_db: Session, query_object: DictDataModel):
     """
     获取字典数据列表信息service
@@ -145,3 +182,47 @@ def detail_dict_data_services(result_db: Session, dict_code: int):
     dict_data = get_dict_data_detail_by_id(result_db, dict_code=dict_code)
 
     return dict_data
+
+
+def export_dict_data_list_services(dict_data_list: List):
+    """
+    导出字典数据信息service
+    :param dict_data_list: 字典数据信息列表
+    :return: 字典数据信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "dict_code": "字典编码",
+        "dict_sort": "字典标签",
+        "dict_label": "字典键值",
+        "dict_value": "字典排序",
+        "dict_type": "字典类型",
+        "css_class": "样式属性",
+        "list_class": "表格回显样式",
+        "is_default": "是否默认",
+        "status": "状态",
+        "create_by": "创建者",
+        "create_time": "创建时间",
+        "update_by": "更新者",
+        "update_time": "更新时间",
+        "remark": "备注",
+    }
+
+    data = [DictDataModel(**vars(row)).dict() for row in dict_data_list]
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '正常'
+        else:
+            item['status'] = '停用'
+        if item.get('is_default') == 'Y':
+            item['is_default'] = '是'
+        else:
+            item['is_default'] = '否'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

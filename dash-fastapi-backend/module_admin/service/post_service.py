@@ -1,3 +1,5 @@
+import io
+import pandas as pd
 from module_admin.entity.vo.post_vo import *
 from module_admin.dao.post_dao import *
 
@@ -78,3 +80,39 @@ def detail_post_services(result_db: Session, post_id: int):
     post = get_post_detail_by_id(result_db, post_id=post_id)
 
     return post
+
+
+def export_post_list_services(post_list: List):
+    """
+    导出岗位信息service
+    :param post_list: 岗位信息列表
+    :return: 岗位信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "post_id": "岗位编号",
+        "post_code": "岗位编码",
+        "post_name": "岗位名称",
+        "post_sort": "显示顺序",
+        "status": "状态",
+        "create_by": "创建者",
+        "create_time": "创建时间",
+        "update_by": "更新者",
+        "update_time": "更新时间",
+        "remark": "备注",
+    }
+
+    data = [PostModel(**vars(row)).dict() for row in post_list]
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '正常'
+        else:
+            item['status'] = '停用'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

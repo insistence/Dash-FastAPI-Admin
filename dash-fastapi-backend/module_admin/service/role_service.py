@@ -1,3 +1,5 @@
+import io
+import pandas as pd
 from module_admin.entity.vo.role_vo import *
 from module_admin.dao.role_dao import *
 
@@ -99,3 +101,39 @@ def detail_role_services(result_db: Session, role_id: int):
     role = get_role_detail_by_id(result_db, role_id=role_id)
 
     return role
+
+
+def export_role_list_services(role_list: List):
+    """
+    导出角色列表信息service
+    :param role_list: 角色信息列表
+    :return: 角色列表信息对象
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "role_id": "角色编号",
+        "role_name": "角色名称",
+        "role_key": "权限字符",
+        "role_sort": "显示顺序",
+        "status": "状态",
+        "create_by": "创建者",
+        "create_time": "创建时间",
+        "update_by": "更新者",
+        "update_time": "更新时间",
+        "remark": "备注",
+    }
+
+    data = [RoleModel(**vars(row)).dict() for row in role_list]
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '正常'
+        else:
+            item['status'] = '停用'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

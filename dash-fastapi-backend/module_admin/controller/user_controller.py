@@ -10,6 +10,7 @@ from module_admin.dao.user_dao import *
 from utils.page_util import get_page_obj
 from utils.response_util import *
 from utils.log_util import *
+from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -100,18 +101,6 @@ async def query_detail_system_user(request: Request, user_id: int, query_db: Ses
         return response_500(data="", message="接口异常")
 
 
-# @userController.post("/user/export", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:expot'))])
-# @log_decorator(title='用户管理', business_type=5)
-# async def export_detail_system_user(request: Request, export_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
-    # try:
-        # delete_user_result = detail_user_services(query_db, user_id)
-        # logger.info(f'获取user_id为{user_id}的信息成功')
-        # return response_200(data=delete_user_result, message='获取成功')
-    # except Exception as e:
-        # logger.exception(e)
-        # return response_500(data="", message="接口异常")
-
-
 @userController.patch("/user/profile/changeAvatar", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
 async def change_system_user_profile_avatar(request: Request, edit_user: AddUserModel, token: Optional[str] = Header(...), query_db: Session = Depends(get_db)):
@@ -183,6 +172,20 @@ async def reset_system_user_password(request: Request, reset_user: ResetUserMode
         else:
             logger.warning(reset_user_result.message)
             return response_400(data="", message=reset_user_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@userController.post("/user/export", dependencies=[Depends(CheckUserInterfaceAuth('system:user:export'))])
+@log_decorator(title='用户管理', business_type=5)
+async def export_system_user_list(request: Request, user_query: UserQueryModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        user_query_result = get_user_list_services(query_db, user_query)
+        user_export_result = export_user_list_services(user_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(user_export_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

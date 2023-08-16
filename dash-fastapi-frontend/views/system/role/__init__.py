@@ -42,6 +42,10 @@ def render(button_perms):
 
     return [
         dcc.Store(id='role-button-perms-container', data=button_perms),
+        # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
+        dcc.Store(id='role-export-complete-judge-container'),
+        # 绑定的导出组件
+        dcc.Download(id='role-export-container'),
         fac.AntdRow(
             [
                 fac.AntdCol(

@@ -29,3 +29,8 @@ def delete_role_api(page_obj: dict):
 def get_role_detail_api(role_id: int):
 
     return api_request(method='get', url=f'/system/role/{role_id}', is_headers=True)
+
+
+def export_role_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/role/export', is_headers=True, json=page_obj, stream=True)

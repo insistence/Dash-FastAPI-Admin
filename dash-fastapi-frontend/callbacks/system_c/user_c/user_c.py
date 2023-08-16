@@ -1,7 +1,7 @@
 import dash
 import time
 import uuid
-from dash import html
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from server import app
 from api.dept import get_dept_tree_api
-from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api
+from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, export_user_list_api
 from api.role import get_role_select_option_api
 from api.post import get_post_select_option_api
 
@@ -551,3 +551,48 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-export-container', 'data', allow_duplicate=True),
+     Output('user-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_user_list(export_click):
+    if export_click:
+        export_user_res = export_user_list_api({})
+        if export_user_res.status_code == 200:
+            export_user = export_user_res.content
+
+            return [
+                dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('user-export-container', 'data', allow_duplicate=True),
+    Input('user-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_user_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

@@ -1,5 +1,6 @@
 from functools import wraps
 from fastapi import Request
+from fastapi.responses import JSONResponse, ORJSONResponse, UJSONResponse
 import inspect
 import os
 import json
@@ -85,7 +86,13 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 # 调用原始函数
                 result = await func(*args, **kwargs)
                 cost_time = float(time.time() - start_time) * 100
-                result_dict = json.loads(str(result.body, 'utf-8'))
+                if isinstance(result, JSONResponse) or isinstance(result, ORJSONResponse) or isinstance(result, UJSONResponse):
+                    result_dict = json.loads(str(result.body, 'utf-8'))
+                else:
+                    if result.status_code == 200:
+                        result_dict = {'code': result.status_code, 'message': '获取成功'}
+                    else:
+                        result_dict = {'code': result.status_code, 'message': '获取失败'}
                 json_result = json.dumps(dict(code=result_dict.get('code'), message=result_dict.get('message')), ensure_ascii=False)
                 status = 1
                 error_msg = ''

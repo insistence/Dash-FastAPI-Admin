@@ -6,36 +6,41 @@ from server import logger
 
 
 def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] = None, data: Optional[dict] = None,
-                json: Optional[dict] = None, timeout: Optional[int] = None):
+                json: Optional[dict] = None, timeout: Optional[int] = None, stream: Optional[bool] = False):
     api_url = ApiBaseUrlConfig.BaseUrl + url
     method = method.lower().strip()
     user_agent = request.headers.get('User-Agent')
     if is_headers:
-        api_headers = {'token': 'Bearer' + session.get('token'), 'remote_addr': request.remote_addr, 'User-Agent': user_agent}
+        api_headers = {'token': 'Bearer' + session.get('token'), 'remote_addr': request.remote_addr,
+                       'User-Agent': user_agent}
     else:
         api_headers = {'remote_addr': request.remote_addr, 'User-Agent': user_agent}
     try:
         if method == 'get':
             response = requests.get(url=api_url, params=params, data=data, json=json, headers=api_headers,
-                                    timeout=timeout)
+                                    timeout=timeout, stream=stream)
         elif method == 'post':
             response = requests.post(url=api_url, params=params, data=data, json=json, headers=api_headers,
-                                     timeout=timeout)
+                                     timeout=timeout, stream=stream)
         elif method == 'delete':
             response = requests.delete(url=api_url, params=params, data=data, json=json, headers=api_headers,
-                                       timeout=timeout)
+                                       timeout=timeout, stream=stream)
         elif method == 'put':
             response = requests.put(url=api_url, params=params, data=data, json=json, headers=api_headers,
-                                    timeout=timeout)
+                                    timeout=timeout, stream=stream)
         elif method == 'patch':
             response = requests.patch(url=api_url, params=params, data=data, json=json, headers=api_headers,
-                                    timeout=timeout)
+                                      timeout=timeout, stream=stream)
         else:
             raise ValueError(f'Unsupported HTTP method: {method}')
 
         data_list = [params, data, json]
-        response_code = response.json().get('code')
-        response_message = response.json().get('message')
+        if stream:
+            response_code = response.status_code
+            response_message = '获取成功' if response_code == 200 else '获取失败'
+        else:
+            response_code = response.json().get('code')
+            response_message = response.json().get('message')
         session['code'] = response_code
         session['message'] = response_message
         if response_code == 200:
@@ -51,7 +56,7 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
                            ','.join([str(x) for x in data_list if x]),
                            response_message)
 
-        return response.json()
+        return response if stream else response.json()
     except Exception as e:
         logger.error("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求结果:{}",
                      session.get('user')['user_name'], request.remote_addr, method, url, str(e))

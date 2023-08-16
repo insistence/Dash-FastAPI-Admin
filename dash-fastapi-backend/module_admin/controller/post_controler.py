@@ -7,6 +7,7 @@ from module_admin.entity.vo.post_vo import *
 from utils.response_util import *
 from utils.log_util import *
 from utils.page_util import get_page_obj
+from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -99,6 +100,20 @@ async def query_detail_system_post(request: Request, post_id: int, query_db: Ses
         detail_post_result = detail_post_services(query_db, post_id)
         logger.info(f'获取post_id为{post_id}的信息成功')
         return response_200(data=detail_post_result, message='获取成功')
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@postController.post("/post/export", dependencies=[Depends(CheckUserInterfaceAuth('system:post:export'))])
+@log_decorator(title='岗位管理', business_type=5)
+async def export_system_post_list(request: Request, post_query: PostModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        post_query_result = get_post_list_services(query_db, post_query)
+        post_export_result = export_post_list_services(post_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(post_export_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

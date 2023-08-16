@@ -7,6 +7,7 @@ from module_admin.entity.vo.dict_vo import *
 from utils.response_util import *
 from utils.log_util import *
 from utils.page_util import get_page_obj
+from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -104,6 +105,20 @@ async def query_detail_system_dict_type(request: Request, dict_id: int, query_db
         return response_500(data="", message="接口异常")
 
 
+@dictController.post("/dictType/export", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:export'))])
+@log_decorator(title='字典管理', business_type=5)
+async def export_system_dict_type_list(request: Request, dict_type_query: DictTypeQueryModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        dict_type_query_result = get_dict_type_list_services(query_db, dict_type_query)
+        dict_type_export_result = export_dict_type_list_services(dict_type_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(dict_type_export_result))
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
 @dictController.post("/dictData/get", response_model=DictDataPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_data_list(request: Request, dict_data_page_query: DictDataPageObject, query_db: Session = Depends(get_db)):
     try:
@@ -178,6 +193,20 @@ async def query_detail_system_dict_data(request: Request, dict_code: int, query_
         detail_dict_data_result = detail_dict_data_services(query_db, dict_code)
         logger.info(f'获取dict_code为{dict_code}的信息成功')
         return response_200(data=detail_dict_data_result, message='获取成功')
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@dictController.post("/dictData/export", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:export'))])
+@log_decorator(title='字典管理', business_type=5)
+async def export_system_dict_type_list(request: Request, dict_data_query: DictDataModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        dict_data_query_result = get_dict_data_list_services(query_db, dict_data_query)
+        dict_data_export_result = export_dict_data_list_services(dict_data_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(dict_data_export_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

@@ -1,13 +1,13 @@
 import dash
 import time
 import uuid
-from dash import html
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.log import get_login_log_list_api, delete_login_log_api, clear_login_log_api
+from api.log import get_login_log_list_api, delete_login_log_api, clear_login_log_api, export_login_log_list_api
 
 
 @app.callback(
@@ -186,3 +186,48 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
             ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('login_log-export-container', 'data', allow_duplicate=True),
+     Output('login_log-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('login_log-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_login_log_list(export_click):
+    if export_click:
+        export_login_log_res = export_login_log_list_api({})
+        if export_login_log_res.status_code == 200:
+            export_login_log = export_login_log_res.content
+
+            return [
+                dcc.send_bytes(export_login_log, f'登录日志信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('login_log-export-container', 'data', allow_duplicate=True),
+    Input('login_log-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_login_log_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

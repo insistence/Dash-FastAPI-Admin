@@ -1,7 +1,7 @@
 from fastapi import status
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.encoders import jsonable_encoder
-from typing import Union
+from typing import Union, Any
 from datetime import datetime
 
 
@@ -62,6 +62,13 @@ def response_500(*, data: str = None, message: str = "接口异常") -> Response
                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         )
+    )
+
+
+def streaming_response_200(*, data: Any = None):
+    return StreamingResponse(
+        status_code=status.HTTP_200_OK,
+        content=data,
     )
     
     

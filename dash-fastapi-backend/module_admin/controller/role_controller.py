@@ -7,6 +7,7 @@ from module_admin.entity.vo.role_vo import *
 from utils.response_util import *
 from utils.log_util import *
 from utils.page_util import get_page_obj
+from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
 from module_admin.annotation.log_annotation import log_decorator
 
@@ -101,6 +102,20 @@ async def query_detail_system_role(request: Request, role_id: int, query_db: Ses
         delete_role_result = detail_role_services(query_db, role_id)
         logger.info(f'获取role_id为{role_id}的信息成功')
         return response_200(data=delete_role_result, message='获取成功')
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message="接口异常")
+
+
+@roleController.post("/role/export", dependencies=[Depends(CheckUserInterfaceAuth('system:role:export'))])
+@log_decorator(title='角色管理', business_type=5)
+async def export_system_role_list(request: Request, role_query: RoleQueryModel, query_db: Session = Depends(get_db)):
+    try:
+        # 获取全量数据
+        role_query_result = get_role_list_services(query_db, role_query)
+        role_export_result = export_role_list_services(role_query_result)
+        logger.info('导出成功')
+        return streaming_response_200(data=bytes2file_response(role_export_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message="接口异常")

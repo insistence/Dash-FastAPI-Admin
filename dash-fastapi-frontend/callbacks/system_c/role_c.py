@@ -1,13 +1,13 @@
 import dash
 import time
 import uuid
-from dash import html
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.role import get_role_list_api, get_role_detail_api, add_role_api, edit_role_api, delete_role_api
+from api.role import get_role_list_api, get_role_detail_api, add_role_api, edit_role_api, delete_role_api, export_role_list_api
 from api.menu import get_menu_tree_api
 
 
@@ -475,3 +475,48 @@ def role_delete_confirm(delete_confirm, role_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('role-export-container', 'data', allow_duplicate=True),
+     Output('role-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('role-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_role_list(export_click):
+    if export_click:
+        export_role_res = export_role_list_api({})
+        if export_role_res.status_code == 200:
+            export_role = export_role_res.content
+
+            return [
+                dcc.send_bytes(export_role, f'角色信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('role-export-container', 'data', allow_duplicate=True),
+    Input('role-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_role_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

@@ -16,3 +16,7 @@ def bytes2human(n, format_str="%(value).1f%(symbol)s"):
             value = float(n) / prefix[symbol]
             return format_str % locals()
     return format_str % dict(symbol=symbols[0], value=n)
+
+
+def bytes2file_response(bytes_info):
+    yield bytes_info

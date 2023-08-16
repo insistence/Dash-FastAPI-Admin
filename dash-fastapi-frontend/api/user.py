@@ -44,3 +44,9 @@ def change_user_info_api(page_obj: dict):
 def reset_user_password_api(page_obj: dict):
 
     return api_request(method='patch', url='/system/user/profile/resetPwd', is_headers=True, json=page_obj)
+
+
+def export_user_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/user/export', is_headers=True, json=page_obj, stream=True)
+

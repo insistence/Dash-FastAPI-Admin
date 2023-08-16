@@ -1,3 +1,5 @@
+import io
+import pandas as pd
 from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
 
@@ -72,6 +74,68 @@ def detail_operation_log_services(result_db: Session, oper_id: int):
     return operation_log
 
 
+def export_operation_log_list_services(operation_log_list: List):
+    """
+    导出操作日志信息service
+    :param operation_log_list: 操作日志信息列表
+    :return: 操作日志信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "oper_id": "日志编号",
+        "title": "系统模块",
+        "business_type": "操作类型",
+        "method": "方法名称",
+        "request_method": "请求方式",
+        "oper_name": "操作人员",
+        "dept_name": "部门名称",
+        "oper_url": "请求URL",
+        "oper_ip": "操作地址",
+        "oper_location": "操作地点",
+        "oper_param": "请求参数",
+        "json_result": "返回参数",
+        "status": "操作状态",
+        "error_msg": "错误消息",
+        "oper_time": "操作日期",
+        "cost_time": "消耗时间"
+    }
+
+    data = [OperLogModel(**vars(row)).dict() for row in operation_log_list]
+
+    for item in data:
+        if item.get('status') == 0:
+            item['status'] = '成功'
+        else:
+            item['status'] = '失败'
+        if item.get('business_type') == 1:
+            item['business_type'] = '新增'
+        elif item.get('business_type') == 2:
+            item['business_type'] = '修改'
+        elif item.get('business_type') == 3:
+            item['business_type'] = '删除'
+        elif item.get('business_type') == 4:
+            item['business_type'] = '授权'
+        elif item.get('business_type') == 5:
+            item['business_type'] = '导出'
+        elif item.get('business_type') == 6:
+            item['business_type'] = '导入'
+        elif item.get('business_type') == 7:
+            item['business_type'] = '强退'
+        elif item.get('business_type') == 8:
+            item['business_type'] = '生成代码'
+        elif item.get('business_type') == 9:
+            item['business_type'] = '清空数据'
+        else:
+            item['business_type'] = '其他'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data
+
+
 def get_login_log_list_services(result_db: Session, query_object: LoginLogQueryModel):
     """
     获取登录日志列表信息service
@@ -128,3 +192,38 @@ def clear_login_log_services(result_db: Session, page_object: ClearLoginLogModel
         result = dict(is_success=False, message='清除标识不合法')
 
     return CrudLogResponse(**result)
+
+
+def export_login_log_list_services(login_log_list: List):
+    """
+    导出登录日志信息service
+    :param login_log_list: 登录日志信息列表
+    :return: 登录日志信息对应excel的二进制数据
+    """
+    # 创建一个映射字典，将英文键映射到中文键
+    mapping_dict = {
+        "info_id": "访问编号",
+        "user_name": "用户名称",
+        "ipaddr": "登录地址",
+        "login_location": "登录地点",
+        "browser": "浏览器",
+        "os": "操作系统",
+        "status": "登录状态",
+        "msg": "操作信息",
+        "login_time": "登录日期"
+    }
+
+    data = [LogininforModel(**vars(row)).dict() for row in login_log_list]
+
+    for item in data:
+        if item.get('status') == '0':
+            item['status'] = '成功'
+        else:
+            item['status'] = '失败'
+    new_data = [{mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data]
+    df = pd.DataFrame(new_data)
+    binary_data = io.BytesIO()
+    df.to_excel(binary_data, index=False, engine='openpyxl')
+    binary_data = binary_data.getvalue()
+
+    return binary_data

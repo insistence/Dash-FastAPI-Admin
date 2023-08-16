@@ -1,13 +1,13 @@
 import dash
 import time
 import uuid
-from dash import html
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_post_api, delete_post_api
+from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_post_api, delete_post_api, export_post_list_api
 
 
 @app.callback(
@@ -328,3 +328,48 @@ def post_delete_confirm(delete_confirm, post_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('post-export-container', 'data', allow_duplicate=True),
+     Output('post-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('post-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_post_list(export_click):
+    if export_click:
+        export_post_res = export_post_list_api({})
+        if export_post_res.status_code == 200:
+            export_post = export_post_res.content
+
+            return [
+                dcc.send_bytes(export_post, f'岗位信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('post-export-container', 'data', allow_duplicate=True),
+    Input('post-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_post_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

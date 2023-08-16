@@ -1,13 +1,13 @@
 import dash
 import time
 import uuid
-from dash import html
+from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.dict import get_dict_data_list_api, get_dict_data_detail_api, add_dict_data_api, edit_dict_data_api, delete_dict_data_api
+from api.dict import get_dict_data_list_api, get_dict_data_detail_api, add_dict_data_api, edit_dict_data_api, delete_dict_data_api, export_dict_data_list_api
 
 
 @app.callback(
@@ -340,3 +340,49 @@ def dict_data_delete_confirm(delete_confirm, dict_codes_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('dict_data-export-container', 'data', allow_duplicate=True),
+     Output('dict_data-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('dict_data-export', 'nClicks'),
+    State('dict_data-dict_type-select', 'value'),
+    prevent_initial_call=True
+)
+def export_dict_data_list(export_click, dict_type):
+    if export_click:
+        export_dict_data_res = export_dict_data_list_api(dict(dict_type=dict_type))
+        if export_dict_data_res.status_code == 200:
+            export_dict_data = export_dict_data_res.content
+
+            return [
+                dcc.send_bytes(export_dict_data, f'字典数据信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('dict_data-export-container', 'data', allow_duplicate=True),
+    Input('dict_data-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_dict_data_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

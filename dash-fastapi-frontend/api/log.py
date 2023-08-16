@@ -16,6 +16,11 @@ def clear_operation_log_api(page_obj: dict):
     return api_request(method='post', url='/system/log/operation/clear', is_headers=True, json=page_obj)
 
 
+def export_operation_log_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/log/operation/export', is_headers=True, json=page_obj, stream=True)
+
+
 def get_operation_log_detail_api(oper_id: int):
 
     return api_request(method='get', url=f'/system/log/operation/{oper_id}', is_headers=True)
@@ -34,3 +39,8 @@ def delete_login_log_api(page_obj: dict):
 def clear_login_log_api(page_obj: dict):
 
     return api_request(method='post', url='/system/log/login/clear', is_headers=True, json=page_obj)
+
+
+def export_login_log_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/log/login/export', is_headers=True, json=page_obj, stream=True)
