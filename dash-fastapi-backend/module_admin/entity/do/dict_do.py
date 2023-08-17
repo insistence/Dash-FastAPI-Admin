@@ -44,6 +44,3 @@ class SysDictData(Base):
     update_by = Column(String(64), nullable=True, default='', comment='更新者')
     update_time = Column(DateTime, nullable=True, default=datetime.now(), comment='更新时间')
     remark = Column(String(500), nullable=True, default='', comment='备注')
-
-
-Base.metadata.create_all(bind=engine)

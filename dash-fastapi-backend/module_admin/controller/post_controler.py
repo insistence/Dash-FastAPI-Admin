@@ -94,7 +94,7 @@ async def delete_system_post(request: Request, delete_post: DeletePostModel, que
         return response_500(data="", message="接口异常")
 
 
-@postController.get("/post/{post_id}", response_model=PostModel, dependencies=[Depends(CheckUserInterfaceAuth('system:post:edit'))])
+@postController.get("/post/{post_id}", response_model=PostModel, dependencies=[Depends(CheckUserInterfaceAuth('system:post:query'))])
 async def query_detail_system_post(request: Request, post_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_post_result = detail_post_services(query_db, post_id)

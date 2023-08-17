@@ -90,7 +90,7 @@ async def delete_system_user(request: Request, delete_user: DeleteUserModel, tok
         return response_500(data="", message="接口异常")
 
 
-@userController.get("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@userController.get("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:query'))])
 async def query_detail_system_user(request: Request, user_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_user_result = detail_user_services(query_db, user_id)

@@ -94,7 +94,7 @@ async def delete_system_dict_type(request: Request, delete_dict_type: DeleteDict
         return response_500(data="", message="接口异常")
 
 
-@dictController.get("/dictType/{dict_id}", response_model=DictTypeModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@dictController.get("/dictType/{dict_id}", response_model=DictTypeModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
 async def query_detail_system_dict_type(request: Request, dict_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dict_type_result = detail_dict_type_services(query_db, dict_id)
@@ -187,7 +187,7 @@ async def delete_system_dict_data(request: Request, delete_dict_data: DeleteDict
         return response_500(data="", message="接口异常")
 
 
-@dictController.get("/dictData/{dict_code}", response_model=DictDataModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@dictController.get("/dictData/{dict_code}", response_model=DictDataModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
 async def query_detail_system_dict_data(request: Request, dict_code: int, query_db: Session = Depends(get_db)):
     try:
         detail_dict_data_result = detail_dict_data_services(query_db, dict_code)

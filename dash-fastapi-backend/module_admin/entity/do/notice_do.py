@@ -19,6 +19,3 @@ class SysNotice(Base):
     update_by = Column(String(64, collation='utf8_general_ci'), default='', comment='更新者')
     update_time = Column(DateTime, comment='更新时间', default=datetime.now())
     remark = Column(String(255, collation='utf8_general_ci'), comment='备注')
-
-
-Base.metadata.create_all(bind=engine)

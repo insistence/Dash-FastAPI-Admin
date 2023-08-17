@@ -103,7 +103,7 @@ async def delete_system_menu(request: Request, delete_menu: DeleteMenuModel, que
         return response_500(data="", message="接口异常")
 
 
-@menuController.get("/menu/{menu_id}", response_model=MenuModel, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:edit'))])
+@menuController.get("/menu/{menu_id}", response_model=MenuModel, dependencies=[Depends(CheckUserInterfaceAuth('system:menu:query'))])
 async def query_detail_system_menu(request: Request, menu_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_menu_result = detail_menu_services(query_db, menu_id)

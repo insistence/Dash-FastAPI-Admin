@@ -50,6 +50,3 @@ class SysOperLog(Base):
     idx_sys_oper_log_bt = Index('idx_sys_oper_log_bt', business_type)
     idx_sys_oper_log_s = Index('idx_sys_oper_log_s', status)
     idx_sys_oper_log_ot = Index('idx_sys_oper_log_ot', oper_time)
-
-
-Base.metadata.create_all(bind=engine)

@@ -103,7 +103,7 @@ async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, tok
         return response_500(data="", message="接口异常")
 
 
-@deptController.get("/dept/{dept_id}", response_model=DeptModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:edit'))])
+@deptController.get("/dept/{dept_id}", response_model=DeptModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:query'))])
 async def query_detail_system_dept(request: Request, dept_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dept_result = detail_dept_services(query_db, dept_id)

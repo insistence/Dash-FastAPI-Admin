@@ -96,7 +96,7 @@ async def delete_system_role(request: Request, delete_role: DeleteRoleModel, tok
         return response_500(data="", message="接口异常")
     
     
-@roleController.get("/role/{role_id}", response_model=RoleDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
+@roleController.get("/role/{role_id}", response_model=RoleDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:role:query'))])
 async def query_detail_system_role(request: Request, role_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_role_result = detail_role_services(query_db, role_id)

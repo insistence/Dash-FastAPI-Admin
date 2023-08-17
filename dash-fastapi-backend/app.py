@@ -16,11 +16,15 @@ from module_admin.controller.dict_controller import dictController
 from module_admin.controller.notice_controller import noticeController
 from module_admin.controller.log_controller import logController
 from module_admin.controller.online_controller import onlineController
+from module_admin.controller.job_controller import jobController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
 from config.env import RedisConfig
+from config.database import Base, engine
 from utils.response_util import response_401, AuthException
+from utils.log_util import logger
+from utils.common_util import worship
 
 
 app = FastAPI(
@@ -58,9 +62,18 @@ async def create_redis_pool() -> aioredis.Redis:
     return redis
 
 
+async def init_create_table():
+
+    Base.metadata.create_all(bind=engine)
+
+
 @app.on_event("startup")
 async def startup_event():
+    logger.info("Dash-FastAPI开始启动")
+    worship()
     app.state.redis = await create_redis_pool()
+    await init_create_table()
+    logger.info("Dash-FastAPI启动成功")
 
 
 @app.on_event("shutdown")
@@ -93,6 +106,7 @@ app.include_router(dictController, prefix="/system", tags=['系统管理-字典�
 app.include_router(noticeController, prefix="/system", tags=['系统管理-通知公告管理'])
 app.include_router(logController, prefix="/system", tags=['系统管理-日志管理'])
 app.include_router(onlineController, prefix="/monitor", tags=['系统监控-在线用户'])
+app.include_router(jobController, prefix="/monitor", tags=['系统监控-定时任务'])
 app.include_router(serverController, prefix="/monitor", tags=['系统监控-服务监控'])
 app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓存监控'])
 app.include_router(commonController, prefix="/common", tags=['通用模块'])

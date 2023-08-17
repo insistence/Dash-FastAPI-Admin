@@ -82,7 +82,7 @@ async def delete_system_notice(request: Request, delete_notice: DeleteNoticeMode
         return response_500(data="", message="接口异常")
 
 
-@noticeController.get("/notice/{notice_id}", response_model=NoticeModel, dependencies=[Depends(CheckUserInterfaceAuth('system:notice:edit'))])
+@noticeController.get("/notice/{notice_id}", response_model=NoticeModel, dependencies=[Depends(CheckUserInterfaceAuth('system:notice:query'))])
 async def query_detail_system_post(request: Request, notice_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_notice_result = detail_notice_services(query_db, notice_id)

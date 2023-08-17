@@ -43,6 +43,3 @@ class SysRoleMenu(Base):
 
     role_id = Column(Integer, primary_key=True, nullable=False, comment='角色ID')
     menu_id = Column(Integer, primary_key=True, nullable=False, comment='菜单ID')
-
-
-Base.metadata.create_all(bind=engine)
