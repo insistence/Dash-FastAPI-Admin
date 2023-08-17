@@ -15,6 +15,7 @@ from api.online import get_online_list_api, force_logout_online_api, batch_logou
      Output('online-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('online-search', 'nClicks'),
+     Input('online-refresh', 'nClicks'),
      Input('online-list-table', 'pagination'),
      Input('online-operations-store', 'data')],
     [State('online-ipaddr-input', 'value'),
@@ -22,7 +23,7 @@ from api.online import get_online_list_api, force_logout_online_api, batch_logou
      State('online-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_online_table_data(search_click, pagination, operations, ipaddr, user_name, button_perms):
+def get_online_table_data(search_click, refresh_click, pagination, operations, ipaddr, user_name, button_perms):
     query_params = dict(
         ipaddr=ipaddr,
         user_name=user_name,
@@ -37,7 +38,7 @@ def get_online_table_data(search_click, pagination, operations, ipaddr, user_nam
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_online_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -78,6 +79,20 @@ def reset_online_query_params(reset_click):
         return [None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('online-search-form-container', 'hidden'),
+     Output('online-hidden-tooltip', 'title')],
+    Input('online-hidden', 'nClicks'),
+    State('online-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_online_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

@@ -17,6 +17,7 @@ from api.dict import get_dict_data_list_api, get_dict_data_detail_api, add_dict_
      Output('dict_data-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('dict_data-search', 'nClicks'),
+     Input('dict_data-refresh', 'nClicks'),
      Input('dict_data-list-table', 'pagination'),
      Input('dict_data-operations-store', 'data')],
     [State('dict_data-dict_type-select', 'value'),
@@ -25,7 +26,7 @@ from api.dict import get_dict_data_list_api, get_dict_data_detail_api, add_dict_
      State('dict_data-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_dict_data_table_data(search_click, pagination, operations, dict_type, dict_label, status_select, button_perms):
+def get_dict_data_table_data(search_click, refresh_click, pagination, operations, dict_type, dict_label, status_select, button_perms):
 
     query_params = dict(
         dict_type=dict_type,
@@ -43,7 +44,7 @@ def get_dict_data_table_data(search_click, pagination, operations, dict_type, di
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_dict_data_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -93,6 +94,20 @@ def reset_dict_data_query_params(reset_click):
         return [None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('dict_data-search-form-container', 'hidden'),
+     Output('dict_data-hidden-tooltip', 'title')],
+    Input('dict_data-hidden', 'nClicks'),
+    State('dict_data-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_dict_data_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

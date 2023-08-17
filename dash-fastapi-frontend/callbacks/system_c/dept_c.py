@@ -22,6 +22,7 @@ from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_de
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('dept-fold', 'nClicks')],
     [Input('dept-search', 'nClicks'),
+     Input('dept-refresh', 'nClicks'),
      Input('dept-operations-store', 'data'),
      Input('dept-fold', 'nClicks')],
     [State('dept-dept_name-input', 'value'),
@@ -30,13 +31,13 @@ from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_de
      State('dept-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_dept_table_data(search_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys, button_perms):
+def get_dept_table_data(search_click, refresh_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         dept_name=dept_name,
         status=status_select
     )
-    if search_click or operations or fold_click:
+    if search_click or refresh_click or operations or fold_click:
         table_info = get_dept_list_api(query_params)
         default_expanded_row_keys = []
         if table_info['code'] == 200:
@@ -104,6 +105,20 @@ def reset_dept_query_params(reset_click):
         return [None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('dept-search-form-container', 'hidden'),
+     Output('dept-hidden-tooltip', 'title')],
+    Input('dept-hidden', 'nClicks'),
+    State('dept-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_dept_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

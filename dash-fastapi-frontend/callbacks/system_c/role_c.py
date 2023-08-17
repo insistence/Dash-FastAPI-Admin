@@ -18,6 +18,7 @@ from api.menu import get_menu_tree_api
      Output('role-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('role-search', 'nClicks'),
+     Input('role-refresh', 'nClicks'),
      Input('role-list-table', 'pagination'),
      Input('role-operations-store', 'data')],
     [State('role-role_name-input', 'value'),
@@ -27,7 +28,7 @@ from api.menu import get_menu_tree_api
      State('role-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_role_table_data(search_click, pagination, operations, role_name, role_key, status_select, create_time_range, button_perms):
+def get_role_table_data(search_click, refresh_click, pagination, operations, role_name, role_key, status_select, create_time_range, button_perms):
 
     create_time_start = None
     create_time_end = None
@@ -54,7 +55,7 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_role_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -109,6 +110,20 @@ def reset_role_query_params(reset_click):
         return [None, None, None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 5
+
+
+@app.callback(
+    [Output('role-search-form-container', 'hidden'),
+     Output('role-hidden-tooltip', 'title')],
+    Input('role-hidden', 'nClicks'),
+    State('role-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_role_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

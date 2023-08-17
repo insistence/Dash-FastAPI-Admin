@@ -17,6 +17,7 @@ from api.log import get_operation_log_list_api, get_operation_log_detail_api, de
      Output('operation_log-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('operation_log-search', 'nClicks'),
+     Input('operation_log-refresh', 'nClicks'),
      Input('operation_log-list-table', 'pagination'),
      Input('operation_log-operations-store', 'data')],
     [State('operation_log-title-input', 'value'),
@@ -27,7 +28,7 @@ from api.log import get_operation_log_list_api, get_operation_log_detail_api, de
      State('operation_log-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_operation_log_table_data(search_click, pagination, operations, title, oper_name, business_type, status_select, oper_time_range, button_perms):
+def get_operation_log_table_data(search_click, refresh_click, pagination, operations, title, oper_name, business_type, status_select, oper_time_range, button_perms):
 
     oper_time_start = None
     oper_time_end = None
@@ -56,7 +57,7 @@ def get_operation_log_table_data(search_click, pagination, operations, title, op
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_operation_log_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -125,6 +126,20 @@ def reset_operation_log_query_params(reset_click):
         return [None, None, None, None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 6
+
+
+@app.callback(
+    [Output('operation_log-search-form-container', 'hidden'),
+     Output('operation_log-hidden-tooltip', 'title')],
+    Input('operation_log-hidden', 'nClicks'),
+    State('operation_log-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_operation_log_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

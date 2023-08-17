@@ -139,7 +139,8 @@ def render(button_perms):
                                                 layout='inline',
                                             )
                                         ],
-                                        hidden='system:role:query' not in button_perms
+                                        id='role-search-form-container',
+                                        hidden=False
                                     ),
                                 )
                             ]
@@ -232,8 +233,53 @@ def render(button_perms):
                                             'paddingBottom': '10px'
                                         }
                                     ),
+                                    span=16
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdSpace(
+                                        [
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            ),
+                                                        ],
+                                                        id='role-hidden',
+                                                        shape='circle'
+                                                    ),
+                                                    id='role-hidden-tooltip',
+                                                    title='隐藏搜索'
+                                                )
+                                            ),
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            ),
+                                                        ],
+                                                        id='role-refresh',
+                                                        shape='circle'
+                                                    ),
+                                                    title='刷新'
+                                                )
+                                            ),
+                                        ],
+                                        style={
+                                            'float': 'right',
+                                            'paddingBottom': '10px'
+                                        }
+                                    ),
+                                    span=8,
+                                    style={
+                                        'paddingRight': '10px'
+                                    }
                                 )
-                            ]
+                            ],
+                            gutter=5
                         ),
                         fac.AntdRow(
                             [

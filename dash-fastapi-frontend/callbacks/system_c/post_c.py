@@ -17,6 +17,7 @@ from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_
      Output('post-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('post-search', 'nClicks'),
+     Input('post-refresh', 'nClicks'),
      Input('post-list-table', 'pagination'),
      Input('post-operations-store', 'data')],
     [State('post-post_code-input', 'value'),
@@ -25,7 +26,7 @@ from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_
      State('post-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_post_table_data(search_click, pagination, operations, post_code, post_name, status_select, button_perms):
+def get_post_table_data(search_click, refresh_click, pagination, operations, post_code, post_name, status_select, button_perms):
 
     query_params = dict(
         post_code=post_code,
@@ -43,7 +44,7 @@ def get_post_table_data(search_click, pagination, operations, post_code, post_na
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_post_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -94,6 +95,20 @@ def reset_post_query_params(reset_click):
         return [None, None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 4
+
+
+@app.callback(
+    [Output('post-search-form-container', 'hidden'),
+     Output('post-hidden-tooltip', 'title')],
+    Input('post-hidden', 'nClicks'),
+    State('post-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_post_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

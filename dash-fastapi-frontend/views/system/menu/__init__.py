@@ -56,68 +56,74 @@ def render(button_perms):
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdSpace(
+                                            fac.AntdForm(
                                                 [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='menu-menu_name-input',
-                                                            placeholder='请输入菜单名称',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='菜单名称'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdSelect(
-                                                            id='menu-status-select',
-                                                            placeholder='菜单状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='菜单状态'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '搜索',
-                                                            id='menu-search',
-                                                            type='primary',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-search'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='menu-menu_name-input',
+                                                                    placeholder='请输入菜单名称',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='菜单名称'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdSelect(
+                                                                    id='menu-status-select',
+                                                                    placeholder='菜单状态',
+                                                                    options=[
+                                                                        {
+                                                                            'label': '正常',
+                                                                            'value': '0'
+                                                                        },
+                                                                        {
+                                                                            'label': '停用',
+                                                                            'value': '1'
+                                                                        }
+                                                                    ],
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='菜单状态'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '搜索',
+                                                                    id='menu-search',
+                                                                    type='primary',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-search'
+                                                                    )
+                                                                )
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '重置',
+                                                                    id='menu-reset',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-sync'
+                                                                    )
+                                                                )
                                                             )
-                                                        )
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '重置',
-                                                            id='menu-reset',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            )
-                                                        )
-                                                    )
                                                 ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
+                                                layout='inline',
+                                            )
                                         ],
-                                        layout='inline',
+                                        id='menu-search-form-container',
+                                        hidden=False
                                     )
                                 )
                             ]
@@ -160,8 +166,53 @@ def render(button_perms):
                                             'paddingBottom': '10px'
                                         }
                                     ),
+                                    span=16
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdSpace(
+                                        [
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            ),
+                                                        ],
+                                                        id='menu-hidden',
+                                                        shape='circle'
+                                                    ),
+                                                    id='menu-hidden-tooltip',
+                                                    title='隐藏搜索'
+                                                )
+                                            ),
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            ),
+                                                        ],
+                                                        id='menu-refresh',
+                                                        shape='circle'
+                                                    ),
+                                                    title='刷新'
+                                                )
+                                            ),
+                                        ],
+                                        style={
+                                            'float': 'right',
+                                            'paddingBottom': '10px'
+                                        }
+                                    ),
+                                    span=8,
+                                    style={
+                                        'paddingRight': '10px'
+                                    }
                                 )
-                            ]
+                            ],
+                            gutter=5
                         ),
                         fac.AntdRow(
                             [

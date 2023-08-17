@@ -20,6 +20,7 @@ from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, del
      Output('notice-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('notice-search', 'nClicks'),
+     Input('notice-refresh', 'nClicks'),
      Input('notice-list-table', 'pagination'),
      Input('notice-operations-store', 'data')],
     [State('notice-notice_title-input', 'value'),
@@ -29,7 +30,7 @@ from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, del
      State('notice-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_notice_table_data(search_click, pagination, operations, notice_title, update_by, notice_type, create_time_range,
+def get_notice_table_data(search_click, refresh_click, pagination, operations, notice_title, update_by, notice_type, create_time_range,
                           button_perms):
     create_time_start = None
     create_time_end = None
@@ -57,7 +58,7 @@ def get_notice_table_data(search_click, pagination, operations, notice_title, up
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_notice_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -113,6 +114,20 @@ def reset_notice_query_params(reset_click):
         return [None, None, None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 5
+
+
+@app.callback(
+    [Output('notice-search-form-container', 'hidden'),
+     Output('notice-hidden-tooltip', 'title')],
+    Input('notice-hidden', 'nClicks'),
+    State('notice-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_notice_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

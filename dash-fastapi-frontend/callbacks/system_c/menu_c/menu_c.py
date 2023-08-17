@@ -22,6 +22,7 @@ from api.menu import get_menu_tree_api, get_menu_tree_for_edit_option_api, get_m
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('menu-fold', 'nClicks')],
     [Input('menu-search', 'nClicks'),
+     Input('menu-refresh', 'nClicks'),
      Input('menu-operations-store', 'data'),
      Input('menu-fold', 'nClicks')],
     [State('menu-menu_name-input', 'value'),
@@ -30,13 +31,13 @@ from api.menu import get_menu_tree_api, get_menu_tree_for_edit_option_api, get_m
      State('menu-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_menu_table_data(search_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys, button_perms):
+def get_menu_table_data(search_click, refresh_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         menu_name=menu_name,
         status=status_select
     )
-    if search_click or operations or fold_click:
+    if search_click or refresh_click or operations or fold_click:
         table_info = get_menu_list_api(query_params)
         default_expanded_row_keys = []
         if table_info['code'] == 200:
@@ -100,6 +101,20 @@ def reset_menu_query_params(reset_click):
         return [None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('menu-search-form-container', 'hidden'),
+     Output('menu-hidden-tooltip', 'title')],
+    Input('menu-hidden', 'nClicks'),
+    State('menu-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_menu_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(

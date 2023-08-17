@@ -17,6 +17,7 @@ from api.log import get_login_log_list_api, delete_login_log_api, clear_login_lo
      Output('login_log-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('login_log-search', 'nClicks'),
+     Input('login_log-refresh', 'nClicks'),
      Input('login_log-list-table', 'pagination'),
      Input('login_log-operations-store', 'data')],
     [State('login_log-ipaddr-input', 'value'),
@@ -26,7 +27,7 @@ from api.log import get_login_log_list_api, delete_login_log_api, clear_login_lo
      State('login_log-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_login_log_table_data(search_click, pagination, operations, ipaddr, user_name, status_select, login_time_range, button_perms):
+def get_login_log_table_data(search_click, refresh_click, pagination, operations, ipaddr, user_name, status_select, login_time_range, button_perms):
 
     login_time_start = None
     login_time_end = None
@@ -53,7 +54,7 @@ def get_login_log_table_data(search_click, pagination, operations, ipaddr, user_
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_login_log_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -93,6 +94,20 @@ def reset_login_log_query_params(reset_click):
         return [None, None, None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 5
+
+
+@app.callback(
+    [Output('login_log-search-form-container', 'hidden'),
+     Output('login_log-hidden-tooltip', 'title')],
+    Input('login_log-hidden', 'nClicks'),
+    State('login_log-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_login_log_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(
