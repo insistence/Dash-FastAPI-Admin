@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 import uvicorn
-import aioredis
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
@@ -20,8 +19,9 @@ from module_admin.controller.job_controller import jobController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
-from config.env import RedisConfig
-from config.database import Base, engine
+from config.get_redis import create_redis_pool, close_redis_pool
+from config.get_db import init_create_table
+from config.get_scheduler import init_system_scheduler, close_system_scheduler
 from utils.response_util import response_401, AuthException
 from utils.log_util import logger
 from utils.common_util import worship
@@ -49,36 +49,20 @@ app.add_middleware(
 )
 
 
-async def create_redis_pool() -> aioredis.Redis:
-    redis = await aioredis.from_url(
-        url=f"redis://{RedisConfig.HOST}",
-        port=RedisConfig.PORT,
-        username=RedisConfig.USERNAME,
-        password=RedisConfig.PASSWORD,
-        db=RedisConfig.DB,
-        encoding="utf-8",
-        decode_responses=True
-    )
-    return redis
-
-
-async def init_create_table():
-
-    Base.metadata.create_all(bind=engine)
-
-
 @app.on_event("startup")
 async def startup_event():
     logger.info("Dash-FastAPI开始启动")
     worship()
     app.state.redis = await create_redis_pool()
     await init_create_table()
+    await init_system_scheduler()
     logger.info("Dash-FastAPI启动成功")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await app.state.redis.close()
+    await close_redis_pool(app)
+    await close_system_scheduler()
 
 
 # 自定义token检验异常

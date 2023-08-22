@@ -90,5 +90,12 @@ def render_store_container():
             dcc.Store(id='online-operations-store-bk'),
             # 在线用户模块删除操作行key存储容器
             dcc.Store(id='online-delete-ids-store'),
+            # 定时任务模块操作类型存储容器
+            dcc.Store(id='job-operations-store'),
+            dcc.Store(id='job-operations-store-bk'),
+            # 定时任务模块修改操作行key存储容器
+            dcc.Store(id='job-edit-id-store'),
+            # 定时任务模块删除操作行key存储容器
+            dcc.Store(id='job-delete-ids-store'),
         ]
     )

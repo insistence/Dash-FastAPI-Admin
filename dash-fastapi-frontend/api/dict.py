@@ -41,6 +41,11 @@ def get_dict_data_list_api(page_obj: dict):
     return api_request(method='post', url='/system/dictData/get', is_headers=True, json=page_obj)
 
 
+def query_dict_data_list_api(dict_type: str):
+
+    return api_request(method='get', url=f'/system/dictData/query/{dict_type}', is_headers=True)
+
+
 def add_dict_data_api(page_obj: dict):
 
     return api_request(method='post', url='/system/dictData/add', is_headers=True, json=page_obj)

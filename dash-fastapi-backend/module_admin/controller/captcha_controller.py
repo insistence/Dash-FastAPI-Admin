@@ -13,7 +13,7 @@ captchaController = APIRouter()
 async def get_captcha_image(request: Request):
     try:
         session_id = str(uuid.uuid4())
-        captcha_result = create_captcha_image_service()
+        captcha_result = CaptchaService.create_captcha_image_service()
         image = captcha_result[0]
         computed_result = captcha_result[1]
         await request.app.state.redis.set(f'captcha_codes:{session_id}', computed_result, ex=timedelta(minutes=2))
@@ -21,4 +21,4 @@ async def get_captcha_image(request: Request):
         return response_200(data={'image': image, 'session_id': session_id}, message='获取验证码成功')
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))

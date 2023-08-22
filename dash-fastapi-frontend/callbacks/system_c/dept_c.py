@@ -145,8 +145,10 @@ def hidden_dept_search_form(hidden_click, hidden_status):
 )
 def add_edit_dept_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
     if add_click or (button_click and clicked_content != '删除'):
+        triggered_id = dash.ctx.triggered_id
         dept_params = dict(dept_name='')
-        if clicked_content == '修改':
+        if triggered_id == 'dept-list-table' and clicked_content == '修改':
+            dept_params['dept_id'] = int(recently_button_clicked_row['key'])
             tree_info = get_dept_tree_for_edit_option_api(dept_params)
         else:
             tree_info = get_dept_tree_api(dept_params)

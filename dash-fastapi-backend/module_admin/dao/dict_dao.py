@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from module_admin.entity.do.dict_do import SysDictType, SysDictData
 from module_admin.entity.vo.dict_vo import DictTypeModel, DictTypeQueryModel, DictDataModel, CrudDictResponse
@@ -33,8 +34,8 @@ def get_dict_type_list(db: Session, query_object: DictTypeQueryModel):
                 SysDictType.create_time.between(
                     datetime.combine(datetime.strptime(query_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
                     datetime.combine(datetime.strptime(query_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                            if query_object.create_time_start and query_object.create_time_end else True
-                )\
+                if query_object.create_time_start and query_object.create_time_end else True
+                ) \
         .distinct().all()
 
     return list_format_datetime(dict_type_list)
@@ -108,8 +109,24 @@ def get_dict_data_list(db: Session, query_object: DictDataModel):
         .filter(SysDictData.dict_type == query_object.dict_type if query_object.dict_type else True,
                 SysDictData.dict_label.like(f'%{query_object.dict_label}%') if query_object.dict_label else True,
                 SysDictData.status == query_object.status if query_object.status else True
-                )\
-        .order_by(SysDictData.dict_sort)\
+                ) \
+        .order_by(SysDictData.dict_sort) \
+        .distinct().all()
+
+    return list_format_datetime(dict_data_list)
+
+
+def query_dict_data_list(db: Session, dict_type: str):
+    """
+    根据查询参数获取字典数据列表信息
+    :param db: orm对象
+    :param dict_type: 字典类型
+    :return: 字典数据列表信息对象
+    """
+    dict_data_list = db.query(SysDictData).select_from(SysDictType) \
+        .filter(SysDictType.dict_type == dict_type if dict_type else True, SysDictType.status == 0) \
+        .outerjoin(SysDictData, and_(SysDictType.dict_type == SysDictData.dict_type, SysDictData.status == 0)) \
+        .order_by(SysDictData.dict_sort) \
         .distinct().all()
 
     return list_format_datetime(dict_data_list)

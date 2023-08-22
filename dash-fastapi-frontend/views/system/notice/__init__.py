@@ -1,12 +1,25 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
+import json
 
 import callbacks.system_c.notice_c
 from api.notice import get_notice_list_api
+from api.dict import query_dict_data_list_api
 
 
 def render(button_perms):
+
+    option = []
+    option_table = []
+    info = query_dict_data_list_api(dict_type='sys_notice_type')
+    if info.get('code') == 200:
+        data = info.get('data')
+        option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
+        option_table = [
+            dict(label=item.get('dict_label'), value=item.get('dict_value'), css_class=item.get('css_class')) for item
+            in data]
+    option_dict = {item.get('value'): item for item in option_table}
 
     notice_params = dict(page_num=1, page_size=10)
     table_info = get_notice_list_api(notice_params)
@@ -24,10 +37,11 @@ def render(button_perms):
                 item['status'] = dict(tag='正常', color='blue')
             else:
                 item['status'] = dict(tag='关闭', color='volcano')
-            if item['notice_type'] == '1':
-                item['notice_type'] = dict(tag='通知', color='gold')
-            else:
-                item['notice_type'] = dict(tag='公告', color='green')
+            if str(item.get('notice_type')) in option_dict.keys():
+                item['notice_type'] = dict(
+                    tag=option_dict.get(str(item.get('notice_type'))).get('label'),
+                    color=json.loads(option_dict.get(str(item.get('notice_type'))).get('css_class')).get('color')
+                )
             item['key'] = str(item['notice_id'])
             item['operation'] = [
                 {
@@ -85,16 +99,7 @@ def render(button_perms):
                                                         fac.AntdSelect(
                                                             id='notice-notice_type-select',
                                                             placeholder='公告类型',
-                                                            options=[
-                                                                {
-                                                                    'label': '通知',
-                                                                    'value': '1'
-                                                                },
-                                                                {
-                                                                    'label': '公告',
-                                                                    'value': '2'
-                                                                }
-                                                            ],
+                                                            options=option,
                                                             style={
                                                                 'width': 240
                                                             }
@@ -389,16 +394,7 @@ def render(button_perms):
                                     fac.AntdFormItem(
                                         fac.AntdSelect(
                                             id='notice-notice_type',
-                                            options=[
-                                                {
-                                                    'label': '通知',
-                                                    'value': '1'
-                                                },
-                                                {
-                                                    'label': '公告',
-                                                    'value': '2'
-                                                },
-                                            ],
+                                            options=option,
                                             style={
                                                 'width': '100%'
                                             }

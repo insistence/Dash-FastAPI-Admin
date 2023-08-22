@@ -14,9 +14,9 @@ serverController = APIRouter(prefix='/server', dependencies=[Depends(get_current
 async def get_monitor_server_info(request: Request):
     try:
         # 获取全量数据
-        server_info_query_result = get_server_monitor_info()
+        server_info_query_result = ServerService.get_server_monitor_info()
         logger.info('获取成功')
         return response_200(data=server_info_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))

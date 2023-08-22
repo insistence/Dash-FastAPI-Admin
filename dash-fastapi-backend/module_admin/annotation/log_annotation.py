@@ -10,7 +10,7 @@ import requests
 from user_agents import parse
 from typing import Optional
 from module_admin.service.login_service import get_current_user
-from module_admin.service.log_service import add_operation_log_services, add_login_log_services
+from module_admin.service.log_service import OperationLogService, LoginLogService
 from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel
 
 
@@ -107,7 +107,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                     login_log['status'] = str(status)
                     login_log['msg'] = result_dict.get('message')
 
-                    add_login_log_services(query_db, LogininforModel(**login_log))
+                    LoginLogService.add_login_log_services(query_db, LogininforModel(**login_log))
                 else:
                     current_user = await get_current_user(request, token, query_db)
                     oper_name = current_user.user.user_name
@@ -130,7 +130,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                         oper_time=oper_time,
                         cost_time=cost_time
                     )
-                    add_operation_log_services(query_db, OperLogModel(**operation_log))
+                    OperationLogService.add_operation_log_services(query_db, OperLogModel(**operation_log))
 
                 return result
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from fastapi import Depends, Header
+from fastapi import Depends
 from config.get_db import get_db
 from module_admin.service.login_service import get_current_user
 from module_admin.service.log_service import *
@@ -20,21 +20,21 @@ async def get_system_operation_log_list(request: Request, operation_log_page_que
     try:
         operation_log_query = OperLogQueryModel(**operation_log_page_query.dict())
         # 获取全量数据
-        operation_log_query_result = get_operation_log_list_services(query_db, operation_log_query)
+        operation_log_query_result = OperationLogService.get_operation_log_list_services(query_db, operation_log_query)
         # 分页操作
         operation_log_page_query_result = get_page_obj(operation_log_query_result, operation_log_page_query.page_num, operation_log_page_query.page_size)
         logger.info('获取成功')
         return response_200(data=operation_log_page_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/operation/delete", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
 @log_decorator(title='操作日志管理', business_type=3)
 async def delete_system_operation_log(request: Request, delete_operation_log: DeleteOperLogModel, query_db: Session = Depends(get_db)):
     try:
-        delete_operation_log_result = delete_operation_log_services(query_db, delete_operation_log)
+        delete_operation_log_result = OperationLogService.delete_operation_log_services(query_db, delete_operation_log)
         if delete_operation_log_result.is_success:
             logger.info(delete_operation_log_result.message)
             return response_200(data=delete_operation_log_result, message=delete_operation_log_result.message)
@@ -43,14 +43,14 @@ async def delete_system_operation_log(request: Request, delete_operation_log: De
             return response_400(data="", message=delete_operation_log_result.message)
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/operation/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
 @log_decorator(title='操作日志管理', business_type=9)
 async def clear_system_operation_log(request: Request, clear_operation_log: ClearOperLogModel, query_db: Session = Depends(get_db)):
     try:
-        clear_operation_log_result = clear_operation_log_services(query_db, clear_operation_log)
+        clear_operation_log_result = OperationLogService.clear_operation_log_services(query_db, clear_operation_log)
         if clear_operation_log_result.is_success:
             logger.info(clear_operation_log_result.message)
             return response_200(data=clear_operation_log_result, message=clear_operation_log_result.message)
@@ -59,18 +59,18 @@ async def clear_system_operation_log(request: Request, clear_operation_log: Clea
             return response_400(data="", message=clear_operation_log_result.message)
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.get("/operation/{oper_id}", response_model=OperLogModel, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:query'))])
 async def query_detail_system_operation_log(request: Request, oper_id: int, query_db: Session = Depends(get_db)):
     try:
-        detail_operation_log_result = detail_operation_log_services(query_db, oper_id)
+        detail_operation_log_result = OperationLogService.detail_operation_log_services(query_db, oper_id)
         logger.info(f'获取oper_id为{oper_id}的信息成功')
         return response_200(data=detail_operation_log_result, message='获取成功')
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/operation/export", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:export'))])
@@ -78,13 +78,13 @@ async def query_detail_system_operation_log(request: Request, oper_id: int, quer
 async def export_system_operation_log_list(request: Request, operation_log_query: OperLogQueryModel, query_db: Session = Depends(get_db)):
     try:
         # 获取全量数据
-        operation_log_query_result = get_operation_log_list_services(query_db, operation_log_query)
-        operation_log_export_result = export_operation_log_list_services(operation_log_query_result)
+        operation_log_query_result = OperationLogService.get_operation_log_list_services(query_db, operation_log_query)
+        operation_log_export_result = OperationLogService.export_operation_log_list_services(query_db, operation_log_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(operation_log_export_result))
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/login/get", response_model=LoginLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:list'))])
@@ -92,21 +92,21 @@ async def get_system_login_log_list(request: Request, login_log_page_query: Logi
     try:
         login_log_query = LoginLogQueryModel(**login_log_page_query.dict())
         # 获取全量数据
-        login_log_query_result = get_login_log_list_services(query_db, login_log_query)
+        login_log_query_result = LoginLogService.get_login_log_list_services(query_db, login_log_query)
         # 分页操作
         login_log_page_query_result = get_page_obj(login_log_query_result, login_log_page_query.page_num, login_log_page_query.page_size)
         logger.info('获取成功')
         return response_200(data=login_log_page_query_result, message="获取成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/login/delete", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
 @log_decorator(title='登录日志管理', business_type=3)
 async def delete_system_login_log(request: Request, delete_login_log: DeleteLoginLogModel, query_db: Session = Depends(get_db)):
     try:
-        delete_login_log_result = delete_login_log_services(query_db, delete_login_log)
+        delete_login_log_result = LoginLogService.delete_login_log_services(query_db, delete_login_log)
         if delete_login_log_result.is_success:
             logger.info(delete_login_log_result.message)
             return response_200(data=delete_login_log_result, message=delete_login_log_result.message)
@@ -115,14 +115,14 @@ async def delete_system_login_log(request: Request, delete_login_log: DeleteLogi
             return response_400(data="", message=delete_login_log_result.message)
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/login/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
 @log_decorator(title='登录日志管理', business_type=9)
 async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLogModel, query_db: Session = Depends(get_db)):
     try:
-        clear_login_log_result = clear_login_log_services(query_db, clear_login_log)
+        clear_login_log_result = LoginLogService.clear_login_log_services(query_db, clear_login_log)
         if clear_login_log_result.is_success:
             logger.info(clear_login_log_result.message)
             return response_200(data=clear_login_log_result, message=clear_login_log_result.message)
@@ -131,7 +131,7 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
             return response_400(data="", message=clear_login_log_result.message)
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @logController.post("/login/export", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:export'))])
@@ -139,10 +139,10 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
 async def export_system_login_log_list(request: Request, login_log_query: LoginLogQueryModel, query_db: Session = Depends(get_db)):
     try:
         # 获取全量数据
-        login_log_query_result = get_login_log_list_services(query_db, login_log_query)
-        login_log_export_result = export_login_log_list_services(login_log_query_result)
+        login_log_query_result = LoginLogService.get_login_log_list_services(query_db, login_log_query)
+        login_log_export_result = LoginLogService.export_login_log_list_services(login_log_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(login_log_export_result))
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))

@@ -514,7 +514,7 @@ def render(button_perms):
             mask=False,
             maskClosable=False,
             width=1200,
-            renderFooter=True,
+            renderFooter=False,
             okClickClose=False
         )
     ]

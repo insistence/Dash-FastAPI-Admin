@@ -2,6 +2,7 @@ import dash
 import time
 import uuid
 import re
+import json
 from dash import html
 from flask import session
 from dash.dependencies import Input, Output, State
@@ -11,6 +12,7 @@ import feffery_utils_components as fuc
 from server import app
 from config.global_config import ApiBaseUrlConfig
 from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, delete_notice_api, get_notice_detail_api
+from api.dict import query_dict_data_list_api
 
 
 @app.callback(
@@ -59,6 +61,15 @@ def get_notice_table_data(search_click, refresh_click, pagination, operations, n
             page_size=pagination['pageSize']
         )
     if search_click or refresh_click or pagination or operations:
+        option_table = []
+        info = query_dict_data_list_api(dict_type='sys_notice_type')
+        if info.get('code') == 200:
+            data = info.get('data')
+            option_table = [
+                dict(label=item.get('dict_label'), value=item.get('dict_value'), css_class=item.get('css_class')) for
+                item in data]
+        option_dict = {item.get('value'): item for item in option_table}
+
         table_info = get_notice_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -75,10 +86,10 @@ def get_notice_table_data(search_click, refresh_click, pagination, operations, n
                     item['status'] = dict(tag='正常', color='blue')
                 else:
                     item['status'] = dict(tag='关闭', color='volcano')
-                if item['notice_type'] == '1':
-                    item['notice_type'] = dict(tag='通知', color='gold')
-                else:
-                    item['notice_type'] = dict(tag='公告', color='green')
+                item['notice_type'] = dict(
+                    tag=option_dict.get(str(item.get('notice_type'))).get('label'),
+                    color=json.loads(option_dict.get(str(item.get('notice_type'))).get('css_class')).get('color')
+                )
                 item['key'] = str(item['notice_id'])
                 item['operation'] = [
                     {
@@ -240,7 +251,7 @@ def init_render_editor(html_string):
                 config: toolbarConfig,
                 mode: 'default'
             })
-            ''' % (url, 'notice', token, url, 'notice', token, html_string)
+            ''' % (url, f'notice_{uuid.uuid4()}', token, url, f'notice_{uuid.uuid4()}', token, html_string)
 
     return js_string
 

@@ -18,12 +18,12 @@ async def common_upload(request: Request, uploadId: str = Form(), file: UploadFi
             os.makedirs(os.path.join(CachePathConfig.PATH, uploadId))
         except FileExistsError:
             pass
-        upload_service(CachePathConfig.PATH, uploadId, file)
+        CommonService.upload_service(CachePathConfig.PATH, uploadId, file)
         logger.info('上传成功')
         return response_200(data={'filename': file.filename}, message="上传成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @commonController.post("/uploadForEditor", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
@@ -33,7 +33,7 @@ async def editor_upload(request: Request, uploadId: str = Form(), file: UploadFi
             os.makedirs(os.path.join(CachePathConfig.PATH, uploadId))
         except FileExistsError:
             pass
-        upload_service(CachePathConfig.PATH, uploadId, file)
+        CommonService.upload_service(CachePathConfig.PATH, uploadId, file)
         logger.info('上传成功')
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -69,4 +69,4 @@ def common_download(request: Request, taskId: str, filename: str):
         return streaming_response_200(data=generate_file())
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))

@@ -51,7 +51,7 @@ async def login(request: Request, user: UserLogin, query_db: Session = Depends(g
                 return response_500(data="", message="生成token失败")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @loginController.post("/getLoginUserInfo", response_model=CurrentUserInfoServiceResponse, dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
@@ -62,7 +62,7 @@ async def get_login_user_info(request: Request, token: Optional[str] = Header(..
         return response_200(data=current_user, message="获取成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))
 
 
 @loginController.post("/logout", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
@@ -75,4 +75,4 @@ async def logout(request: Request, token: Optional[str] = Header(...), query_db:
         return response_200(data="", message="退出成功")
     except Exception as e:
         logger.exception(e)
-        return response_500(data="", message="接口异常")
+        return response_500(data="", message=str(e))

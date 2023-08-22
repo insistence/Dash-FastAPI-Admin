@@ -1,11 +1,24 @@
 from dash import dcc, html
 import feffery_antd_components as fac
+import json
 
 import callbacks.monitor_c.operlog_c
 from api.log import get_operation_log_list_api
+from api.dict import query_dict_data_list_api
 
 
 def render(button_perms):
+
+    option = []
+    option_table = []
+    info = query_dict_data_list_api(dict_type='sys_oper_type')
+    if info.get('code') == 200:
+        data = info.get('data')
+        option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
+        option_table = [
+            dict(label=item.get('dict_label'), value=item.get('dict_value'), css_class=item.get('css_class')) for item
+            in data]
+    option_dict = {item.get('value'): item for item in option_table}
 
     operation_log_params = dict(page_num=1, page_size=10)
     table_info = get_operation_log_list_api(operation_log_params)
@@ -23,26 +36,11 @@ def render(button_perms):
                 item['status'] = dict(tag='成功', color='blue')
             else:
                 item['status'] = dict(tag='失败', color='volcano')
-            if item['business_type'] == 0:
-                item['business_type'] = dict(tag='其他', color='purple')
-            elif item['business_type'] == 1:
-                item['business_type'] = dict(tag='新增', color='green')
-            elif item['business_type'] == 2:
-                item['business_type'] = dict(tag='修改', color='orange')
-            elif item['business_type'] == 3:
-                item['business_type'] = dict(tag='删除', color='red')
-            elif item['business_type'] == 4:
-                item['business_type'] = dict(tag='授权', color='lime')
-            elif item['business_type'] == 5:
-                item['business_type'] = dict(tag='导出', color='geekblue')
-            elif item['business_type'] == 6:
-                item['business_type'] = dict(tag='导入', color='blue')
-            elif item['business_type'] == 7:
-                item['business_type'] = dict(tag='强退', color='magenta')
-            elif item['business_type'] == 8:
-                item['business_type'] = dict(tag='生成代码', color='cyan')
-            elif item['business_type'] == 9:
-                item['business_type'] = dict(tag='清空数据', color='volcano')
+            if str(item.get('business_type')) in option_dict.keys():
+                item['business_type'] = dict(
+                    tag=option_dict.get(str(item.get('business_type'))).get('label'),
+                    color=json.loads(option_dict.get(str(item.get('business_type'))).get('css_class')).get('color')
+                )
             item['key'] = str(item['oper_id'])
             item['cost_time'] = f"{item['cost_time']}毫秒"
             item['operation'] = [
@@ -100,48 +98,7 @@ def render(button_perms):
                                                         fac.AntdSelect(
                                                             id='operation_log-business_type-select',
                                                             placeholder='操作类型',
-                                                            options=[
-                                                                {
-                                                                    'label': '新增',
-                                                                    'value': 1
-                                                                },
-                                                                {
-                                                                    'label': '修改',
-                                                                    'value': 2
-                                                                },
-                                                                {
-                                                                    'label': '删除',
-                                                                    'value': 3
-                                                                },
-                                                                {
-                                                                    'label': '授权',
-                                                                    'value': 4
-                                                                },
-                                                                {
-                                                                    'label': '导出',
-                                                                    'value': 5
-                                                                },
-                                                                {
-                                                                    'label': '导入',
-                                                                    'value': 6
-                                                                },
-                                                                {
-                                                                    'label': '强退',
-                                                                    'value': 7
-                                                                },
-                                                                {
-                                                                    'label': '生成代码',
-                                                                    'value': 8
-                                                                },
-                                                                {
-                                                                    'label': '清空数据',
-                                                                    'value': 9
-                                                                },
-                                                                {
-                                                                    'label': '其他',
-                                                                    'value': 0
-                                                                },
-                                                            ],
+                                                            options=option,
                                                             style={
                                                                 'width': 240
                                                             }
