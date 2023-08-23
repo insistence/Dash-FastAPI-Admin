@@ -38,7 +38,7 @@ def get_job_table_data(search_click, refresh_click, pagination, operations, job_
         page_size=10
     )
     triggered_id = dash.ctx.triggered_id
-    if triggered_id == 'role-list-table':
+    if triggered_id == 'job-list-table':
         query_params = dict(
             job_name=job_name,
             job_group=job_group,
@@ -334,9 +334,9 @@ def job_confirm(confirm_trigger, operation_type, cur_job_info, job_name, job_gro
 def table_switch_job_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
     if recently_switch_data_index:
         if recently_switch_status:
-            params = dict(job_id=int(recently_switch_row['key']), status='0')
+            params = dict(job_id=int(recently_switch_row['key']), status='0', type='status')
         else:
-            params = dict(job_id=int(recently_switch_row['key']), status='1')
+            params = dict(job_id=int(recently_switch_row['key']), status='1', type='status')
         edit_button_result = edit_job_api(params)
         if edit_button_result['code'] == 200:
 

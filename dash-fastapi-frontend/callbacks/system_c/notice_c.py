@@ -50,7 +50,7 @@ def get_notice_table_data(search_click, refresh_click, pagination, operations, n
         page_size=10
     )
     triggered_id = dash.ctx.triggered_id
-    if triggered_id == 'dict_type-list-table':
+    if triggered_id == 'notice-list-table':
         query_params = dict(
             notice_title=notice_title,
             update_by=update_by,

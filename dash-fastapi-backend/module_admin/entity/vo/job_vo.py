@@ -68,6 +68,13 @@ class CrudJobResponse(BaseModel):
     message: str
 
 
+class EditJobModel(JobModel):
+    """
+    编辑定时任务模型
+    """
+    type: Optional[str]
+
+
 class DeleteJobModel(BaseModel):
     """
     删除定时任务模型

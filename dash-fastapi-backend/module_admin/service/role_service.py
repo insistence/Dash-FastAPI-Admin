@@ -15,7 +15,7 @@ class RoleService:
         :param result_db: orm对象
         :return: 角色列表不分页信息对象
         """
-        role_list_result = get_role_select_option_dao(result_db)
+        role_list_result = RoleDao.get_role_select_option_dao(result_db)
 
         return role_list_result
 
@@ -27,7 +27,7 @@ class RoleService:
         :param query_object: 查询参数对象
         :return: 角色列表信息对象
         """
-        role_list_result = get_role_list(result_db, query_object)
+        role_list_result = RoleDao.get_role_list(result_db, query_object)
 
         return role_list_result
 
@@ -40,16 +40,25 @@ class RoleService:
         :return: 新增角色校验结果
         """
         add_role = RoleModel(**page_object.dict())
-        add_role_result = add_role_dao(result_db, add_role)
-        if add_role_result.is_success:
-            role_id = get_role_by_name(result_db, page_object.role_name).role_id
-            if page_object.menu_id:
-                menu_id_list = page_object.menu_id.split(',')
-                for menu in menu_id_list:
-                    menu_dict = dict(role_id=role_id, menu_id=menu)
-                    add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
+        role = RoleDao.get_role_by_info(result_db, RoleModel(**dict(role_name=page_object.role_name)))
+        if role:
+            result = dict(is_success=False, message='角色名称已存在')
+        else:
+            try:
+                add_result = RoleDao.add_role_dao(result_db, add_role)
+                role_id = add_result.role_id
+                if page_object.menu_id:
+                    menu_id_list = page_object.menu_id.split(',')
+                    for menu in menu_id_list:
+                        menu_dict = dict(role_id=role_id, menu_id=menu)
+                        RoleDao.add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_role_result
+        return CrudRoleResponse(**result)
 
     @classmethod
     def edit_role_services(cls, result_db: Session, page_object: AddRoleModel):
@@ -64,17 +73,32 @@ class RoleService:
             del edit_role['menu_id']
         if page_object.type == 'status':
             del edit_role['type']
-        edit_role_result = edit_role_dao(result_db, edit_role)
-        if edit_role_result.is_success and page_object.type != 'status':
-            role_id_dict = dict(role_id=page_object.role_id)
-            delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
-            if page_object.menu_id:
-                menu_id_list = page_object.menu_id.split(',')
-                for menu in menu_id_list:
-                    menu_dict = dict(role_id=page_object.role_id, menu_id=menu)
-                    add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
+        role_info = cls.detail_role_services(result_db, edit_role.get('role_id'))
+        if role_info:
+            if page_object.type != 'status' and role_info.role.role_name != page_object.role_name:
+                role = RoleDao.get_role_by_info(result_db, RoleModel(**dict(role_name=page_object.role_name)))
+                if role:
+                    result = dict(is_success=False, message='角色名称已存在')
+                    return CrudRoleResponse(**result)
+            try:
+                RoleDao.edit_role_dao(result_db, edit_role)
+                if page_object.type != 'status':
+                    role_id_dict = dict(role_id=page_object.role_id)
+                    RoleDao.delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
+                    if page_object.menu_id:
+                        menu_id_list = page_object.menu_id.split(',')
+                        for menu in menu_id_list:
+                            menu_dict = dict(role_id=page_object.role_id, menu_id=menu)
+                            RoleDao.add_role_menu_dao(result_db, RoleMenuModel(**menu_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='角色不存在')
 
-        return edit_role_result
+        return CrudRoleResponse(**result)
 
     @classmethod
     def delete_role_services(cls, result_db: Session, page_object: DeleteRoleModel):
@@ -86,11 +110,16 @@ class RoleService:
         """
         if page_object.role_ids.split(','):
             role_id_list = page_object.role_ids.split(',')
-            for role_id in role_id_list:
-                role_id_dict = dict(role_id=role_id, update_by=page_object.update_by, update_time=page_object.update_time)
-                delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
-                delete_role_dao(result_db, RoleModel(**role_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for role_id in role_id_list:
+                    role_id_dict = dict(role_id=role_id, update_by=page_object.update_by, update_time=page_object.update_time)
+                    RoleDao.delete_role_menu_dao(result_db, RoleMenuModel(**role_id_dict))
+                    RoleDao.delete_role_dao(result_db, RoleModel(**role_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入角色id为空')
         return CrudRoleResponse(**result)
@@ -103,7 +132,7 @@ class RoleService:
         :param role_id: 角色id
         :return: 角色id对应的信息
         """
-        role = get_role_detail_by_id(result_db, role_id=role_id)
+        role = RoleDao.get_role_detail_by_id(result_db, role_id=role_id)
 
         return role
 

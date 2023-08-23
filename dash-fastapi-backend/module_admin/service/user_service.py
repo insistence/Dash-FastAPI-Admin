@@ -17,7 +17,7 @@ class UserService:
         :param query_object: 查询参数对象
         :return: 用户列表信息对象
         """
-        user_list_result = get_user_list(result_db, query_object)
+        user_list_result = UserDao.get_user_list(result_db, query_object)
 
         return user_list_result
 
@@ -30,21 +30,30 @@ class UserService:
         :return: 新增用户校验结果
         """
         add_user = UserModel(**page_object.dict())
-        add_user_result = add_user_dao(result_db, add_user)
-        if add_user_result.is_success:
-            user_id = get_user_by_name(result_db, page_object.user_name).user_id
-            if page_object.role_id:
-                role_id_list = page_object.role_id.split(',')
-                for role in role_id_list:
-                    role_dict = dict(user_id=user_id, role_id=role)
-                    add_user_role_dao(result_db, UserRoleModel(**role_dict))
-            if page_object.post_id:
-                post_id_list = page_object.post_id.split(',')
-                for post in post_id_list:
-                    post_dict = dict(user_id=user_id, post_id=post)
-                    add_user_post_dao(result_db, UserPostModel(**post_dict))
+        user = UserDao.get_user_by_info(result_db, UserModel(**dict(user_name=page_object.user_name)))
+        if user:
+            result = dict(is_success=False, message='用户名已存在')
+        else:
+            try:
+                add_result = UserDao.add_user_dao(result_db, add_user)
+                user_id = add_result.user_id
+                if page_object.role_id:
+                    role_id_list = page_object.role_id.split(',')
+                    for role in role_id_list:
+                        role_dict = dict(user_id=user_id, role_id=role)
+                        UserDao.add_user_role_dao(result_db, UserRoleModel(**role_dict))
+                if page_object.post_id:
+                    post_id_list = page_object.post_id.split(',')
+                    for post in post_id_list:
+                        post_dict = dict(user_id=user_id, post_id=post)
+                        UserDao.add_user_post_dao(result_db, UserPostModel(**post_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_user_result
+        return CrudUserResponse(**result)
 
     @classmethod
     def edit_user_services(cls, result_db: Session, page_object: AddUserModel):
@@ -60,23 +69,38 @@ class UserService:
             del edit_user['post_id']
         if page_object.type == 'status' or page_object.type == 'avatar':
             del edit_user['type']
-        edit_user_result = edit_user_dao(result_db, edit_user)
-        if edit_user_result.is_success and page_object.type != 'status' and page_object.type != 'avatar':
-            user_id_dict = dict(user_id=page_object.user_id)
-            delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
-            delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
-            if page_object.role_id:
-                role_id_list = page_object.role_id.split(',')
-                for role in role_id_list:
-                    role_dict = dict(user_id=page_object.user_id, role_id=role)
-                    add_user_role_dao(result_db, UserRoleModel(**role_dict))
-            if page_object.post_id:
-                post_id_list = page_object.post_id.split(',')
-                for post in post_id_list:
-                    post_dict = dict(user_id=page_object.user_id, post_id=post)
-                    add_user_post_dao(result_db, UserPostModel(**post_dict))
+        user_info = cls.detail_user_services(result_db, edit_user.get('user_id'))
+        if user_info:
+            if page_object.type != 'status' and page_object.type != 'avatar' and user_info.user.user_name != page_object.user_name:
+                user = UserDao.get_user_by_info(result_db, UserModel(**dict(user_name=page_object.user_name)))
+                if user:
+                    result = dict(is_success=False, message='用户名已存在')
+                    return CrudUserResponse(**result)
+            try:
+                UserDao.edit_user_dao(result_db, edit_user)
+                if page_object.type != 'status' and page_object.type != 'avatar':
+                    user_id_dict = dict(user_id=page_object.user_id)
+                    UserDao.delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
+                    UserDao.delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
+                    if page_object.role_id:
+                        role_id_list = page_object.role_id.split(',')
+                        for role in role_id_list:
+                            role_dict = dict(user_id=page_object.user_id, role_id=role)
+                            UserDao.add_user_role_dao(result_db, UserRoleModel(**role_dict))
+                    if page_object.post_id:
+                        post_id_list = page_object.post_id.split(',')
+                        for post in post_id_list:
+                            post_dict = dict(user_id=page_object.user_id, post_id=post)
+                            UserDao.add_user_post_dao(result_db, UserPostModel(**post_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='用户不存在')
 
-        return edit_user_result
+        return CrudUserResponse(**result)
 
     @classmethod
     def delete_user_services(cls, result_db: Session, page_object: DeleteUserModel):
@@ -88,12 +112,17 @@ class UserService:
         """
         if page_object.user_ids.split(','):
             user_id_list = page_object.user_ids.split(',')
-            for user_id in user_id_list:
-                user_id_dict = dict(user_id=user_id, update_by=page_object.update_by, update_time=page_object.update_time)
-                delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
-                delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
-                delete_user_dao(result_db, UserModel(**user_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for user_id in user_id_list:
+                    user_id_dict = dict(user_id=user_id, update_by=page_object.update_by, update_time=page_object.update_time)
+                    UserDao.delete_user_role_dao(result_db, UserRoleModel(**user_id_dict))
+                    UserDao.delete_user_post_dao(result_db, UserPostModel(**user_id_dict))
+                    UserDao.delete_user_dao(result_db, UserModel(**user_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入用户id为空')
         return CrudUserResponse(**result)
@@ -106,7 +135,7 @@ class UserService:
         :param user_id: 用户id
         :return: 用户id对应的信息
         """
-        user = get_user_detail_by_id(result_db, user_id=user_id)
+        user = UserDao.get_user_detail_by_id(result_db, user_id=user_id)
 
         return UserDetailModel(
             user=user.user_basic_info[0],
@@ -123,17 +152,17 @@ class UserService:
         :param page_object: 重置用户对象
         :return: 重置用户校验结果
         """
-        user = get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
+        user = UserDao.get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
         if page_object.old_password:
             if not verify_password(page_object.old_password, user.password):
                 result = CrudUserResponse(**dict(is_success=False, message='旧密码不正确'))
             else:
                 reset_user = page_object.dict(exclude_unset=True)
                 del reset_user['old_password']
-                result = edit_user_dao(result_db, reset_user)
+                result = UserDao.edit_user_dao(result_db, reset_user)
         else:
             reset_user = page_object.dict(exclude_unset=True)
-            result = edit_user_dao(result_db, reset_user)
+            result = UserDao.edit_user_dao(result_db, reset_user)
 
         return result
 

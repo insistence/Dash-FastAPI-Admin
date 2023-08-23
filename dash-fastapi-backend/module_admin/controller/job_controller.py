@@ -49,7 +49,7 @@ async def add_system_job(request: Request, add_job: JobModel, query_db: Session 
 
 @jobController.patch("/job/edit", response_model=CrudJobResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:job:edit'))])
 @log_decorator(title='定时任务管理', business_type=2)
-async def edit_system_job(request: Request, edit_job: JobModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+async def edit_system_job(request: Request, edit_job: EditJobModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         edit_job.update_by = current_user.user.user_name
         edit_job.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

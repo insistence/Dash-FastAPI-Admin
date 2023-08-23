@@ -17,7 +17,7 @@ class JobService:
         :param query_object: 查询参数对象
         :return: 定时任务列表信息对象
         """
-        job_list_result = get_job_list(result_db, query_object)
+        job_list_result = JobDao.get_job_list(result_db, query_object)
 
         return job_list_result
 
@@ -29,12 +29,25 @@ class JobService:
         :param page_object: 新增定时任务对象
         :return: 新增定时任务校验结果
         """
-        add_job_result = add_job_dao(result_db, page_object)
+        job = JobDao.get_job_detail_by_info(result_db, page_object)
+        if job:
+            result = dict(is_success=False, message='定时任务已存在')
+        else:
+            try:
+                JobDao.add_job_dao(result_db, page_object)
+                job_info = JobDao.get_job_detail_by_info(result_db, page_object)
+                if job_info.status == '0':
+                    add_scheduler_job(job_info=job_info)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_job_result
+        return CrudJobResponse(**result)
 
     @classmethod
-    def edit_job_services(cls, result_db: Session, page_object: JobModel):
+    def edit_job_services(cls, result_db: Session, page_object: EditJobModel):
         """
         编辑定时任务信息service
         :param result_db: orm对象
@@ -42,24 +55,40 @@ class JobService:
         :return: 编辑定时任务校验结果
         """
         edit_job = page_object.dict(exclude_unset=True)
-        edit_job_result = edit_job_dao(result_db, edit_job)
-        if edit_job.get('status') == '0':
-            job_info = cls.detail_job_services(result_db, edit_job.get('job_id'))
+        if page_object.type == 'status':
+            del edit_job['type']
+        job_info = cls.detail_job_services(result_db, edit_job.get('job_id'))
+        if job_info:
+            if page_object.type != 'status' and (job_info.job_name != page_object.job_name or job_info.job_group != page_object.job_group or job_info.invoke_target != page_object.invoke_target or job_info.cron_expression != page_object.cron_expression):
+                job = JobDao.get_job_detail_by_info(result_db, page_object)
+                if job:
+                    result = dict(is_success=False, message='定时任务已存在')
+                    return CrudJobResponse(**result)
             try:
-                remove_scheduler_job(job_id=edit_job.get('job_id'))
+                JobDao.edit_job_dao(result_db, edit_job)
+                if edit_job.get('status') == '0':
+                    try:
+                        remove_scheduler_job(job_id=edit_job.get('job_id'))
+                    except Exception as e:
+                        print(e)
+                    finally:
+                        add_scheduler_job(job_info=job_info)
+                if edit_job.get('status') == '1':
+                    try:
+                        remove_scheduler_job(job_id=edit_job.get('job_id'))
+                    except Exception as e:
+                        print(e)
+                    finally:
+                        print('')
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
             except Exception as e:
-                print(e)
-            finally:
-                add_scheduler_job(job_info=job_info)
-        if edit_job.get('status') == '1':
-            try:
-                remove_scheduler_job(job_id=edit_job.get('job_id'))
-            except Exception as e:
-                print(e)
-            finally:
-                print('')
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='定时任务不存在')
 
-        return edit_job_result
+        return CrudJobResponse(**result)
 
     @classmethod
     def delete_job_services(cls, result_db: Session, page_object: DeleteJobModel):
@@ -71,10 +100,15 @@ class JobService:
         """
         if page_object.job_ids.split(','):
             job_id_list = page_object.job_ids.split(',')
-            for job_id in job_id_list:
-                job_id_dict = dict(job_id=job_id)
-                delete_job_dao(result_db, JobModel(**job_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for job_id in job_id_list:
+                    job_id_dict = dict(job_id=job_id)
+                    JobDao.delete_job_dao(result_db, JobModel(**job_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入定时任务id为空')
         return CrudJobResponse(**result)
@@ -87,7 +121,7 @@ class JobService:
         :param job_id: 定时任务id
         :return: 定时任务id对应的信息
         """
-        job = get_job_detail_by_id(result_db, job_id=job_id)
+        job = JobDao.get_job_detail_by_id(result_db, job_id=job_id)
 
         return job
 

@@ -4,7 +4,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from apscheduler.triggers.cron import CronTrigger
 from config.database import engine, SQLALCHEMY_DATABASE_URL
 from config.get_db import SessionLocal
-from module_admin.dao.job_dao import Session, get_job_list_for_scheduler
+from module_admin.dao.job_dao import Session, JobDao
 from utils.log_util import logger
 from utils.scheduler_util import *
 
@@ -43,25 +43,22 @@ async def init_system_scheduler(result_db: Session = SessionLocal()):
     """
     logger.info("开始启动定时任务...")
     scheduler.start()
-    job_list = get_job_list_for_scheduler(result_db)
+    job_list = JobDao.get_job_list_for_scheduler(result_db)
     for item in job_list:
-        if item.status == '0':
-            try:
-                scheduler.remove_job(job_id=str(item.job_id))
-            except Exception as e:
-                print(e)
-            finally:
-                scheduler.add_job(
-                    func=eval(item.invoke_target),
-                    trigger=MyCronTrigger.from_crontab(item.cron_expression),
-                    id=str(item.job_id),
-                    name=item.job_name,
-                    misfire_grace_time=1000000000000 if item.misfire_policy == '3' else None,
-                    coalesce=True if item.misfire_policy == '2' else False,
-                    max_instances=3 if item.concurrent == '0' else 1
-                )
-        else:
-            continue
+        try:
+            scheduler.remove_job(job_id=str(item.job_id))
+        except Exception as e:
+            print(e)
+        finally:
+            scheduler.add_job(
+                func=eval(item.invoke_target),
+                trigger=MyCronTrigger.from_crontab(item.cron_expression),
+                id=str(item.job_id),
+                name=item.job_name,
+                misfire_grace_time=1000000000000 if item.misfire_policy == '3' else None,
+                coalesce=True if item.misfire_policy == '2' else False,
+                max_instances=3 if item.concurrent == '0' else 1
+            )
     logger.info("系统初始定时任务加载成功")
 
 

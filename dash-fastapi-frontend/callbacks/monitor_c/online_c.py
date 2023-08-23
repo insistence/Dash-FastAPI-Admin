@@ -31,7 +31,7 @@ def get_online_table_data(search_click, refresh_click, pagination, operations, i
         page_size=10
     )
     triggered_id = dash.ctx.triggered_id
-    if triggered_id == 'post-list-table':
+    if triggered_id == 'online-list-table':
         query_params = dict(
             ipaddr=ipaddr,
             user_name=user_name,

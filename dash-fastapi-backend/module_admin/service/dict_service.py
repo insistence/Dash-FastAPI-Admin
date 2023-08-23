@@ -16,7 +16,7 @@ class DictTypeService:
         :param query_object: 查询参数对象
         :return: 字典类型列表信息对象
         """
-        dict_type_list_result = get_dict_type_list(result_db, query_object)
+        dict_type_list_result = DictTypeDao.get_dict_type_list(result_db, query_object)
 
         return dict_type_list_result
 
@@ -27,7 +27,7 @@ class DictTypeService:
         :param result_db: orm对象
         :return: 字典类型列表信息对象
         """
-        dict_type_list_result = get_all_dict_type(result_db)
+        dict_type_list_result = DictTypeDao.get_all_dict_type(result_db)
 
         return dict_type_list_result
 
@@ -39,9 +39,19 @@ class DictTypeService:
         :param page_object: 新增岗位对象
         :return: 新增字典类型校验结果
         """
-        add_dict_type_result = add_dict_type_dao(result_db, page_object)
+        dict_type = DictTypeDao.get_dict_type_detail_by_info(result_db, DictTypeModel(**dict(dict_type=page_object.dict_type)))
+        if dict_type:
+            result = dict(is_success=False, message='字典类型已存在')
+        else:
+            try:
+                DictTypeDao.add_dict_type_dao(result_db, page_object)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_dict_type_result
+        return CrudDictResponse(**result)
 
     @classmethod
     def edit_dict_type_services(cls, result_db: Session, page_object: DictTypeModel):
@@ -52,9 +62,33 @@ class DictTypeService:
         :return: 编辑字典类型校验结果
         """
         edit_dict_type = page_object.dict(exclude_unset=True)
-        edit_dict_type_result = edit_dict_type_dao(result_db, edit_dict_type)
+        dict_type_info = cls.detail_dict_type_services(result_db, edit_dict_type.get('dict_id'))
+        if dict_type_info:
+            if dict_type_info.dict_type != page_object.dict_type or dict_type_info.dict_name != page_object.dict_name:
+                dict_type = DictTypeDao.get_dict_type_detail_by_info(result_db, DictTypeModel(
+                    **dict(dict_type=page_object.dict_type)))
+                if dict_type:
+                    result = dict(is_success=False, message='字典类型已存在')
+                else:
+                    try:
+                        DictTypeDao.edit_dict_type_dao(result_db, edit_dict_type)
+                        result_db.commit()
+                        result = dict(is_success=True, message='更新成功')
+                    except Exception as e:
+                        result_db.rollback()
+                        result = dict(is_success=False, message=str(e))
+            else:
+                try:
+                    DictTypeDao.edit_dict_type_dao(result_db, edit_dict_type)
+                    result_db.commit()
+                    result = dict(is_success=True, message='更新成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='字典类型不存在')
 
-        return edit_dict_type_result
+        return CrudDictResponse(**result)
 
     @classmethod
     def delete_dict_type_services(cls, result_db: Session, page_object: DeleteDictTypeModel):
@@ -66,10 +100,15 @@ class DictTypeService:
         """
         if page_object.dict_ids.split(','):
             dict_id_list = page_object.dict_ids.split(',')
-            for dict_id in dict_id_list:
-                dict_id_dict = dict(dict_id=dict_id)
-                delete_dict_type_dao(result_db, DictTypeModel(**dict_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for dict_id in dict_id_list:
+                    dict_id_dict = dict(dict_id=dict_id)
+                    DictTypeDao.delete_dict_type_dao(result_db, DictTypeModel(**dict_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入字典类型id为空')
         return CrudDictResponse(**result)
@@ -82,7 +121,7 @@ class DictTypeService:
         :param dict_id: 字典类型id
         :return: 字典类型id对应的信息
         """
-        dict_type = get_dict_type_detail_by_id(result_db, dict_id=dict_id)
+        dict_type = DictTypeDao.get_dict_type_detail_by_id(result_db, dict_id=dict_id)
 
         return dict_type
 
@@ -132,7 +171,7 @@ class DictDataService:
         :param query_object: 查询参数对象
         :return: 字典数据列表信息对象
         """
-        dict_data_list_result = get_dict_data_list(result_db, query_object)
+        dict_data_list_result = DictDataDao.get_dict_data_list(result_db, query_object)
 
         return dict_data_list_result
 
@@ -144,7 +183,7 @@ class DictDataService:
         :param dict_type: 字典类型
         :return: 字典数据列表信息对象
         """
-        dict_data_list_result = query_dict_data_list(result_db, dict_type)
+        dict_data_list_result = DictDataDao.query_dict_data_list(result_db, dict_type)
 
         return dict_data_list_result
 
@@ -156,9 +195,19 @@ class DictDataService:
         :param page_object: 新增岗位对象
         :return: 新增字典数据校验结果
         """
-        add_dict_data_result = add_dict_data_dao(result_db, page_object)
+        dict_data = DictDataDao.get_dict_data_detail_by_info(result_db, page_object)
+        if dict_data:
+            result = dict(is_success=False, message='字典数据已存在')
+        else:
+            try:
+                DictDataDao.add_dict_data_dao(result_db, page_object)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_dict_data_result
+        return CrudDictResponse(**result)
 
     @classmethod
     def edit_dict_data_services(cls, result_db: Session, page_object: DictDataModel):
@@ -169,9 +218,24 @@ class DictDataService:
         :return: 编辑字典数据校验结果
         """
         edit_data_type = page_object.dict(exclude_unset=True)
-        edit_dict_data_result = edit_dict_data_dao(result_db, edit_data_type)
+        dict_data_info = cls.detail_dict_data_services(result_db, edit_data_type.get('dict_code'))
+        if dict_data_info:
+            if dict_data_info.dict_type != page_object.dict_type or dict_data_info.dict_label != page_object.dict_label or dict_data_info.dict_value != page_object.dict_value:
+                dict_data = DictDataDao.get_dict_data_detail_by_info(result_db, page_object)
+                if dict_data:
+                    result = dict(is_success=False, message='字典数据已存在')
+                    return CrudDictResponse(**result)
+            try:
+                DictDataDao.edit_dict_data_dao(result_db, edit_data_type)
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='字典数据不存在')
 
-        return edit_dict_data_result
+        return CrudDictResponse(**result)
 
     @classmethod
     def delete_dict_data_services(cls, result_db: Session, page_object: DeleteDictDataModel):
@@ -183,10 +247,15 @@ class DictDataService:
         """
         if page_object.dict_codes.split(','):
             dict_code_list = page_object.dict_codes.split(',')
-            for dict_code in dict_code_list:
-                dict_code_dict = dict(dict_code=dict_code)
-                delete_dict_data_dao(result_db, DictDataModel(**dict_code_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for dict_code in dict_code_list:
+                    dict_code_dict = dict(dict_code=dict_code)
+                    DictDataDao.delete_dict_data_dao(result_db, DictDataModel(**dict_code_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入字典数据id为空')
         return CrudDictResponse(**result)
@@ -199,7 +268,7 @@ class DictDataService:
         :param dict_code: 字典数据id
         :return: 字典数据id对应的信息
         """
-        dict_data = get_dict_data_detail_by_id(result_db, dict_code=dict_code)
+        dict_data = DictDataDao.get_dict_data_detail_by_id(result_db, dict_code=dict_code)
 
         return dict_data
 

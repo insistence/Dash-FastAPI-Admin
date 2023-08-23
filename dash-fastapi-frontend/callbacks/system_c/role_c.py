@@ -219,6 +219,7 @@ def change_role_menu_mode(parent_children, current_role_menu):
      Output('role-menu-perms', 'treeData'),
      Output('role-menu-perms', 'expandedKeys', allow_duplicate=True),
      Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
+     Output('role-menu-perms', 'halfCheckedKeys', allow_duplicate=True),
      Output('role-menu-store', 'data'),
      Output('current-role-menu-store', 'data'),
      Output('role-remark', 'value'),
@@ -252,6 +253,7 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                     tree_data[0],
                     [],
                     None,
+                    None,
                     tree_data[1],
                     None,
                     None,
@@ -270,8 +272,10 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                 if role_info_res['code'] == 200:
                     role_info = role_info_res['data']
                     checked_menu = []
+                    checked_menu_all = []
                     if role_info.get('menu')[0]:
                         for item in role_info.get('menu'):
+                            checked_menu_all.append(str(item.get('menu_id')))
                             has_children = False
                             for other_item in role_info.get('menu'):
                                 if other_item['parent_id'] == item['menu_id']:
@@ -279,6 +283,7 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                                     break
                             if not has_children:
                                 checked_menu.append(str(item.get('menu_id')))
+                    half_checked_menu = [x for x in checked_menu_all if x not in checked_menu]
                     return [
                         True,
                         '编辑角色',
@@ -289,6 +294,7 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         tree_data[0],
                         [],
                         checked_menu,
+                        half_checked_menu,
                         tree_data[1],
                         role_info.get('menu'),
                         role_info.get('role').get('remark'),
@@ -299,9 +305,9 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         {'type': 'edit'}
                     ]
                     
-        return [dash.no_update] * 12 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None, None, None, None]
 
-    return [dash.no_update] * 13 + [None, None, None, None]
+    return [dash.no_update] * 14 + [None, None, None, None]
 
 
 @app.callback(
@@ -324,13 +330,17 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
      State('role-status', 'value'),
      State('role-menu-perms', 'checkedKeys'),
      State('role-menu-perms', 'halfCheckedKeys'),
+     State('role-menu-perms-radio-parent-children', 'checked'),
      State('role-remark', 'value')],
     prevent_initial_call=True
 )
-def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_checked_keys, menu_half_checked_eys, remark):
+def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_checked_keys, menu_half_checked_keys, parent_checked, remark):
     if confirm_trigger:
         if all([role_name, role_key, role_sort]):
-            menu_perms = menu_half_checked_eys + menu_checked_keys
+            if parent_checked:
+                menu_perms = menu_half_checked_keys + menu_checked_keys
+            else:
+                menu_perms = menu_checked_keys
             params_add = dict(role_name=role_name, role_key=role_key, role_sort=role_sort, menu_id=','.join(menu_perms) if menu_perms else None, status=status, remark=remark)
             params_edit = dict(role_id=cur_role_info.get('role_id') if cur_role_info else None, role_name=role_name, role_key=role_key, role_sort=role_sort, 
                                menu_id=','.join(menu_perms) if menu_perms else '', status=status, remark=remark)

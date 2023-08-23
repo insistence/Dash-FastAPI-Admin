@@ -18,7 +18,7 @@ class MenuService:
         :return: 菜单树信息对象
         """
         menu_tree_option = []
-        menu_list_result = get_menu_list_for_tree(result_db, MenuModel(**page_object.dict()), current_user.user.user_id, current_user.role)
+        menu_list_result = MenuDao.get_menu_list_for_tree(result_db, MenuModel(**page_object.dict()), current_user.user.user_id, current_user.role)
         menu_tree_result = cls.get_menu_tree(0, MenuTree(menu_tree=menu_list_result))
         if page_object.type != 'role':
             menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
@@ -37,7 +37,7 @@ class MenuService:
         :return: 菜单树信息对象
         """
         menu_tree_option = []
-        menu_list_result = get_menu_info_for_edit_option(result_db, page_object, current_user.user.user_id, current_user.role)
+        menu_list_result = MenuDao.get_menu_info_for_edit_option(result_db, page_object, current_user.user.user_id, current_user.role)
         menu_tree_result = cls.get_menu_tree(0, MenuTree(menu_tree=menu_list_result))
         menu_tree_option.append(dict(title='主类目', value='0', key='0', children=menu_tree_result))
 
@@ -52,7 +52,7 @@ class MenuService:
         :param current_user: 当前用户对象
         :return: 菜单列表信息对象
         """
-        menu_list_result = get_menu_list(result_db, page_object, current_user.user.user_id, current_user.role)
+        menu_list_result = MenuDao.get_menu_list(result_db, page_object, current_user.user.user_id, current_user.role)
 
         return menu_list_result
 
@@ -64,9 +64,20 @@ class MenuService:
         :param page_object: 新增菜单对象
         :return: 新增菜单校验结果
         """
-        add_menu_result = add_menu_dao(result_db, page_object)
+        menu = MenuDao.get_menu_detail_by_info(result_db, MenuModel(
+            **dict(parent_id=page_object.parent_id, menu_name=page_object.menu_name, menu_type=page_object.menu_type)))
+        if menu:
+            result = dict(is_success=False, message='同一目录下不允许存在同名同类型的菜单')
+        else:
+            try:
+                MenuDao.add_menu_dao(result_db, page_object)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_menu_result
+        return CrudMenuResponse(**result)
 
     @classmethod
     def edit_menu_services(cls, result_db: Session, page_object: MenuModel):
@@ -77,9 +88,25 @@ class MenuService:
         :return: 编辑菜单校验结果
         """
         edit_menu = page_object.dict(exclude_unset=True)
-        edit_menu_result = edit_menu_dao(result_db, edit_menu)
+        menu_info = cls.detail_menu_services(result_db, edit_menu.get('menu_id'))
+        if menu_info:
+            if menu_info.page_id != page_object.parent_id or menu_info.menu_name != page_object.menu_name or menu_info.menu_type != page_object.menu_type:
+                menu = MenuDao.get_menu_detail_by_info(result_db, MenuModel(
+                    **dict(parent_id=page_object.parent_id, menu_name=page_object.menu_name, menu_type=page_object.menu_type)))
+                if menu:
+                    result = dict(is_success=False, message='同一目录下不允许存在同名同类型的菜单')
+                    return CrudMenuResponse(**result)
+            try:
+                MenuDao.edit_menu_dao(result_db, edit_menu)
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='菜单不存在')
 
-        return edit_menu_result
+        return CrudMenuResponse(**result)
 
     @classmethod
     def delete_menu_services(cls, result_db: Session, page_object: DeleteMenuModel):
@@ -91,10 +118,15 @@ class MenuService:
         """
         if page_object.menu_ids.split(','):
             menu_id_list = page_object.menu_ids.split(',')
-            for menu_id in menu_id_list:
-                menu_id_dict = dict(menu_id=menu_id)
-                delete_menu_dao(result_db, MenuModel(**menu_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for menu_id in menu_id_list:
+                    menu_id_dict = dict(menu_id=menu_id)
+                    MenuDao.delete_menu_dao(result_db, MenuModel(**menu_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入菜单id为空')
         return CrudMenuResponse(**result)
@@ -107,7 +139,7 @@ class MenuService:
         :param menu_id: 菜单id
         :return: 菜单id对应的信息
         """
-        menu = get_menu_detail_by_id(result_db, menu_id=menu_id)
+        menu = MenuDao.get_menu_detail_by_id(result_db, menu_id=menu_id)
 
         return menu
 

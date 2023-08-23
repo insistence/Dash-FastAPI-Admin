@@ -1,6 +1,6 @@
 from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
-from module_admin.dao.dict_dao import query_dict_data_list
+from module_admin.dao.dict_dao import DictDataDao
 from utils.common_util import export_list2excel
 
 
@@ -17,7 +17,7 @@ class OperationLogService:
         :param query_object: 查询参数对象
         :return: 操作日志列表信息对象
         """
-        operation_log_list_result = get_operation_log_list(result_db, query_object)
+        operation_log_list_result = OperationLogDao.get_operation_log_list(result_db, query_object)
 
         return operation_log_list_result
 
@@ -29,9 +29,15 @@ class OperationLogService:
         :param page_object: 新增操作日志对象
         :return: 新增操作日志校验结果
         """
-        add_operation_log_result = add_operation_log_dao(result_db, page_object)
+        try:
+            OperationLogDao.add_operation_log_dao(result_db, page_object)
+            result_db.commit()
+            result = dict(is_success=True, message='新增成功')
+        except Exception as e:
+            result_db.rollback()
+            result = dict(is_success=False, message=str(e))
 
-        return add_operation_log_result
+        return CrudLogResponse(**result)
 
     @classmethod
     def delete_operation_log_services(cls, result_db: Session, page_object: DeleteOperLogModel):
@@ -43,10 +49,15 @@ class OperationLogService:
         """
         if page_object.oper_ids.split(','):
             oper_id_list = page_object.oper_ids.split(',')
-            for oper_id in oper_id_list:
-                oper_id_dict = dict(oper_id=oper_id)
-                delete_operation_log_dao(result_db, OperLogModel(**oper_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for oper_id in oper_id_list:
+                    oper_id_dict = dict(oper_id=oper_id)
+                    OperationLogDao.delete_operation_log_dao(result_db, OperLogModel(**oper_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入操作日志id为空')
         return CrudLogResponse(**result)
@@ -60,8 +71,13 @@ class OperationLogService:
         :return: 清除操作日志校验结果
         """
         if page_object.oper_type == 'clear':
-            clear_operation_log_dao(result_db)
-            result = dict(is_success=True, message='清除成功')
+            try:
+                OperationLogDao.clear_operation_log_dao(result_db)
+                result_db.commit()
+                result = dict(is_success=True, message='清除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='清除标识不合法')
 
@@ -75,7 +91,7 @@ class OperationLogService:
         :param oper_id: 操作日志id
         :return: 操作日志id对应的信息
         """
-        operation_log = get_operation_log_detail_by_id(result_db, oper_id=oper_id)
+        operation_log = OperationLogDao.get_operation_log_detail_by_id(result_db, oper_id=oper_id)
 
         return operation_log
 
@@ -108,7 +124,7 @@ class OperationLogService:
         }
 
         data = [OperLogModel(**vars(row)).dict() for row in operation_log_list]
-        operation_type_list = query_dict_data_list(result_db, dict_type='sys_oper_type')
+        operation_type_list = DictDataDao.query_dict_data_list(result_db, dict_type='sys_oper_type')
         operation_type_option = [dict(label=item.dict_label, value=item.dict_value) for item in operation_type_list]
         operation_type_option_dict = {item.get('value'): item for item in operation_type_option}
 
@@ -139,7 +155,7 @@ class LoginLogService:
         :param query_object: 查询参数对象
         :return: 登录日志列表信息对象
         """
-        operation_log_list_result = get_login_log_list(result_db, query_object)
+        operation_log_list_result = LoginLogDao.get_login_log_list(result_db, query_object)
 
         return operation_log_list_result
 
@@ -151,9 +167,15 @@ class LoginLogService:
         :param page_object: 新增登录日志对象
         :return: 新增登录日志校验结果
         """
-        add_login_log_result = add_login_log_dao(result_db, page_object)
+        try:
+            LoginLogDao.add_login_log_dao(result_db, page_object)
+            result_db.commit()
+            result = dict(is_success=True, message='新增成功')
+        except Exception as e:
+            result_db.rollback()
+            result = dict(is_success=False, message=str(e))
 
-        return add_login_log_result
+        return CrudLogResponse(**result)
 
     @classmethod
     def delete_login_log_services(cls, result_db: Session, page_object: DeleteLoginLogModel):
@@ -165,10 +187,15 @@ class LoginLogService:
         """
         if page_object.info_ids.split(','):
             info_id_list = page_object.info_ids.split(',')
-            for info_id in info_id_list:
-                info_id_dict = dict(info_id=info_id)
-                delete_login_log_dao(result_db, LogininforModel(**info_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for info_id in info_id_list:
+                    info_id_dict = dict(info_id=info_id)
+                    LoginLogDao.delete_login_log_dao(result_db, LogininforModel(**info_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入登录日志id为空')
         return CrudLogResponse(**result)
@@ -182,8 +209,13 @@ class LoginLogService:
         :return: 清除操作日志校验结果
         """
         if page_object.oper_type == 'clear':
-            clear_login_log_dao(result_db)
-            result = dict(is_success=True, message='清除成功')
+            try:
+                LoginLogDao.clear_login_log_dao(result_db)
+                result_db.commit()
+                result = dict(is_success=True, message='清除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='清除标识不合法')
 

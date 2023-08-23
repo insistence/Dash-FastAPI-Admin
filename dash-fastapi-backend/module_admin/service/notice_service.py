@@ -15,7 +15,7 @@ class NoticeService:
         :param query_object: 查询参数对象
         :return: 通知公告列表信息对象
         """
-        notice_list_result = get_notice_list(result_db, query_object)
+        notice_list_result = NoticeDao.get_notice_list(result_db, query_object)
 
         return notice_list_result
 
@@ -27,9 +27,19 @@ class NoticeService:
         :param page_object: 新增通知公告对象
         :return: 新增通知公告校验结果
         """
-        add_notice_result = add_notice_dao(result_db, page_object)
+        notice = NoticeDao.get_notice_detail_by_info(result_db, page_object)
+        if notice:
+            result = dict(is_success=False, message='通知公告已存在')
+        else:
+            try:
+                NoticeDao.add_notice_dao(result_db, page_object)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_notice_result
+        return CrudNoticeResponse(**result)
 
     @classmethod
     def edit_notice_services(cls, result_db: Session, page_object: NoticeModel):
@@ -40,9 +50,24 @@ class NoticeService:
         :return: 编辑通知公告校验结果
         """
         edit_notice = page_object.dict(exclude_unset=True)
-        edit_notice_result = edit_notice_dao(result_db, edit_notice)
+        notice_info = cls.detail_notice_services(result_db, edit_notice.get('notice_id'))
+        if notice_info:
+            if notice_info.notice_title != page_object.notice_title or notice_info.notice_type != page_object.notice_type or notice_info.notice_content != page_object.notice_content:
+                notice = NoticeDao.get_notice_detail_by_info(result_db, page_object)
+                if notice:
+                    result = dict(is_success=False, message='通知公告已存在')
+                    return CrudNoticeResponse(**result)
+            try:
+                NoticeDao.edit_notice_dao(result_db, edit_notice)
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='通知公告不存在')
 
-        return edit_notice_result
+        return CrudNoticeResponse(**result)
 
     @classmethod
     def delete_notice_services(cls, result_db: Session, page_object: DeleteNoticeModel):
@@ -54,12 +79,17 @@ class NoticeService:
         """
         if page_object.notice_ids.split(','):
             notice_id_list = page_object.notice_ids.split(',')
-            for notice_id in notice_id_list:
-                notice_id_dict = dict(notice_id=notice_id)
-                delete_notice_dao(result_db, NoticeModel(**notice_id_dict))
-            result = dict(is_success=True, message='删除成功')
+            try:
+                for notice_id in notice_id_list:
+                    notice_id_dict = dict(notice_id=notice_id)
+                    NoticeDao.delete_notice_dao(result_db, NoticeModel(**notice_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
-            result = dict(is_success=False, message='传入岗位id为空')
+            result = dict(is_success=False, message='传入通知公告id为空')
         return CrudNoticeResponse(**result)
 
     @classmethod
@@ -70,6 +100,6 @@ class NoticeService:
         :param notice_id: 通知公告id
         :return: 通知公告id对应的信息
         """
-        notice = get_notice_detail_by_id(result_db, notice_id=notice_id)
+        notice = NoticeDao.get_notice_detail_by_id(result_db, notice_id=notice_id)
 
         return notice

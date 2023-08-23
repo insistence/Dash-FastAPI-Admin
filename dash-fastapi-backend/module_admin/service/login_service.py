@@ -38,7 +38,7 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
     except JWTError:
         logger.warning("用户token已失效，请重新登录")
         raise AuthException(data="", message="用户token已失效，请重新登录")
-    user = get_user_by_id(result_db, user_id=token_data.user_id)
+    user = UserDao.get_user_by_id(result_db, user_id=token_data.user_id)
     if user is None:
         logger.warning("用户token不合法")
         raise AuthException(data="", message="用户token不合法")
@@ -144,7 +144,7 @@ def deal_user_dept_info(db: Session, dept_info: DeptInfo):
     dept_ancestors = dept_info.ancestors.split(',')
     tmp_dept_list = []
     for item in dept_ancestors:
-        dept_obj = get_user_dept_info(db, int(item))
+        dept_obj = UserDao.get_user_dept_info(db, int(item))
         if dept_obj:
             tmp_dept_list.append(dept_obj.dept_name)
     tmp_dept_list.append(tmp_dept_name)
