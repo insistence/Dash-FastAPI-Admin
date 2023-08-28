@@ -166,7 +166,7 @@ def add_edit_dict_data_modal(add_click, edit_click, button_click, selected_row_k
                 'default',
                 '0',
                 None,
-                {'timestamp': time.time()},
+                dash.no_update,
                 None,
                 None,
                 None,

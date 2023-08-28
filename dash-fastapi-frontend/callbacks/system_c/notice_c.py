@@ -287,7 +287,7 @@ def add_edit_notice_modal(add_click, edit_click, button_click, selected_row_keys
                 None,
                 '0',
                 '<p><br></p>',
-                {'timestamp': time.time()},
+                dash.no_update,
                 None,
                 None,
                 None,

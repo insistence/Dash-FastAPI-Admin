@@ -173,7 +173,7 @@ def add_edit_dict_type_modal(add_click, edit_click, button_click, selected_row_k
                 None,
                 '0',
                 None,
-                {'timestamp': time.time()},
+                dash.no_update,
                 None,
                 None,
                 None,
