@@ -48,10 +48,11 @@ async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, q
         add_dict_type.create_by = current_user.user.user_name
         add_dict_type.update_by = current_user.user.user_name
         add_dict_type_result = DictTypeService.add_dict_type_services(query_db, add_dict_type)
-        logger.info(add_dict_type_result.message)
         if add_dict_type_result.is_success:
+            logger.info(add_dict_type_result.message)
             return response_200(data=add_dict_type_result, message=add_dict_type_result.message)
         else:
+            logger.warning(add_dict_type_result.message)
             return response_400(data="", message=add_dict_type_result.message)
     except Exception as e:
         logger.exception(e)
@@ -151,10 +152,11 @@ async def add_system_dict_data(request: Request, add_dict_data: DictDataModel, q
         add_dict_data.create_by = current_user.user.user_name
         add_dict_data.update_by = current_user.user.user_name
         add_dict_data_result = DictDataService.add_dict_data_services(query_db, add_dict_data)
-        logger.info(add_dict_data_result.message)
         if add_dict_data_result.is_success:
+            logger.info(add_dict_data_result.message)
             return response_200(data=add_dict_data_result, message=add_dict_data_result.message)
         else:
+            logger.warning(add_dict_data_result.message)
             return response_400(data="", message=add_dict_data_result.message)
     except Exception as e:
         logger.exception(e)

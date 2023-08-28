@@ -1,7 +1,8 @@
 from module_admin.entity.vo.job_vo import *
 from module_admin.dao.job_dao import *
+from module_admin.dao.dict_dao import DictDataDao
 from utils.common_util import export_list2excel
-from config.get_scheduler import add_scheduler_job, remove_scheduler_job
+from config.get_scheduler import SchedulerUtil
 
 
 class JobService:
@@ -37,7 +38,7 @@ class JobService:
                 JobDao.add_job_dao(result_db, page_object)
                 job_info = JobDao.get_job_detail_by_info(result_db, page_object)
                 if job_info.status == '0':
-                    add_scheduler_job(job_info=job_info)
+                    SchedulerUtil.add_scheduler_job(job_info=job_info)
                 result_db.commit()
                 result = dict(is_success=True, message='新增成功')
             except Exception as e:
@@ -66,20 +67,11 @@ class JobService:
                     return CrudJobResponse(**result)
             try:
                 JobDao.edit_job_dao(result_db, edit_job)
+                query_job = SchedulerUtil.get_scheduler_job(job_id=edit_job.get('job_id'))
+                if query_job:
+                    SchedulerUtil.remove_scheduler_job(job_id=edit_job.get('job_id'))
                 if edit_job.get('status') == '0':
-                    try:
-                        remove_scheduler_job(job_id=edit_job.get('job_id'))
-                    except Exception as e:
-                        print(e)
-                    finally:
-                        add_scheduler_job(job_info=job_info)
-                if edit_job.get('status') == '1':
-                    try:
-                        remove_scheduler_job(job_id=edit_job.get('job_id'))
-                    except Exception as e:
-                        print(e)
-                    finally:
-                        print('')
+                    SchedulerUtil.add_scheduler_job(job_info=job_info)
                 result_db.commit()
                 result = dict(is_success=True, message='更新成功')
             except Exception as e:
@@ -126,9 +118,10 @@ class JobService:
         return job
 
     @staticmethod
-    def export_job_list_services(job_list: List):
+    def export_job_list_services(result_db: Session, job_list: List):
         """
         导出定时任务信息service
+        :param result_db: orm对象
         :param job_list: 定时任务信息列表
         :return: 定时任务信息对应excel的二进制数据
         """
@@ -137,7 +130,10 @@ class JobService:
             "job_id": "任务编码",
             "job_name": "任务名称",
             "job_group": "任务组名",
+            "job_executor": "任务执行器",
             "invoke_target": "调用目标字符串",
+            "job_args": "位置参数",
+            "job_kwargs": "关键字参数",
             "cron_expression": "cron执行表达式",
             "misfire_policy": "计划执行错误策略",
             "concurrent": "是否并发执行",
@@ -150,16 +146,17 @@ class JobService:
         }
 
         data = [JobModel(**vars(row)).dict() for row in job_list]
+        job_group_list = DictDataDao.query_dict_data_list(result_db, dict_type='sys_job_group')
+        job_group_option = [dict(label=item.dict_label, value=item.dict_value) for item in job_group_list]
+        job_group_option_dict = {item.get('value'): item for item in job_group_option}
 
         for item in data:
             if item.get('status') == '0':
                 item['status'] = '正常'
             else:
                 item['status'] = '暂停'
-            if item.get('job_group') == 'SYSTEM':
-                item['job_group'] = '系统'
-            else:
-                item['job_group'] = '默认'
+            if str(item.get('job_group')) in job_group_option_dict.keys():
+                item['job_group'] = job_group_option_dict.get(str(item.get('job_group'))).get('label')
             if item.get('misfire_policy') == '1':
                 item['misfire_policy'] = '立即执行'
             elif item.get('misfire_policy') == '2':

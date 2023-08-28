@@ -36,10 +36,11 @@ async def add_system_notice(request: Request, add_notice: NoticeModel, query_db:
         add_notice.create_by = current_user.user.user_name
         add_notice.update_by = current_user.user.user_name
         add_notice_result = NoticeService.add_notice_services(query_db, add_notice)
-        logger.info(add_notice_result.message)
         if add_notice_result.is_success:
+            logger.info(add_notice_result.message)
             return response_200(data=add_notice_result, message=add_notice_result.message)
         else:
+            logger.warning(add_notice_result.message)
             return response_400(data="", message=add_notice_result.message)
     except Exception as e:
         logger.exception(e)

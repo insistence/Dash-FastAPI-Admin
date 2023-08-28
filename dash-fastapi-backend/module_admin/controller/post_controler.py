@@ -48,10 +48,11 @@ async def add_system_post(request: Request, add_post: PostModel, query_db: Sessi
         add_post.create_by = current_user.user.user_name
         add_post.update_by = current_user.user.user_name
         add_post_result = PostService.add_post_services(query_db, add_post)
-        logger.info(add_post_result.message)
         if add_post_result.is_success:
+            logger.info(add_post_result.message)
             return response_200(data=add_post_result, message=add_post_result.message)
         else:
+            logger.warning(add_post_result.message)
             return response_400(data="", message=add_post_result.message)
     except Exception as e:
         logger.exception(e)

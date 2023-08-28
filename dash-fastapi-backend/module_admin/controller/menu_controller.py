@@ -54,10 +54,11 @@ async def add_system_menu(request: Request, add_menu: MenuModel, query_db: Sessi
         add_menu.create_by = current_user.user.user_name
         add_menu.update_by = current_user.user.user_name
         add_menu_result = MenuService.add_menu_services(query_db, add_menu)
-        logger.info(add_menu_result.message)
         if add_menu_result.is_success:
+            logger.info(add_menu_result.message)
             return response_200(data=add_menu_result, message=add_menu_result.message)
         else:
+            logger.warning(add_menu_result.message)
             return response_400(data="", message=add_menu_result.message)
     except Exception as e:
         logger.exception(e)

@@ -2,7 +2,8 @@ from dash import dcc, html
 import feffery_antd_components as fac
 import json
 
-import callbacks.monitor_c.job_c
+import callbacks.monitor_c.job_c.job_c
+from . import job_log
 from api.job import get_job_list_api
 from api.dict import query_dict_data_list_api
 
@@ -489,6 +490,51 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
+                                            id='job-job_args',
+                                            placeholder='请输入位置参数',
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        id='job-job_args-form-item',
+                                        label='位置参数',
+                                        labelCol={
+                                            'span': 6
+                                        },
+                                        wrapperCol={
+                                            'span': 18
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='job-job_kwargs',
+                                            placeholder='请输入关键字参数',
+                                            style={
+                                                'width': '100%'
+                                            }
+                                        ),
+                                        id='job-job_kwargs-form-item',
+                                        label='关键字参数',
+                                        labelCol={
+                                            'span': 6
+                                        },
+                                        wrapperCol={
+                                            'span': 18
+                                        }
+                                    ),
+                                    span=12
+                                )
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
                                             id='job-cron_expression',
                                             placeholder='请输入cron执行表达式',
                                             addonAfter=html.Div(
@@ -641,5 +687,232 @@ def render(button_perms):
             title='提示',
             renderFooter=True,
             centered=True
+        ),
+
+        # 任务调度日志modal
+        fac.AntdModal(
+            job_log.render(button_perms),
+            id='job_to_job_log-modal',
+            mask=False,
+            maskClosable=False,
+            width=1050,
+            renderFooter=False,
+            okClickClose=False
+        ),
+
+        # 任务明细modal
+        fac.AntdModal(
+            [
+                fac.AntdForm(
+                    [
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-job_name-text'),
+                                        label='任务名称',
+                                        required=True,
+                                        id='job_detail-job_name-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-job_group-text'),
+                                        label='任务分组',
+                                        required=True,
+                                        id='job_detail-job_group-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-job_executor-text'),
+                                        label='任务执行器',
+                                        required=True,
+                                        id='job_detail-job_executor-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-invoke_target-text'),
+                                        label='调用目标函数',
+                                        required=True,
+                                        id='job_detail-invoke_target-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-job_args-text'),
+                                        label='位置参数',
+                                        required=True,
+                                        id='job_detail-job_args-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-job_kwargs-text'),
+                                        label='关键字参数',
+                                        required=True,
+                                        id='job_detail-job_kwargs-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-cron_expression-text'),
+                                        label='cron表达式',
+                                        required=True,
+                                        id='job_detail-cron_expression-form-item',
+                                        labelCol={
+                                            'span': 4
+                                        },
+                                        wrapperCol={
+                                            'span': 20
+                                        }
+                                    ),
+                                    span=24
+                                ),
+                            ],
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-misfire_policy-text'),
+                                        label='执行策略',
+                                        required=True,
+                                        id='job_detail-misfire_policy-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-concurrent-text'),
+                                        label='是否并发',
+                                        required=True,
+                                        id='job_detail-concurrent-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                            gutter=5
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-status-text'),
+                                        label='任务状态',
+                                        required=True,
+                                        id='job_detail-status-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdText(id='job_detail-create_time-text'),
+                                        label='创建时间',
+                                        required=True,
+                                        id='job_detail-create_time-form-item',
+                                        labelCol={
+                                            'span': 8
+                                        },
+                                        wrapperCol={
+                                            'span': 16
+                                        }
+                                    ),
+                                    span=12
+                                ),
+                            ],
+                        ),
+                    ],
+                    labelCol={
+                        'span': 8
+                    },
+                    wrapperCol={
+                        'span': 16
+                    },
+                    style={
+                        'marginRight': '15px'
+                    }
+                )
+            ],
+            id='job_detail-modal',
+            mask=False,
+            width=850,
+            renderFooter=False,
         ),
     ]

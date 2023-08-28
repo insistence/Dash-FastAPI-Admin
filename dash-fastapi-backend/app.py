@@ -21,11 +21,10 @@ from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
 from config.get_redis import create_redis_pool, close_redis_pool
 from config.get_db import init_create_table
-from config.get_scheduler import init_system_scheduler, close_system_scheduler
+from config.get_scheduler import SchedulerUtil
 from utils.response_util import response_401, AuthException
 from utils.log_util import logger
 from utils.common_util import worship
-
 
 app = FastAPI(
     title='Dash-FastAPI',
@@ -55,14 +54,14 @@ async def startup_event():
     worship()
     app.state.redis = await create_redis_pool()
     await init_create_table()
-    await init_system_scheduler()
+    await SchedulerUtil.init_system_scheduler()
     logger.info("Dash-FastAPI启动成功")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     await close_redis_pool(app)
-    await close_system_scheduler()
+    await SchedulerUtil.close_system_scheduler()
 
 
 # 自定义token检验异常
@@ -94,7 +93,6 @@ app.include_router(jobController, prefix="/monitor", tags=['系统监控-定时�
 app.include_router(serverController, prefix="/monitor", tags=['系统监控-服务监控'])
 app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓存监控'])
 app.include_router(commonController, prefix="/common", tags=['通用模块'])
-
 
 if __name__ == '__main__':
     uvicorn.run(app='app:app', host="127.0.0.1", port=9099, reload=True)

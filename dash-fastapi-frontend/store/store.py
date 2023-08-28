@@ -97,5 +97,9 @@ def render_store_container():
             dcc.Store(id='job-edit-id-store'),
             # 定时任务模块删除操作行key存储容器
             dcc.Store(id='job-delete-ids-store'),
+            # 定时任务日志管理模块操作类型存储容器
+            dcc.Store(id='job_log-operations-store'),
+            # 定时任务日志管理模块删除操作行key存储容器
+            dcc.Store(id='job_log-delete-ids-store'),
         ]
     )

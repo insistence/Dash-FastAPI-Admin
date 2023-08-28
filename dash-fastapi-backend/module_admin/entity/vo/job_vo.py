@@ -9,7 +9,10 @@ class JobModel(BaseModel):
     job_id: Optional[int]
     job_name: Optional[str]
     job_group: Optional[str]
+    job_executor: Optional[str]
     invoke_target: Optional[str]
+    job_args: Optional[str]
+    job_kwargs: Optional[str]
     cron_expression: Optional[str]
     misfire_policy: Optional[str]
     concurrent: Optional[str]
@@ -31,7 +34,11 @@ class JobLogModel(BaseModel):
     job_log_id: Optional[int]
     job_name: Optional[str]
     job_group: Optional[str]
+    job_executor: Optional[str]
     invoke_target: Optional[str]
+    job_args: Optional[str]
+    job_kwargs: Optional[str]
+    job_trigger: Optional[str]
     job_message: Optional[str]
     status: Optional[str]
     exception_info: Optional[str]
@@ -62,7 +69,7 @@ class JobPageObjectResponse(BaseModel):
 
 class CrudJobResponse(BaseModel):
     """
-    操作定时任务响应模型
+    操作定时任务及日志响应模型
     """
     is_success: bool
     message: str
@@ -80,3 +87,44 @@ class DeleteJobModel(BaseModel):
     删除定时任务模型
     """
     job_ids: str
+
+
+class JobLogQueryModel(JobLogModel):
+    """
+    定时任务日志不分页查询模型
+    """
+    create_time_start: Optional[str]
+    create_time_end: Optional[str]
+
+
+class JobLogPageObject(JobLogQueryModel):
+    """
+    定时任务日志管理分页查询模型
+    """
+    page_num: int
+    page_size: int
+
+
+class JobLogPageObjectResponse(BaseModel):
+    """
+    定时任务日志管理列表分页查询返回模型
+    """
+    rows: List[Union[JobLogModel, None]] = []
+    page_num: int
+    page_size: int
+    total: int
+    has_next: bool
+
+
+class DeleteJobLogModel(BaseModel):
+    """
+    删除定时任务日志模型
+    """
+    job_log_ids: str
+
+
+class ClearJobLogModel(BaseModel):
+    """
+    清除定时任务日志模型
+    """
+    oper_type: str

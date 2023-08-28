@@ -47,10 +47,11 @@ async def add_system_role(request: Request, add_role: AddRoleModel, query_db: Se
         add_role.create_by = current_user.user.user_name
         add_role.update_by = current_user.user.user_name
         add_role_result = RoleService.add_role_services(query_db, add_role)
-        logger.info(add_role_result.message)
         if add_role_result.is_success:
+            logger.info(add_role_result.message)
             return response_200(data=add_role_result, message=add_role_result.message)
         else:
+            logger.warning(add_role_result.message)
             return response_400(data="", message=add_role_result.message)
     except Exception as e:
         logger.exception(e)

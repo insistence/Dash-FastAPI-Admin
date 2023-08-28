@@ -54,10 +54,11 @@ async def add_system_dept(request: Request, add_dept: DeptModel, query_db: Sessi
         add_dept.create_by = current_user.user.user_name
         add_dept.update_by = current_user.user.user_name
         add_dept_result = DeptService.add_dept_services(query_db, add_dept)
-        logger.info(add_dept_result.message)
         if add_dept_result.is_success:
+            logger.info(add_dept_result.message)
             return response_200(data=add_dept_result, message=add_dept_result.message)
         else:
+            logger.warning(add_dept_result.message)
             return response_400(data="", message=add_dept_result.message)
     except Exception as e:
         logger.exception(e)

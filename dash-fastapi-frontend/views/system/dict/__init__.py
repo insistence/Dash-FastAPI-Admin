@@ -513,7 +513,7 @@ def render(button_perms):
             id='dict_type_to_dict_data-modal',
             mask=False,
             maskClosable=False,
-            width=1200,
+            width=1000,
             renderFooter=False,
             okClickClose=False
         )

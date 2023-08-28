@@ -160,6 +160,8 @@ def change_job_edit_delete_button_status(table_rows_selected):
      Output('job-job_group', 'value'),
      Output('job-invoke_target', 'value'),
      Output('job-cron_expression', 'value'),
+     Output('job-job_args', 'value'),
+     Output('job-job_kwargs', 'value'),
      Output('job-misfire_policy', 'value'),
      Output('job-concurrent', 'value'),
      Output('job-status', 'value'),
@@ -187,10 +189,12 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
                 None,
                 None,
                 None,
+                None,
+                None,
                 '1',
                 '1',
                 '0',
-                {'timestamp': time.time()},
+                dash.no_update,
                 None,
                 None,
                 None,
@@ -211,6 +215,8 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
                     job_info.get('job_group'),
                     job_info.get('invoke_target'),
                     job_info.get('cron_expression'),
+                    job_info.get('job_args'),
+                    job_info.get('job_kwargs'),
                     job_info.get('misfire_policy'),
                     job_info.get('concurrent'),
                     job_info.get('status'),
@@ -221,9 +227,9 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
                     {'type': 'edit'}
                 ]
 
-        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None, None, None]
 
-    return [dash.no_update] * 10 + [None, None, None, None]
+    return [dash.no_update] * 12 + [None, None, None, None]
 
 
 @app.callback(
@@ -244,20 +250,23 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
      State('job-job_group', 'value'),
      State('job-invoke_target', 'value'),
      State('job-cron_expression', 'value'),
+     State('job-job_args', 'value'),
+     State('job-job_kwargs', 'value'),
      State('job-misfire_policy', 'value'),
      State('job-concurrent', 'value'),
      State('job-status', 'value')],
     prevent_initial_call=True
 )
 def job_confirm(confirm_trigger, operation_type, cur_job_info, job_name, job_group, invoke_target, cron_expression,
-                misfire_policy, concurrent, status):
+                job_args, job_kwargs, misfire_policy, concurrent, status):
     if confirm_trigger:
         if all([job_name, invoke_target, cron_expression]):
             params_add = dict(job_name=job_name, job_group=job_group, invoke_target=invoke_target,
-                              cron_expression=cron_expression, misfire_policy=misfire_policy, concurrent=concurrent,
-                              status=status)
+                              cron_expression=cron_expression, job_args=job_args, job_kwargs=job_kwargs,
+                              misfire_policy=misfire_policy, concurrent=concurrent, status=status)
             params_edit = dict(job_id=cur_job_info.get('job_id') if cur_job_info else None, job_name=job_name,
                                job_group=job_group, invoke_target=invoke_target, cron_expression=cron_expression,
+                               job_args=job_args, job_kwargs=job_kwargs,
                                misfire_policy=misfire_policy, concurrent=concurrent, status=status)
             api_res = {}
             operation_type = operation_type.get('type')
@@ -356,6 +365,60 @@ def table_switch_job_status(recently_switch_data_index, recently_switch_status, 
 
 
 @app.callback(
+    [Output('job_detail-modal', 'visible', allow_duplicate=True),
+     Output('job_detail-modal', 'title'),
+     Output('job_detail-job_name-text', 'children'),
+     Output('job_detail-job_group-text', 'children'),
+     Output('job_detail-job_executor-text', 'children'),
+     Output('job_detail-invoke_target-text', 'children'),
+     Output('job_detail-job_args-text', 'children'),
+     Output('job_detail-job_kwargs-text', 'children'),
+     Output('job_detail-cron_expression-text', 'children'),
+     Output('job_detail-misfire_policy-text', 'children'),
+     Output('job_detail-concurrent-text', 'children'),
+     Output('job_detail-status-text', 'children'),
+     Output('job_detail-create_time-text', 'children'),
+     Output('api-check-token', 'data', allow_duplicate=True)],
+    Input('job-list-table', 'nClicksDropdownItem'),
+    [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('job-list-table', 'recentlyDropdownItemClickedRow')],
+    prevent_initial_call=True
+)
+def get_job_detail_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    if dropdown_click and recently_clicked_dropdown_item_title == '任务详细':
+        job_id = int(recently_dropdown_item_clicked_row['key'])
+        job_info_res = get_job_detail_api(job_id=job_id)
+        if job_info_res['code'] == 200:
+            job_info = job_info_res['data']
+            if job_info.get('misfire_policy') == '1':
+                misfire_policy = '立即执行'
+            elif job_info.get('misfire_policy') == '2':
+                misfire_policy = '执行一次'
+            else:
+                misfire_policy = '放弃执行'
+            return [
+                True,
+                '任务详情',
+                job_info.get('job_name'),
+                job_info.get('job_group'),
+                job_info.get('job_executor'),
+                job_info.get('invoke_target'),
+                job_info.get('job_args'),
+                job_info.get('job_kwargs'),
+                job_info.get('cron_expression'),
+                misfire_policy,
+                '是' if job_info.get('concurrent') == '0' else '否',
+                '正常' if job_info.get('status') == '0' else '停用',
+                job_info.get('create_time'),
+                {'timestamp': time.time()},
+            ]
+
+        return [dash.no_update] * 13 + [{'timestamp': time.time()}]
+
+    return [dash.no_update] * 14
+
+
+@app.callback(
     [Output('job-delete-text', 'children'),
      Output('job-delete-confirm-modal', 'visible'),
      Output('job-delete-ids-store', 'data')],
@@ -415,6 +478,54 @@ def job_delete_confirm(delete_confirm, job_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('job_to_job_log-modal', 'visible'),
+     Output('job_to_job_log-modal', 'title'),
+     Output('job_log-job_name-input', 'value', allow_duplicate=True),
+     Output('job_log-job_group-select', 'options'),
+     Output('job-log', 'nClicks'),
+     Output('job_log-search', 'nClicks'),
+     Output('api-check-token', 'data', allow_duplicate=True)],
+    [Input('job-log', 'nClicks'),
+     Input('job-list-table', 'nClicksDropdownItem')],
+    [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('job-list-table', 'recentlyDropdownItemClickedRow'),
+     State('job_log-search', 'nClicks')],
+    prevent_initial_call=True
+)
+def job_to_job_log_modal(job_log_click, dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, job_log_search_nclick):
+
+    if job_log_click or (dropdown_click and recently_clicked_dropdown_item_title == '调度日志'):
+        option_table = []
+        info = query_dict_data_list_api(dict_type='sys_job_group')
+        if info.get('code') == 200:
+            data = info.get('data')
+            option_table = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
+
+            if dropdown_click and recently_clicked_dropdown_item_title == '调度日志':
+                return [
+                    True,
+                    '任务调度日志',
+                    recently_dropdown_item_clicked_row.get('job_name'),
+                    option_table,
+                    None,
+                    job_log_search_nclick + 1 if job_log_search_nclick else 1,
+                    {'timestamp': time.time()},
+                ]
+
+        return [
+                True,
+                '任务调度日志',
+                None,
+                option_table,
+                None,
+                job_log_search_nclick + 1 if job_log_search_nclick else 1,
+                {'timestamp': time.time()},
+            ]
+
+    return [dash.no_update] * 7
 
 
 @app.callback(

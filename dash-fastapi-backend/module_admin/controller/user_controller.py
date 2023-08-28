@@ -41,10 +41,11 @@ async def add_system_user(request: Request, add_user: AddUserModel, query_db: Se
         add_user.create_by = current_user.user.user_name
         add_user.update_by = current_user.user.user_name
         add_user_result = UserService.add_user_services(query_db, add_user)
-        logger.info(add_user_result.message)
         if add_user_result.is_success:
+            logger.info(add_user_result.message)
             return response_200(data=add_user_result, message=add_user_result.message)
         else:
+            logger.warning(add_user_result.message)
             return response_400(data="", message=add_user_result.message)
     except Exception as e:
         logger.exception(e)
