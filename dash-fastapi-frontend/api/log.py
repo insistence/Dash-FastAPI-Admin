@@ -41,6 +41,11 @@ def clear_login_log_api(page_obj: dict):
     return api_request(method='post', url='/system/log/login/clear', is_headers=True, json=page_obj)
 
 
+def unlock_user_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/log/login/unlock', is_headers=True, json=page_obj)
+
+
 def export_login_log_list_api(page_obj: dict):
 
     return api_request(method='post', url='/system/log/login/export', is_headers=True, json=page_obj, stream=True)

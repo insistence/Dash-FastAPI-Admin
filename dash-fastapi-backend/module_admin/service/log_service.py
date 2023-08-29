@@ -221,6 +221,16 @@ class LoginLogService:
 
         return CrudLogResponse(**result)
 
+    @classmethod
+    async def unlock_user_services(cls, request: Request, unlock_user: UnlockUser):
+        locked_user = await request.app.state.redis.get(f"account_lock:{unlock_user.user_name}")
+        if locked_user:
+            await request.app.state.redis.delete(f"account_lock:{unlock_user.user_name}")
+            result = dict(is_success=True, message='解锁成功')
+        else:
+            result = dict(is_success=False, message='该用户未锁定')
+        return CrudLogResponse(**result)
+
     @staticmethod
     def export_login_log_list_services(login_log_list: List):
         """

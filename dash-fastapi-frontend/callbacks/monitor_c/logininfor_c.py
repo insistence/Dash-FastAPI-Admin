@@ -7,7 +7,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.log import get_login_log_list_api, delete_login_log_api, clear_login_log_api, export_login_log_list_api
+from api.log import get_login_log_list_api, delete_login_log_api, clear_login_log_api, unlock_user_api, export_login_log_list_api
 
 
 @app.callback(
@@ -246,3 +246,29 @@ def reset_login_log_export_status(data):
         return None
 
     return dash.no_update
+
+
+@app.callback(
+    [Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('login_log-unlock', 'nClicks'),
+    State('login_log-list-table', 'selectedRows'),
+    prevent_initial_call=True
+)
+def unlock_user(unlock_click, selected_rows):
+    if unlock_click:
+        user_name = selected_rows[0].get('user_name')
+        unlock_info_res = unlock_user_api(dict(user_name=user_name))
+        if unlock_info_res.get('code') == 200:
+
+            return [
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('解锁成功', type='success')
+            ]
+
+        return [
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('解锁失败', type='error')
+        ]
+
+    return [dash.no_update] * 2

@@ -19,7 +19,7 @@ loginController = APIRouter()
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
     try:
         result = await authenticate_user(request, query_db, user)
-        if result in ['用户不存在', '密码错误', '用户已停用', '验证码已失效', '验证码错误']:
+        if result in ['用户不存在', '密码错误', '用户已停用', '验证码已失效', '验证码错误', '账号已锁定，请稍后再试', '10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试']:
             logger.warning(result)
             return response_400(data="", message=result)
 

@@ -128,6 +128,13 @@ class ClearLoginLogModel(BaseModel):
     oper_type: str
 
 
+class UnlockUser(BaseModel):
+    """
+    解锁用户模型
+    """
+    user_name: str
+
+
 class CrudLogResponse(BaseModel):
     """
     操作各类日志响应模型

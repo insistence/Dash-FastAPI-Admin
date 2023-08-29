@@ -134,6 +134,22 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
         return response_500(data="", message=str(e))
 
 
+@logController.post("/login/unlock", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
+@log_decorator(title='登录日志管理', business_type=9)
+async def clear_system_login_log(request: Request, unlock_user: UnlockUser, query_db: Session = Depends(get_db)):
+    try:
+        unlock_user_result = await LoginLogService.unlock_user_services(request, unlock_user)
+        if unlock_user_result.is_success:
+            logger.info(unlock_user_result.message)
+            return response_200(data=unlock_user_result, message=unlock_user_result.message)
+        else:
+            logger.warning(unlock_user_result.message)
+            return response_400(data="", message=unlock_user_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
 @logController.post("/login/export", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:export'))])
 @log_decorator(title='登录日志管理', business_type=5)
 async def export_system_login_log_list(request: Request, login_log_query: LoginLogQueryModel, query_db: Session = Depends(get_db)):
