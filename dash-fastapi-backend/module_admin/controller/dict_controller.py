@@ -47,7 +47,7 @@ async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, q
     try:
         add_dict_type.create_by = current_user.user.user_name
         add_dict_type.update_by = current_user.user.user_name
-        add_dict_type_result = DictTypeService.add_dict_type_services(query_db, add_dict_type)
+        add_dict_type_result = await DictTypeService.add_dict_type_services(request, query_db, add_dict_type)
         if add_dict_type_result.is_success:
             logger.info(add_dict_type_result.message)
             return response_200(data=add_dict_type_result, message=add_dict_type_result.message)
@@ -65,7 +65,7 @@ async def edit_system_dict_type(request: Request, edit_dict_type: DictTypeModel,
     try:
         edit_dict_type.update_by = current_user.user.user_name
         edit_dict_type.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        edit_dict_type_result = DictTypeService.edit_dict_type_services(query_db, edit_dict_type)
+        edit_dict_type_result = await DictTypeService.edit_dict_type_services(request, query_db, edit_dict_type)
         if edit_dict_type_result.is_success:
             logger.info(edit_dict_type_result.message)
             return response_200(data=edit_dict_type_result, message=edit_dict_type_result.message)
@@ -81,7 +81,7 @@ async def edit_system_dict_type(request: Request, edit_dict_type: DictTypeModel,
 @log_decorator(title='字典管理', business_type=3)
 async def delete_system_dict_type(request: Request, delete_dict_type: DeleteDictTypeModel, query_db: Session = Depends(get_db)):
     try:
-        delete_dict_type_result = DictTypeService.delete_dict_type_services(query_db, delete_dict_type)
+        delete_dict_type_result = await DictTypeService.delete_dict_type_services(request, query_db, delete_dict_type)
         if delete_dict_type_result.is_success:
             logger.info(delete_dict_type_result.message)
             return response_200(data=delete_dict_type_result, message=delete_dict_type_result.message)
@@ -118,6 +118,22 @@ async def export_system_dict_type_list(request: Request, dict_type_query: DictTy
         return response_500(data="", message=str(e))
 
 
+@dictController.post("/dictType/refresh", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@log_decorator(title='字典管理', business_type=2)
+async def refresh_system_dict(request: Request, query_db: Session = Depends(get_db)):
+    try:
+        refresh_dict_result = await DictTypeService.refresh_sys_dict_services(request, query_db)
+        if refresh_dict_result.is_success:
+            logger.info(refresh_dict_result.message)
+            return response_200(data=refresh_dict_result, message=refresh_dict_result.message)
+        else:
+            logger.warning(refresh_dict_result.message)
+            return response_400(data="", message=refresh_dict_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
 @dictController.post("/dictData/get", response_model=DictDataPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_data_list(request: Request, dict_data_page_query: DictDataPageObject, query_db: Session = Depends(get_db)):
     try:
@@ -137,7 +153,7 @@ async def get_system_dict_data_list(request: Request, dict_data_page_query: Dict
 async def query_system_dict_data_list(request: Request, dict_type: str, query_db: Session = Depends(get_db)):
     try:
         # 获取全量数据
-        dict_data_query_result = DictDataService.query_dict_data_list_services(query_db, dict_type)
+        dict_data_query_result = await DictDataService.query_dict_data_list_from_cache_services(request.app.state.redis, dict_type)
         logger.info('获取成功')
         return response_200(data=dict_data_query_result, message="获取成功")
     except Exception as e:
@@ -151,7 +167,7 @@ async def add_system_dict_data(request: Request, add_dict_data: DictDataModel, q
     try:
         add_dict_data.create_by = current_user.user.user_name
         add_dict_data.update_by = current_user.user.user_name
-        add_dict_data_result = DictDataService.add_dict_data_services(query_db, add_dict_data)
+        add_dict_data_result = await DictDataService.add_dict_data_services(request, query_db, add_dict_data)
         if add_dict_data_result.is_success:
             logger.info(add_dict_data_result.message)
             return response_200(data=add_dict_data_result, message=add_dict_data_result.message)
@@ -169,7 +185,7 @@ async def edit_system_dict_data(request: Request, edit_dict_data: DictDataModel,
     try:
         edit_dict_data.update_by = current_user.user.user_name
         edit_dict_data.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        edit_dict_data_result = DictDataService.edit_dict_data_services(query_db, edit_dict_data)
+        edit_dict_data_result = await DictDataService.edit_dict_data_services(request, query_db, edit_dict_data)
         if edit_dict_data_result.is_success:
             logger.info(edit_dict_data_result.message)
             return response_200(data=edit_dict_data_result, message=edit_dict_data_result.message)
@@ -185,7 +201,7 @@ async def edit_system_dict_data(request: Request, edit_dict_data: DictDataModel,
 @log_decorator(title='字典管理', business_type=3)
 async def delete_system_dict_data(request: Request, delete_dict_data: DeleteDictDataModel, query_db: Session = Depends(get_db)):
     try:
-        delete_dict_data_result = DictDataService.delete_dict_data_services(query_db, delete_dict_data)
+        delete_dict_data_result = await DictDataService.delete_dict_data_services(request, query_db, delete_dict_data)
         if delete_dict_data_result.is_success:
             logger.info(delete_dict_data_result.message)
             return response_200(data=delete_dict_data_result, message=delete_dict_data_result.message)

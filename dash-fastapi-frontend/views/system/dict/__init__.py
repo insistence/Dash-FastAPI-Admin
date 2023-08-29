@@ -239,7 +239,7 @@ def render(button_perms):
                                                             ),
                                                             '刷新缓存',
                                                         ],
-                                                        id='dict_type-refresh',
+                                                        id='dict_type-refresh-cache',
                                                         style={
                                                             'color': '#ff9292',
                                                             'background': '#ffeded',
@@ -247,6 +247,7 @@ def render(button_perms):
                                                         }
                                                     ),
                                                 ],
+                                                hidden='system:dict:edit' not in button_perms
                                             ),
                                         ],
                                         style={

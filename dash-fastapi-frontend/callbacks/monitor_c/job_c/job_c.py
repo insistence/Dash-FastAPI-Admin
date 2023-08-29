@@ -8,7 +8,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.job import get_job_list_api, get_job_detail_api, add_job_api, edit_job_api, delete_job_api, export_job_list_api
+from api.job import get_job_list_api, get_job_detail_api, add_job_api, edit_job_api, execute_job_api, delete_job_api, export_job_list_api
 from api.dict import query_dict_data_list_api
 
 
@@ -378,7 +378,8 @@ def table_switch_job_status(recently_switch_data_index, recently_switch_status, 
      Output('job_detail-concurrent-text', 'children'),
      Output('job_detail-status-text', 'children'),
      Output('job_detail-create_time-text', 'children'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
     Input('job-list-table', 'nClicksDropdownItem'),
     [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
      State('job-list-table', 'recentlyDropdownItemClickedRow')],
@@ -411,11 +412,53 @@ def get_job_detail_modal(dropdown_click, recently_clicked_dropdown_item_title, r
                 '正常' if job_info.get('status') == '0' else '停用',
                 job_info.get('create_time'),
                 {'timestamp': time.time()},
+                None
             ]
 
-        return [dash.no_update] * 13 + [{'timestamp': time.time()}]
+        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None]
 
-    return [dash.no_update] * 14
+    if dropdown_click and recently_clicked_dropdown_item_title == '执行一次':
+        job_id = int(recently_dropdown_item_clicked_row['key'])
+        job_info_res = execute_job_api(dict(job_id=job_id))
+        if job_info_res['code'] == 200:
+
+            return [
+                False,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('执行成功', type='success')
+            ]
+
+        return [
+            False,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('执行失败', type='success')
+        ]
+
+    return [dash.no_update] * 15
 
 
 @app.callback(

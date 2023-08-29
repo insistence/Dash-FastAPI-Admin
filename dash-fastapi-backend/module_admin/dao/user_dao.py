@@ -1,4 +1,4 @@
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, or_, desc, func
 from sqlalchemy.orm import Session
 from module_admin.entity.do.user_do import SysUser, SysUserRole, SysUserPost
 from module_admin.entity.do.role_do import SysRole, SysRoleMenu
@@ -148,7 +148,9 @@ class UserDao:
         """
         user_list = db.query(SysUser, SysDept) \
             .filter(SysUser.del_flag == 0,
-                    SysUser.dept_id == query_object.dept_id if query_object.dept_id else True,
+                    or_(SysUser.dept_id == query_object.dept_id, SysUser.dept_id.in_(
+                        db.query(SysDept.dept_id).filter(func.find_in_set(query_object.dept_id, SysDept.ancestors))
+                    )) if query_object.dept_id else True,
                     SysUser.user_name.like(f'%{query_object.user_name}%') if query_object.user_name else True,
                     SysUser.nick_name.like(f'%{query_object.nick_name}%') if query_object.nick_name else True,
                     SysUser.email.like(f'%{query_object.email}%') if query_object.email else True,

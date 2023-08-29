@@ -79,7 +79,7 @@ async def export_system_operation_log_list(request: Request, operation_log_query
     try:
         # 获取全量数据
         operation_log_query_result = OperationLogService.get_operation_log_list_services(query_db, operation_log_query)
-        operation_log_export_result = OperationLogService.export_operation_log_list_services(query_db, operation_log_query_result)
+        operation_log_export_result = await OperationLogService.export_operation_log_list_services(request, operation_log_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(operation_log_export_result))
     except Exception as e:

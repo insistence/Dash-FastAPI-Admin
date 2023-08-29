@@ -6,7 +6,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.events import EVENT_ALL
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from config.database import engine, SQLALCHEMY_DATABASE_URL, SessionLocal
 from config.env import RedisConfig
 from module_admin.service.job_log_service import JobLogService, JobLogModel
@@ -105,6 +105,28 @@ class SchedulerUtil:
         scheduler.add_job(
             func=eval(job_info.invoke_target),
             trigger=MyCronTrigger.from_crontab(job_info.cron_expression),
+            args=job_info.job_args.split(',') if job_info.job_args else None,
+            kwargs=json.loads(job_info.job_kwargs) if job_info.job_kwargs else None,
+            id=str(job_info.job_id),
+            name=job_info.job_name,
+            misfire_grace_time=1000000000000 if job_info.misfire_policy == '3' else None,
+            coalesce=True if job_info.misfire_policy == '2' else False,
+            max_instances=3 if job_info.concurrent == '0' else 1,
+            jobstore=job_info.job_group,
+            executor=job_info.job_executor
+        )
+
+    @classmethod
+    def execute_scheduler_job_once(cls, job_info):
+        """
+        根据输入的任务对象执行一次任务
+        :param job_info: 任务对象信息
+        :return:
+        """
+        scheduler.add_job(
+            func=eval(job_info.invoke_target),
+            trigger='date',
+            run_date=datetime.now() + timedelta(seconds=1),
             args=job_info.job_args.split(',') if job_info.job_args else None,
             kwargs=json.loads(job_info.job_kwargs) if job_info.job_kwargs else None,
             id=str(job_info.job_id),

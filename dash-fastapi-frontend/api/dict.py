@@ -36,6 +36,11 @@ def export_dict_type_list_api(page_obj: dict):
     return api_request(method='post', url='/system/dictType/export', is_headers=True, json=page_obj, stream=True)
 
 
+def refresh_dict_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/dictType/refresh', is_headers=True, json=page_obj)
+
+
 def get_dict_data_list_api(page_obj: dict):
 
     return api_request(method='post', url='/system/dictData/get', is_headers=True, json=page_obj)

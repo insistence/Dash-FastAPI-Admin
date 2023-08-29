@@ -7,7 +7,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
-from api.dict import get_dict_type_list_api, get_all_dict_type_api, get_dict_type_detail_api, add_dict_type_api, edit_dict_type_api, delete_dict_type_api, export_dict_type_list_api
+from api.dict import get_dict_type_list_api, get_all_dict_type_api, get_dict_type_detail_api, add_dict_type_api, edit_dict_type_api, delete_dict_type_api, export_dict_type_list_api, refresh_dict_api
 
 
 @app.callback(
@@ -432,3 +432,26 @@ def reset_dict_type_export_status(data):
         return None
 
     return dash.no_update
+
+
+@app.callback(
+    [Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('dict_type-refresh-cache', 'nClicks'),
+    prevent_initial_call=True
+)
+def refresh_dict_cache(refresh_click):
+    if refresh_click:
+        refresh_info_res = refresh_dict_api({})
+        if refresh_info_res.get('code') == 200:
+            return [
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('刷新成功', type='success')
+            ]
+
+        return [
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('刷新失败', type='error')
+        ]
+
+    return [dash.no_update] * 2

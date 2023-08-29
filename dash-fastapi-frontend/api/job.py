@@ -16,6 +16,11 @@ def edit_job_api(page_obj: dict):
     return api_request(method='patch', url='/monitor/job/edit', is_headers=True, json=page_obj)
 
 
+def execute_job_api(page_obj: dict):
+
+    return api_request(method='post', url='/monitor/job/changeStatus', is_headers=True, json=page_obj)
+
+
 def delete_job_api(page_obj: dict):
 
     return api_request(method='post', url='/monitor/job/delete', is_headers=True, json=page_obj)

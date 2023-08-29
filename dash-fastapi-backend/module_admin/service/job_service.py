@@ -1,6 +1,6 @@
 from module_admin.entity.vo.job_vo import *
 from module_admin.dao.job_dao import *
-from module_admin.dao.dict_dao import DictDataDao
+from module_admin.service.dict_service import Request, DictDataService
 from utils.common_util import export_list2excel
 from config.get_scheduler import SchedulerUtil
 
@@ -83,6 +83,26 @@ class JobService:
         return CrudJobResponse(**result)
 
     @classmethod
+    def execute_job_once_services(cls, result_db: Session, page_object: JobModel):
+        """
+        执行一次定时任务service
+        :param result_db: orm对象
+        :param page_object: 定时任务对象
+        :return: 执行一次定时任务结果
+        """
+        query_job = SchedulerUtil.get_scheduler_job(job_id=page_object.job_id)
+        if query_job:
+            SchedulerUtil.remove_scheduler_job(job_id=page_object.job_id)
+        job_info = cls.detail_job_services(result_db, page_object.job_id)
+        if job_info:
+            SchedulerUtil.execute_scheduler_job_once(job_info=job_info)
+            result = dict(is_success=True, message='执行成功')
+        else:
+            result = dict(is_success=False, message='定时任务不存在')
+
+        return CrudJobResponse(**result)
+
+    @classmethod
     def delete_job_services(cls, result_db: Session, page_object: DeleteJobModel):
         """
         删除定时任务信息service
@@ -118,10 +138,10 @@ class JobService:
         return job
 
     @staticmethod
-    def export_job_list_services(result_db: Session, job_list: List):
+    async def export_job_list_services(request: Request, job_list: List):
         """
         导出定时任务信息service
-        :param result_db: orm对象
+        :param request: Request对象
         :param job_list: 定时任务信息列表
         :return: 定时任务信息对应excel的二进制数据
         """
@@ -146,7 +166,7 @@ class JobService:
         }
 
         data = [JobModel(**vars(row)).dict() for row in job_list]
-        job_group_list = DictDataDao.query_dict_data_list(result_db, dict_type='sys_job_group')
+        job_group_list = await DictDataService.query_dict_data_list_from_cache_services(request.app.state.redis, dict_type='sys_job_group')
         job_group_option = [dict(label=item.dict_label, value=item.dict_value) for item in job_group_list]
         job_group_option_dict = {item.get('value'): item for item in job_group_option}
 

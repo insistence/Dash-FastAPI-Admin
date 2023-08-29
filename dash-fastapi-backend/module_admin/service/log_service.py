@@ -1,6 +1,6 @@
 from module_admin.entity.vo.log_vo import *
 from module_admin.dao.log_dao import *
-from module_admin.dao.dict_dao import DictDataDao
+from module_admin.service.dict_service import Request, DictDataService
 from utils.common_util import export_list2excel
 
 
@@ -96,10 +96,10 @@ class OperationLogService:
         return operation_log
 
     @classmethod
-    def export_operation_log_list_services(cls, result_db, operation_log_list: List):
+    async def export_operation_log_list_services(cls, request: Request, operation_log_list: List):
         """
         导出操作日志信息service
-        :param result_db: orm对象
+        :param request: Request对象
         :param operation_log_list: 操作日志信息列表
         :return: 操作日志信息对应excel的二进制数据
         """
@@ -124,8 +124,8 @@ class OperationLogService:
         }
 
         data = [OperLogModel(**vars(row)).dict() for row in operation_log_list]
-        operation_type_list = DictDataDao.query_dict_data_list(result_db, dict_type='sys_oper_type')
-        operation_type_option = [dict(label=item.dict_label, value=item.dict_value) for item in operation_type_list]
+        operation_type_list = await DictDataService.query_dict_data_list_from_cache_services(request.app.state.redis, dict_type='sys_oper_type')
+        operation_type_option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in operation_type_list]
         operation_type_option_dict = {item.get('value'): item for item in operation_type_option}
 
         for item in data:

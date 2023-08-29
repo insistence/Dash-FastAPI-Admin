@@ -67,6 +67,22 @@ async def edit_system_job(request: Request, edit_job: EditJobModel, query_db: Se
         return response_500(data="", message=str(e))
 
 
+@jobController.post("/job/changeStatus", response_model=CrudJobResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:job:changeStatus'))])
+@log_decorator(title='定时任务管理', business_type=2)
+async def execute_system_job(request: Request, execute_job: JobModel, query_db: Session = Depends(get_db)):
+    try:
+        execute_job_result = JobService.execute_job_once_services(query_db, execute_job)
+        if execute_job_result.is_success:
+            logger.info(execute_job_result.message)
+            return response_200(data=execute_job_result, message=execute_job_result.message)
+        else:
+            logger.warning(execute_job_result.message)
+            return response_400(data="", message=execute_job_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
 @jobController.post("/job/delete", response_model=CrudJobResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:job:remove'))])
 @log_decorator(title='定时任务管理', business_type=3)
 async def delete_system_job(request: Request, delete_job: DeleteJobModel, query_db: Session = Depends(get_db)):
@@ -100,7 +116,7 @@ async def export_system_job_list(request: Request, job_query: JobModel, query_db
     try:
         # 获取全量数据
         job_query_result = JobService.get_job_list_services(query_db, job_query)
-        job_export_result = JobService.export_job_list_services(query_db, job_query_result)
+        job_export_result = await JobService.export_job_list_services(request, job_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(job_export_result))
     except Exception as e:

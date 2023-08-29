@@ -19,7 +19,7 @@ from module_admin.controller.job_controller import jobController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
-from config.get_redis import create_redis_pool, close_redis_pool
+from config.get_redis import RedisUtil
 from config.get_db import init_create_table
 from config.get_scheduler import SchedulerUtil
 from utils.response_util import response_401, AuthException
@@ -52,15 +52,16 @@ app.add_middleware(
 async def startup_event():
     logger.info("Dash-FastAPI开始启动")
     worship()
-    app.state.redis = await create_redis_pool()
     await init_create_table()
+    app.state.redis = await RedisUtil.create_redis_pool()
+    await RedisUtil.init_sys_dict(app.state.redis)
     await SchedulerUtil.init_system_scheduler()
     logger.info("Dash-FastAPI启动成功")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await close_redis_pool(app)
+    await RedisUtil.close_redis_pool(app)
     await SchedulerUtil.close_system_scheduler()
 
 
