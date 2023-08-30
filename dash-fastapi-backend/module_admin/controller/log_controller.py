@@ -134,7 +134,7 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
         return response_500(data="", message=str(e))
 
 
-@logController.post("/login/unlock", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
+@logController.post("/login/unlock", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:unlock'))])
 @log_decorator(title='登录日志管理', business_type=9)
 async def clear_system_login_log(request: Request, unlock_user: UnlockUser, query_db: Session = Depends(get_db)):
     try:

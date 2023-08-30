@@ -22,7 +22,7 @@ from module_admin.controller.common_controller import commonController
 from config.get_redis import RedisUtil
 from config.get_db import init_create_table
 from config.get_scheduler import SchedulerUtil
-from utils.response_util import response_401, AuthException
+from utils.response_util import *
 from utils.log_util import logger
 from utils.common_util import worship
 
@@ -69,6 +69,12 @@ async def shutdown_event():
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException):
     return response_401(data=exc.data, message=exc.message)
+
+
+# 自定义登录检验异常
+@app.exception_handler(LoginException)
+async def login_exception_handler(request: Request, exc: LoginException):
+    return response_400(data=exc.data, message=exc.message)
 
 
 @app.exception_handler(HTTPException)

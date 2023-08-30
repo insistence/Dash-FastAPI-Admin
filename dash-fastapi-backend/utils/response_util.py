@@ -79,3 +79,12 @@ class AuthException(Exception):
     def __init__(self, data: str = None, message: str = None):
         self.data = data
         self.message = message
+
+
+class LoginException(Exception):
+    """
+    自定义登录异常LoginException
+    """
+    def __init__(self, data: str = None, message: str = None):
+        self.data = data
+        self.message = message

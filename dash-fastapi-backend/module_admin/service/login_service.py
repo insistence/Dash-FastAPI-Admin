@@ -109,15 +109,19 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     """
     account_lock = await request.app.state.redis.get(f"account_lock:{login_user.user_name}")
     if login_user.user_name == account_lock:
-        return '账号已锁定，请稍后再试'
+        logger.warning("账号已锁定，请稍后再试")
+        raise LoginException(data="", message="账号已锁定，请稍后再试")
     captcha_value = await request.app.state.redis.get(f'captcha_codes:{login_user.session_id}')
     if not captcha_value:
-        return '验证码已失效'
+        logger.warning("验证码已失效")
+        raise LoginException(data="", message="验证码已失效")
     if login_user.captcha != str(captcha_value):
-        return '验证码错误'
+        logger.warning("验证码错误")
+        raise LoginException(data="", message="验证码错误")
     user = login_by_account(query_db, login_user.user_name)
     if not user[0]:
-        return '用户不存在'
+        logger.warning("用户不存在")
+        raise LoginException(data="", message="用户不存在")
     if not verify_password(login_user.password, user[0].password):
         cache_password_error_count = await request.app.state.redis.get(f"password_error_count:{login_user.user_name}")
         password_error_counted = 0
@@ -128,10 +132,13 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
         if password_error_count > 5:
             await request.app.state.redis.delete(f"password_error_count:{login_user.user_name}")
             await request.app.state.redis.set(f"account_lock:{login_user.user_name}", login_user.user_name, ex=timedelta(minutes=10))
-            return '10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试'
-        return '密码错误'
+            logger.warning("10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
+            raise LoginException(data="", message="10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
+        logger.warning("密码错误")
+        raise LoginException(data="", message="密码错误")
     if user[0].status == '1':
-        return '用户已停用'
+        logger.warning("用户已停用")
+        raise LoginException(data="", message="用户已停用")
     await request.app.state.redis.delete(f"password_error_count:{login_user.user_name}")
     return user
 
