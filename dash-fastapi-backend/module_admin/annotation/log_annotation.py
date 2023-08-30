@@ -64,8 +64,13 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 oper_location = '未知'
                 print(e)
             finally:
-                payload = await request.body()
-                oper_param = json.dumps(json.loads(str(payload, 'utf-8')), ensure_ascii=False)
+                content_type = request.headers.get("Content-Type")
+                if content_type and "multipart/form-data" in content_type:
+                    payload = await request.form()
+                    oper_param = "\n".join([f"{key}: {value}" for key, value in payload.items()])
+                else:
+                    payload = await request.body()
+                    oper_param = json.dumps(json.loads(str(payload, 'utf-8')), ensure_ascii=False)
                 if len(oper_param) > 2000:
                     oper_param = '请求参数过长'
 

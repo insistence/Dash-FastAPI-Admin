@@ -71,12 +71,6 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     return response_401(data=exc.data, message=exc.message)
 
 
-# 自定义登录检验异常
-@app.exception_handler(LoginException)
-async def login_exception_handler(request: Request, exc: LoginException):
-    return response_400(data=exc.data, message=exc.message)
-
-
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(

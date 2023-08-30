@@ -17,7 +17,10 @@ loginController = APIRouter()
 @loginController.post("/loginByAccount", response_model=Token)
 @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, user: UserLogin, query_db: Session = Depends(get_db)):
-    result = await authenticate_user(request, query_db, user)
+    try:
+        result = await authenticate_user(request, query_db, user)
+    except LoginException as e:
+        return response_400(data="", message=e.message)
     try:
         access_token_expires = timedelta(minutes=JwtConfig.ACCESS_TOKEN_EXPIRE_MINUTES)
         session_id = str(uuid.uuid4())
