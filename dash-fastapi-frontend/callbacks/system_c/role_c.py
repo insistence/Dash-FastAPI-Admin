@@ -192,9 +192,9 @@ def all_none_role_menu_mode(all_none, menu_info):
     prevent_initial_call=True
 )
 def change_role_menu_mode(parent_children, current_role_menu):
+    checked_menu = []
     if parent_children:
-        checked_menu = []
-        if current_role_menu[0]:
+        if current_role_menu:
             for item in current_role_menu:
                 has_children = False
                 for other_item in current_role_menu:
@@ -205,7 +205,8 @@ def change_role_menu_mode(parent_children, current_role_menu):
                     checked_menu.append(str(item.get('menu_id')))
         return [False, checked_menu]
     else:
-        checked_menu = [str(item.get('menu_id')) for item in current_role_menu if item] or []
+        if current_role_menu:
+            checked_menu = [str(item.get('menu_id')) for item in current_role_menu if item] or []
         return [True, checked_menu]
 
 
