@@ -34,11 +34,11 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
         if all([username, password, input_captcha]):
 
             try:
-                user_params = dict(user_name=username, password=password, captcha=input_captcha, session_id=session_id)
+                user_params = dict(username=username, password=password, captcha=input_captcha, session_id=session_id)
                 userinfo_result = login_api(user_params)
                 if userinfo_result['code'] == 200:
-                    token = userinfo_result['data']['token']
-                    session['token'] = token
+                    token = userinfo_result['data']['access_token']
+                    session['Authorization'] = token
 
                     return [
                         None,

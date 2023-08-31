@@ -4,18 +4,44 @@ from module_admin.dao.login_dao import *
 from module_admin.dao.user_dao import *
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from config.env import JwtConfig
 from utils.response_util import *
 from utils.log_util import *
 from datetime import datetime, timedelta
-from fastapi import Request
+from fastapi import Request, Form
 from fastapi import Depends, Header
 from config.get_db import get_db
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login/loginByAccount")
 
 
-async def get_current_user(request: Request = Request, token: str = Header(...), result_db: Session = Depends(get_db)):
+class CustomOAuth2PasswordRequestForm(OAuth2PasswordRequestForm):
+    """
+    自定义OAuth2PasswordRequestForm类，增加验证码及会话编号参数
+    """
+    def __init__(
+            self,
+            grant_type: str = Form(default=None, regex="password"),
+            username: str = Form(),
+            password: str = Form(),
+            scope: str = Form(default=""),
+            client_id: Optional[str] = Form(default=None),
+            client_secret: Optional[str] = Form(default=None),
+            captcha: Optional[str] = Form(default=""),
+            session_id: Optional[str] = Form(default=""),
+            login_info: Optional[Dict[str, str]] = Form(default=None)
+    ):
+        super().__init__(grant_type=grant_type, username=username, password=password,
+                         scope=scope, client_id=client_id, client_secret=client_secret)
+        self.captcha = captcha
+        self.session_id = session_id
+        self.login_info = login_info
+
+
+async def get_current_user(request: Request = Request, token: str = Depends(oauth2_scheme),
+                           result_db: Session = Depends(get_db)):
     """
     根据token获取当前用户信息
     :param request: Request对象
@@ -24,11 +50,13 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
     :return: 当前用户信息对象
     :raise: 令牌异常AuthException
     """
-    if token[:6] != 'Bearer':
-        logger.warning("用户token不合法")
-        raise AuthException(data="", message="用户token不合法")
+    # if token[:6] != 'Bearer':
+    #     logger.warning("用户token不合法")
+    #     raise AuthException(data="", message="用户token不合法")
     try:
-        payload = jwt.decode(token[6:], JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
+        if token.startswith('Bearer'):
+            token = token.split(' ')[1]
+        payload = jwt.decode(token, JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
         user_id: str = payload.get("user_id")
         session_id: str = payload.get("session_id")
         if user_id is None:
@@ -46,9 +74,9 @@ async def get_current_user(request: Request = Request, token: str = Header(...),
     # 此方法可实现同一账号同一时间只能登录一次
     # redis_token = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_access_token')
     # redis_session = await request.app.state.redis.get(f'{user.user_basic_info[0].user_id}_session_id')
-    if token[6:] == redis_token:
+    if token == redis_token:
         await request.app.state.redis.set(f'access_token:{session_id}', redis_token,
-                                          ex=timedelta(minutes=30))
+                                          ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
         # await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_access_token', redis_token,
         #                                   ex=timedelta(minutes=30))
         # await request.app.state.redis.set(f'{user.user_basic_info[0].user_id}_session_id', redis_session,
@@ -128,10 +156,12 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
         if cache_password_error_count:
             password_error_counted = cache_password_error_count
         password_error_count = int(password_error_counted) + 1
-        await request.app.state.redis.set(f"password_error_count:{login_user.user_name}", password_error_count, ex=timedelta(minutes=10))
+        await request.app.state.redis.set(f"password_error_count:{login_user.user_name}", password_error_count,
+                                          ex=timedelta(minutes=10))
         if password_error_count > 5:
             await request.app.state.redis.delete(f"password_error_count:{login_user.user_name}")
-            await request.app.state.redis.set(f"account_lock:{login_user.user_name}", login_user.user_name, ex=timedelta(minutes=10))
+            await request.app.state.redis.set(f"account_lock:{login_user.user_name}", login_user.user_name,
+                                              ex=timedelta(minutes=10))
             logger.warning("10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
             raise LoginException(data="", message="10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
         logger.warning("密码错误")

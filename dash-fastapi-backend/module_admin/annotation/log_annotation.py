@@ -36,7 +36,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
             func_path = f'{relative_path}{func.__name__}()'
             # 获取上下文信息
             request: Request = kwargs.get('request')
-            token = request.headers.get('token')
+            token = request.headers.get('Authorization')
             query_db = kwargs.get('query_db')
             request_method = request.method
             operator_type = 0
@@ -65,7 +65,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 print(e)
             finally:
                 content_type = request.headers.get("Content-Type")
-                if content_type and "multipart/form-data" in content_type:
+                if content_type and ("multipart/form-data" in content_type or 'application/x-www-form-urlencoded' in content_type):
                     payload = await request.form()
                     oper_param = "\n".join([f"{key}: {value}" for key, value in payload.items()])
                 else:
@@ -87,7 +87,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                         os=system_os,
                         login_time=oper_time
                     )
-                    kwargs['user'].login_info = login_log
+                    kwargs['form_data'].login_info = login_log
                 # 调用原始函数
                 result = await func(*args, **kwargs)
                 cost_time = float(time.time() - start_time) * 100
@@ -106,8 +106,8 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 else:
                     error_msg = result_dict.get('message')
                 if log_type == 'login':
-                    user = kwargs.get('user')
-                    user_name = user.user_name
+                    user = kwargs.get('form_data')
+                    user_name = user.username
                     login_log['user_name'] = user_name
                     login_log['status'] = str(status)
                     login_log['msg'] = result_dict.get('message')

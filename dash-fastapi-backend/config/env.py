@@ -8,6 +8,7 @@ class JwtConfig:
     SECRET_KEY = "b01c66dc2c58dc6a0aabfe2144256be36226de378bf87f72c0c795dda67f4d55"
     ALGORITHM = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES = 1440
+    REDIS_TOKEN_EXPIRE_MINUTES = 30
 
 
 class DataBaseConfig:

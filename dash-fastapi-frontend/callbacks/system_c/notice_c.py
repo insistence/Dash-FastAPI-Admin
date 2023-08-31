@@ -164,7 +164,7 @@ def change_notice_edit_delete_button_status(table_rows_selected):
 )
 def init_render_editor(html_string):
     url = f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor'
-    token = 'Bearer' + session.get('token')
+    token = 'Bearer ' + session.get('Authorization')
 
     js_string = '''
             const { i18nChangeLanguage, createEditor, createToolbar } = window.wangEditor

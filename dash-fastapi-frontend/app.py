@@ -75,7 +75,7 @@ app.layout = html.Div(
 )
 def router(pathname, trigger):
     # 检查当前会话是否已经登录
-    token_result = session.get('token')
+    token_result = session.get('Authorization')
     # 若已登录
     if token_result:
         try:

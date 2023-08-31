@@ -113,7 +113,7 @@ def render():
                                 id='avatar-upload-choose',
                                 apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
                                 downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
-                                headers={'token': 'Bearer' + session.get('token')},
+                                headers={'token': 'Bearer ' + session.get('Authorization')},
                                 fileMaxSize=1,
                                 showUploadList=False,
                                 fileTypes=['jpeg', 'jpg', 'png'],

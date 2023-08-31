@@ -11,7 +11,7 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
     method = method.lower().strip()
     user_agent = request.headers.get('User-Agent')
     if is_headers:
-        api_headers = {'token': 'Bearer' + session.get('token'), 'remote_addr': request.remote_addr,
+        api_headers = {'Authorization': 'Bearer ' + session.get('Authorization'), 'remote_addr': request.remote_addr,
                        'User-Agent': user_agent}
     else:
         api_headers = {'remote_addr': request.remote_addr, 'User-Agent': user_agent}
