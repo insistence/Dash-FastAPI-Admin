@@ -17,13 +17,15 @@ loginController = APIRouter()
 @loginController.post("/loginByAccount", response_model=Token)
 @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = Depends(), query_db: Session = Depends(get_db)):
+    captcha_enabled = True if await request.app.state.redis.get(f'sys_config:sys.account.captchaEnabled') == 'true' else False
     user = UserLogin(
         **dict(
             user_name=form_data.username,
             password=form_data.password,
             captcha=form_data.captcha,
             session_id=form_data.session_id,
-            login_info=form_data.login_info
+            login_info=form_data.login_info,
+            captcha_enabled=captcha_enabled
         )
     )
     try:
@@ -49,8 +51,13 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
         # await request.app.state.redis.set(f'{result.user_id}_access_token', access_token, ex=timedelta(minutes=30))
         # await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
         logger.info('登录成功')
+        # 判断请求是否来自于api文档，如果是返回指定格式的结果，用于修复api文档认证成功后token显示undefined的bug
+        request_from_swagger = request.headers.get('referer').endswith('docs') if request.headers.get('referer') else False
+        request_from_redoc = request.headers.get('referer').endswith('redoc') if request.headers.get('referer') else False
+        if request_from_swagger or request_from_redoc:
+            return {'access_token': access_token, 'token_type': 'Bearer'}
         return response_200(
-            data={'access_token': access_token, 'token_type': 'bearer'},
+            data={'access_token': access_token, 'token_type': 'Bearer'},
             message='登录成功'
         )
     except Exception as e:

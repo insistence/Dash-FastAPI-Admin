@@ -8,6 +8,7 @@ class UserLogin(BaseModel):
     captcha: Optional[str]
     session_id: Optional[str]
     login_info: Optional[dict]
+    captcha_enabled: Optional[bool]
 
 
 class Token(BaseModel):

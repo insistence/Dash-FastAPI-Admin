@@ -127,6 +127,23 @@ def get_password_hash(input_password):
     return pwd_context.hash(input_password)
 
 
+async def check_login_captcha(request: Request, login_user: UserLogin):
+    """
+    校验用户登录验证码
+    :param request: Request对象
+    :param login_user: 登录用户对象
+    :return: 校验结果
+    """
+    captcha_value = await request.app.state.redis.get(f'captcha_codes:{login_user.session_id}')
+    if not captcha_value:
+        logger.warning("验证码已失效")
+        raise LoginException(data="", message="验证码已失效")
+    if login_user.captcha != str(captcha_value):
+        logger.warning("验证码错误")
+        raise LoginException(data="", message="验证码错误")
+    return True
+
+
 async def authenticate_user(request: Request, query_db: Session, login_user: UserLogin):
     """
     根据用户名密码校验用户登录
@@ -139,13 +156,9 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     if login_user.user_name == account_lock:
         logger.warning("账号已锁定，请稍后再试")
         raise LoginException(data="", message="账号已锁定，请稍后再试")
-    captcha_value = await request.app.state.redis.get(f'captcha_codes:{login_user.session_id}')
-    if not captcha_value:
-        logger.warning("验证码已失效")
-        raise LoginException(data="", message="验证码已失效")
-    if login_user.captcha != str(captcha_value):
-        logger.warning("验证码错误")
-        raise LoginException(data="", message="验证码错误")
+    # 判断是否开启验证码，开启则验证，否则不验证
+    if login_user.captcha_enabled:
+        await check_login_captcha(request, login_user)
     user = login_by_account(query_db, login_user.user_name)
     if not user[0]:
         logger.warning("用户不存在")

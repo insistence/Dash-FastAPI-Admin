@@ -70,6 +70,13 @@ def render_store_container():
             # 字典管理模块删除操作行key存储容器
             dcc.Store(id='dict_type-delete-ids-store'),
             dcc.Store(id='dict_data-delete-ids-store'),
+            # 参数管理模块操作类型存储容器
+            dcc.Store(id='config-operations-store'),
+            dcc.Store(id='config-operations-store-bk'),
+            # 参数管理模块修改操作行key存储容器
+            dcc.Store(id='config-edit-id-store'),
+            # 参数管理模块删除操作行key存储容器
+            dcc.Store(id='config-delete-ids-store'),
             # 通知公告管理模块操作类型存储容器
             dcc.Store(id='notice-operations-store'),
             dcc.Store(id='notice-operations-store-bk'),

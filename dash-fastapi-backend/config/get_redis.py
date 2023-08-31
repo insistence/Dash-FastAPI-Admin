@@ -1,5 +1,6 @@
 import aioredis
 from module_admin.service.dict_service import DictDataService
+from module_admin.service.config_service import ConfigService
 from config.env import RedisConfig
 from config.database import SessionLocal
 from utils.log_util import logger
@@ -48,5 +49,17 @@ class RedisUtil:
         """
         session = SessionLocal()
         await DictDataService.init_cache_sys_dict_services(session, redis)
+
+        session.close()
+
+    @classmethod
+    async def init_sys_config(cls, redis):
+        """
+        应用启动时缓存参数配置表
+        :param redis: redis对象
+        :return:
+        """
+        session = SessionLocal()
+        await ConfigService.init_cache_sys_config_services(session, redis)
 
         session.close()

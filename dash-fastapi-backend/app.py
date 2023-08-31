@@ -12,6 +12,7 @@ from module_admin.controller.dept_controller import deptController
 from module_admin.controller.role_controller import roleController
 from module_admin.controller.post_controler import postController
 from module_admin.controller.dict_controller import dictController
+from module_admin.controller.config_controller import configController
 from module_admin.controller.notice_controller import noticeController
 from module_admin.controller.log_controller import logController
 from module_admin.controller.online_controller import onlineController
@@ -55,6 +56,7 @@ async def startup_event():
     await init_create_table()
     app.state.redis = await RedisUtil.create_redis_pool()
     await RedisUtil.init_sys_dict(app.state.redis)
+    await RedisUtil.init_sys_config(app.state.redis)
     await SchedulerUtil.init_system_scheduler()
     logger.info("Dash-FastAPI启动成功")
 
@@ -87,6 +89,7 @@ app.include_router(deptController, prefix="/system", tags=['系统管理-部门�
 app.include_router(roleController, prefix="/system", tags=['系统管理-角色管理'])
 app.include_router(postController, prefix="/system", tags=['系统管理-岗位管理'])
 app.include_router(dictController, prefix="/system", tags=['系统管理-字典管理'])
+app.include_router(configController, prefix="/system", tags=['系统管理-参数管理'])
 app.include_router(noticeController, prefix="/system", tags=['系统管理-通知公告管理'])
 app.include_router(logController, prefix="/system", tags=['系统管理-日志管理'])
 app.include_router(onlineController, prefix="/monitor", tags=['系统监控-在线用户'])

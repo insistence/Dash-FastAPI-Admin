@@ -198,7 +198,7 @@ def init_render_editor(html_string):
                         metaWithUrl: true,
                         // 自定义增加 http  header
                         headers: {
-                            token: '% s'
+                            Authorization: '% s'
                         },
                         // 跨域是否传递 cookie ，默认为 false
                         withCredentials: true,
@@ -225,7 +225,7 @@ def init_render_editor(html_string):
                         metaWithUrl: true,
                         // 自定义增加 http  header
                         headers: {
-                            token: '% s'
+                            Authorization: '% s'
                         },
                         // 跨域是否传递 cookie ，默认为 false
                         withCredentials: true,

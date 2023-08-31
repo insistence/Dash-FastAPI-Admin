@@ -4,9 +4,14 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 import callbacks.login_c
+from api.config import query_config_list_api
 
 
 def render_content():
+    captcha_enabled_info = query_config_list_api(config_key='sys.account.captchaEnabled')
+    captcha_hidden = False
+    if captcha_enabled_info.get('code') == 200:
+        captcha_hidden = False if captcha_enabled_info.get('data') == 'true' else True
 
     return html.Div(
         [
@@ -79,43 +84,49 @@ def render_content():
                                 ),
                                 id='login-password-form-item'
                             ),
-                            fac.AntdSpace(
+                            html.Div(
                                 [
-                                    fac.AntdFormItem(
-                                        fac.AntdInput(
-                                            placeholder='请输入验证码',
-                                            id='login-captcha',
-                                            size='large',
-                                            prefix=fac.AntdIcon(
-                                                icon='antd-check-circle'
+                                    fac.AntdSpace(
+                                        [
+                                            fac.AntdFormItem(
+                                                fac.AntdInput(
+                                                    placeholder='请输入验证码',
+                                                    id='login-captcha',
+                                                    size='large',
+                                                    prefix=fac.AntdIcon(
+                                                        icon='antd-check-circle'
+                                                    ),
+                                                    style={
+                                                        'width': '210px'
+                                                    }
+                                                ),
+                                                id='login-captcha-form-item'
                                             ),
-                                            style={
-                                                'width': '210px'
-                                            }
-                                        ),
-                                        id='login-captcha-form-item'
-                                    ),
-                                    fac.AntdFormItem(
-                                        html.Div(
-                                            [
-                                                fac.AntdImage(
-                                                    id='login-captcha-image',
-                                                    src='',
-                                                    height=37,
-                                                    width=100,
-                                                    preview=False
+                                            fac.AntdFormItem(
+                                                html.Div(
+                                                    [
+                                                        fac.AntdImage(
+                                                            id='login-captcha-image',
+                                                            src='',
+                                                            height=37,
+                                                            width=100,
+                                                            preview=False
+                                                        )
+                                                    ],
+                                                    id='login-captcha-image-container',
+                                                    n_clicks=1,
+                                                    style={
+                                                        'border': '1px solid #ccc'
+                                                    }
                                                 )
-                                            ],
-                                            id='login-captcha-image-container',
-                                            n_clicks=1,
-                                            style={
-                                                'border': '1px solid #ccc'
-                                            }
-                                        )
-                                    )
+                                            )
+                                        ],
+                                        align='end',
+                                        size=10
+                                    ),
                                 ],
-                                align='end',
-                                size=10
+                                id='captcha-row-container',
+                                hidden=captcha_hidden
                             ),
                             fac.AntdSpace(
                                 [

@@ -25,11 +25,14 @@ from api.login import login_api, get_captcha_image_api
      State('login-password', 'value'),
      State('login-captcha', 'value'),
      State('captcha_image-session_id-container', 'data'),
-     State('login-captcha-image-container', 'n_clicks'),],
+     State('login-captcha-image-container', 'n_clicks'),
+     State('captcha-row-container', 'hidden')],
     prevent_initial_call=True
 )
-def login_auth(nClicks, username, password, input_captcha, session_id, image_click):
+def login_auth(nClicks, username, password, input_captcha, session_id, image_click, captcha_hidden):
     if nClicks:
+        if captcha_hidden:
+            input_captcha = 'hidden'
         # 校验全部输入值是否不为空
         if all([username, password, input_captcha]):
 
