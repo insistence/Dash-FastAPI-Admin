@@ -138,25 +138,23 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='dept-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='system:dept:add' not in button_perms
-                                            ),
+                                                id={
+                                                    'type': 'dept-operation-button',
+                                                    'index': 'add'
+                                                },
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff'
+                                                }
+                                            ) if 'system:dept:add' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(

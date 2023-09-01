@@ -167,103 +167,90 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='job-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='monitor:job:add' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'job-operation-button',
+                                                    'index': 'add'
+                                                },
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff'
+                                                }
+                                            ) if 'monitor:job:add' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-edit'
-                                                            ),
-                                                            '修改',
-                                                        ],
-                                                        id='job-edit',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#71e2a3',
-                                                            'background': '#e7faf0',
-                                                            'border-color': '#d0f5e0'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-edit'
                                                     ),
+                                                    '修改',
                                                 ],
-                                                hidden='monitor:job:edit' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'job-operation-button',
+                                                    'index': 'edit'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#71e2a3',
+                                                    'background': '#e7faf0',
+                                                    'border-color': '#d0f5e0'
+                                                }
+                                            ) if 'monitor:job:edit' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-minus'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='job-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-minus'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='monitor:job:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'job-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'monitor:job:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-down'
-                                                            ),
-                                                            '导出',
-                                                        ],
-                                                        id='job-export',
-                                                        style={
-                                                            'color': '#ffba00',
-                                                            'background': '#fff8e6',
-                                                            'border-color': '#ffe399'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-down'
                                                     ),
+                                                    '导出',
                                                 ],
-                                                hidden='monitor:job:export' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id='job-export',
+                                                style={
+                                                    'color': '#ffba00',
+                                                    'background': '#fff8e6',
+                                                    'border-color': '#ffe399'
+                                                }
+                                            ) if 'monitor:job:export' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-history'
-                                                            ),
-                                                            '调度日志',
-                                                        ],
-                                                        id='job-log',
-                                                        style={
-                                                            'color': '#909399',
-                                                            'background': '#f4f4f5',
-                                                            'border-color': '#d3d4d6'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-history'
                                                     ),
+                                                    '调度日志',
                                                 ],
-                                                hidden='monitor:job:query' not in button_perms
-                                            ),
+                                                id={
+                                                    'type': 'job-operation-log',
+                                                    'index': 'log'
+                                                },
+                                                style={
+                                                    'color': '#909399',
+                                                    'background': '#f4f4f5',
+                                                    'border-color': '#d3d4d6'
+                                                }
+                                            ) if 'monitor:job:query' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

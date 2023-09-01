@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from jsonpath_ng import parse
@@ -134,20 +134,19 @@ def hidden_dept_search_form(hidden_click, hidden_status):
      Output('dept-email', 'value'),
      Output('dept-status', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dept-add', 'nClicks'),
      Output('dept-edit-id-store', 'data'),
      Output('dept-operations-store-bk', 'data')],
-    [Input('dept-add', 'nClicks'),
+    [Input({'type': 'dept-operation-button', 'index': ALL}, 'nClicks'),
      Input('dept-list-table', 'nClicksButton')],
     [State('dept-list-table', 'clickedContent'),
      State('dept-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_dept_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or (button_click and clicked_content != '删除'):
-        triggered_id = dash.ctx.triggered_id
+def add_edit_dept_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} or (trigger_id == 'dept-list-table' and clicked_content != '删除'):
         dept_params = dict(dept_name='')
-        if triggered_id == 'dept-list-table' and clicked_content == '修改':
+        if trigger_id == 'dept-list-table' and clicked_content == '修改':
             dept_params['dept_id'] = int(recently_button_clicked_row['key'])
             tree_info = get_dept_tree_for_edit_option_api(dept_params)
         else:
@@ -155,7 +154,7 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'dept-operation-button'}:
                 return [
                     True,
                     '新增部门',
@@ -170,10 +169,9 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                     '0',
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '新增':
+            elif trigger_id == 'dept-list-table' and clicked_content == '新增':
                 return [
                     True,
                     '新增部门',
@@ -188,10 +186,9 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                     '0',
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '修改':
+            elif trigger_id == 'dept-list-table' and clicked_content == '修改':
                 dept_id = int(recently_button_clicked_row['key'])
                 dept_info_res = get_dept_detail_api(dept_id=dept_id)
                 if dept_info_res['code'] == 200:
@@ -210,7 +207,6 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                             dept_info.get('email'),
                             dept_info.get('status'),
                             {'timestamp': time.time()},
-                            None,
                             dept_info,
                             {'type': 'edit'}
                         ]
@@ -228,14 +224,13 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                             dept_info.get('email'),
                             dept_info.get('status'),
                             {'timestamp': time.time()},
-                            None,
                             dept_info,
                             {'type': 'edit'}
                         ]
 
-        return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None, None]
+        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 11 + [None, None, None]
+    return [dash.no_update] * 12 + [None, None]
 
 
 @app.callback(

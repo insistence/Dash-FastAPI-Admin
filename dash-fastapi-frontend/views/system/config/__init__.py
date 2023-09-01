@@ -147,103 +147,88 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='config-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='system:config:add' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'config-operation-button',
+                                                    'index': 'add'
+                                                },
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff'
+                                                }
+                                            ) if 'system:config:add' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-edit'
-                                                            ),
-                                                            '修改',
-                                                        ],
-                                                        id='config-edit',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#71e2a3',
-                                                            'background': '#e7faf0',
-                                                            'border-color': '#d0f5e0'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-edit'
                                                     ),
+                                                    '修改',
                                                 ],
-                                                hidden='system:config:edit' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'config-operation-button',
+                                                    'index': 'edit'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#71e2a3',
+                                                    'background': '#e7faf0',
+                                                    'border-color': '#d0f5e0'
+                                                }
+                                            ) if 'system:config:edit' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-minus'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='config-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-minus'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='system:config:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'config-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'system:config:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-down'
-                                                            ),
-                                                            '导出',
-                                                        ],
-                                                        id='config-export',
-                                                        style={
-                                                            'color': '#ffba00',
-                                                            'background': '#fff8e6',
-                                                            'border-color': '#ffe399'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-down'
                                                     ),
+                                                    '导出',
                                                 ],
-                                                hidden='system:config:export' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id='config-export',
+                                                style={
+                                                    'color': '#ffba00',
+                                                    'background': '#fff8e6',
+                                                    'border-color': '#ffe399'
+                                                }
+                                            ) if 'system:config:export' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            ),
-                                                            '刷新缓存',
-                                                        ],
-                                                        id='config-refresh-cache',
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-sync'
                                                     ),
+                                                    '刷新缓存',
                                                 ],
-                                                hidden='system:config:edit' not in button_perms
-                                            ),
+                                                id='config-refresh-cache',
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb',
+                                                    'marginRight': '10px'
+                                                }
+                                            ) if 'system:config:edit' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

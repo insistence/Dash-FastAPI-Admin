@@ -193,103 +193,84 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='user-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='system:user:add' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id='user-add',
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff'
+                                                }
+                                            ) if 'system:user:add' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-edit'
-                                                            ),
-                                                            '修改',
-                                                        ],
-                                                        id='user-edit',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#71e2a3',
-                                                            'background': '#e7faf0',
-                                                            'border-color': '#d0f5e0'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-edit'
                                                     ),
+                                                    '修改',
                                                 ],
-                                                hidden='system:user:edit' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'user-operation-button',
+                                                    'index': 'edit'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#71e2a3',
+                                                    'background': '#e7faf0',
+                                                    'border-color': '#d0f5e0'
+                                                }
+                                            ) if 'system:user:edit' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-minus'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='user-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-minus'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='system:user:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'user-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'system:user:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-up'
-                                                            ),
-                                                            '导入',
-                                                        ],
-                                                        id='user-import',
-                                                        style={
-                                                            'color': '#909399',
-                                                            'background': '#f4f4f5',
-                                                            'border-color': '#d3d4d6'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-up'
                                                     ),
+                                                    '导入',
                                                 ],
-                                                hidden='system:user:export' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id='user-import',
+                                                style={
+                                                    'color': '#909399',
+                                                    'background': '#f4f4f5',
+                                                    'border-color': '#d3d4d6'
+                                                }
+                                            ) if 'system:user:export' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-down'
-                                                            ),
-                                                            '导出',
-                                                        ],
-                                                        id='user-export',
-                                                        style={
-                                                            'color': '#ffba00',
-                                                            'background': '#fff8e6',
-                                                            'border-color': '#ffe399'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-down'
                                                     ),
+                                                    '导出',
                                                 ],
-                                                hidden='system:user:import' not in button_perms
-                                            ),
+                                                id='user-export',
+                                                style={
+                                                    'color': '#ffba00',
+                                                    'background': '#fff8e6',
+                                                    'border-color': '#ffe399'
+                                                }
+                                            ) if 'system:user:import' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

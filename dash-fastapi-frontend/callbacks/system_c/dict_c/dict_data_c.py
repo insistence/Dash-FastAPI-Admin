@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -111,19 +111,41 @@ def hidden_dict_data_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('dict_data-edit', 'disabled'),
-     Output('dict_data-delete', 'disabled')],
+    Output({'type': 'dict_data-operation-button', 'index': 'edit'}, 'disabled'),
     Input('dict_data-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_dict_data_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_dict_data_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'dict_data-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('dict_data-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_dict_data_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -138,12 +160,9 @@ def change_dict_data_edit_delete_button_status(table_rows_selected):
      Output('dict_data-status', 'value'),
      Output('dict_data-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dict_data-add', 'nClicks'),
-     Output('dict_data-edit', 'nClicks'),
      Output('dict_data-edit-id-store', 'data'),
      Output('dict_data-operations-store-bk', 'data')],
-    [Input('dict_data-add', 'nClicks'),
-     Input('dict_data-edit', 'nClicks'),
+    [Input({'type': 'dict_data-operation-button', 'index': ALL}, 'nClicks'),
      Input('dict_data-list-table', 'nClicksButton')],
     [State('dict_data-list-table', 'selectedRowKeys'),
      State('dict_data-list-table', 'clickedContent'),
@@ -151,10 +170,13 @@ def change_dict_data_edit_delete_button_status(table_rows_selected):
      State('dict_data-dict_type-select', 'value')],
     prevent_initial_call=True
 )
-def add_edit_dict_data_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content,
+def add_edit_dict_data_modal(operation_click, button_click, selected_row_keys, clicked_content,
                         recently_button_clicked_row, dict_type_select):
-    if add_click or edit_click or button_click:
-        if add_click:
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'dict_data-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'dict_data-operation-button'} \
+            or (trigger_id == 'dict_data-list-table' and clicked_content == '修改'):
+        if trigger_id == {'index': 'add', 'type': 'dict_data-operation-button'}:
             return [
                 True,
                 '新增字典数据',
@@ -168,12 +190,10 @@ def add_edit_dict_data_modal(add_click, edit_click, button_click, selected_row_k
                 None,
                 dash.no_update,
                 None,
-                None,
-                None,
                 {'type': 'add'}
             ]
-        elif edit_click or (button_click and clicked_content == '修改'):
-            if edit_click:
+        elif trigger_id == {'index': 'edit', 'type': 'dict_data-operation-button'} or (trigger_id == 'dict_data-list-table' and clicked_content == '修改'):
+            if trigger_id == {'index': 'edit', 'type': 'dict_data-operation-button'}:
                 dict_code = int(','.join(selected_row_keys))
             else:
                 dict_code = int(recently_button_clicked_row['key'])
@@ -192,15 +212,13 @@ def add_edit_dict_data_modal(add_click, edit_click, button_click, selected_row_k
                     dict_data_info.get('status'),
                     dict_data_info.get('remark'),
                     {'timestamp': time.time()},
-                    None,
-                    None,
                     dict_data_info if dict_data_info else None,
                     {'type': 'edit'}
                 ]
 
-        return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 11 + [None, None, None, None]
+    return [dash.no_update] * 11 + [None, None]
 
 
 @app.callback(
@@ -299,19 +317,20 @@ def dict_data_confirm(confirm_trigger, operation_type, cur_post_info, dict_type,
     [Output('dict_data-delete-text', 'children'),
      Output('dict_data-delete-confirm-modal', 'visible'),
      Output('dict_data-delete-ids-store', 'data')],
-    [Input('dict_data-delete', 'nClicks'),
+    [Input({'type': 'dict_data-operation-button', 'index': ALL}, 'nClicks'),
      Input('dict_data-list-table', 'nClicksButton')],
     [State('dict_data-list-table', 'selectedRowKeys'),
      State('dict_data-list-table', 'clickedContent'),
      State('dict_data-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def dict_data_delete_modal(delete_click, button_click,
+def dict_data_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'dict_data-operation-button'} or (
+            trigger_id == 'dict_data-list-table' and clicked_content == '删除'):
 
-        if trigger_id == 'dict_data-delete':
+        if trigger_id == {'index': 'delete', 'type': 'dict_data-operation-button'}:
             dict_codes = ','.join(selected_row_keys)
         else:
             if clicked_content == '删除':

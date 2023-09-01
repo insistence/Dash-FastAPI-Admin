@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -123,19 +123,41 @@ def hidden_config_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('config-edit', 'disabled'),
-     Output('config-delete', 'disabled')],
+    Output({'type': 'config-operation-button', 'index': 'edit'}, 'disabled'),
     Input('config-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_config_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_config_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'config-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('config-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_config_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -147,22 +169,21 @@ def change_config_edit_delete_button_status(table_rows_selected):
      Output('config-config_type', 'value'),
      Output('config-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('config-add', 'nClicks'),
-     Output('config-edit', 'nClicks'),
      Output('config-edit-id-store', 'data'),
      Output('config-operations-store-bk', 'data')],
-    [Input('config-add', 'nClicks'),
-     Input('config-edit', 'nClicks'),
+    [Input({'type': 'config-operation-button', 'index': ALL}, 'nClicks'),
      Input('config-list-table', 'nClicksButton')],
     [State('config-list-table', 'selectedRowKeys'),
      State('config-list-table', 'clickedContent'),
      State('config-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_config_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content,
-                        recently_button_clicked_row):
-    if add_click or edit_click or button_click:
-        if add_click:
+def add_edit_config_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'config-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'config-operation-button'} \
+            or (trigger_id == 'config-list-table' and clicked_content == '修改'):
+        if trigger_id == {'index': 'add', 'type': 'config-operation-button'}:
             return [
                 True,
                 '新增参数',
@@ -173,12 +194,10 @@ def add_edit_config_modal(add_click, edit_click, button_click, selected_row_keys
                 None,
                 dash.no_update,
                 None,
-                None,
-                None,
                 {'type': 'add'}
             ]
-        elif edit_click or (button_click and clicked_content == '修改'):
-            if edit_click:
+        elif trigger_id == {'index': 'edit', 'type': 'config-operation-button'} or (trigger_id == 'config-list-table' and clicked_content == '修改'):
+            if trigger_id == {'index': 'edit', 'type': 'config-operation-button'}:
                 config_id = int(','.join(selected_row_keys))
             else:
                 config_id = int(recently_button_clicked_row['key'])
@@ -194,15 +213,13 @@ def add_edit_config_modal(add_click, edit_click, button_click, selected_row_keys
                     config_info.get('config_type'),
                     config_info.get('remark'),
                     {'timestamp': time.time()},
-                    None,
-                    None,
                     config_info if config_info else None,
                     {'type': 'edit'}
                 ]
 
-        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 8 + [None, None, None, None]
+    return [dash.no_update] * 8 + [None, None]
 
 
 @app.callback(
@@ -301,19 +318,20 @@ def dict_type_confirm(confirm_trigger, operation_type, cur_config_info, config_n
     [Output('config-delete-text', 'children'),
      Output('config-delete-confirm-modal', 'visible'),
      Output('config-delete-ids-store', 'data')],
-    [Input('config-delete', 'nClicks'),
+    [Input({'type': 'config-operation-button', 'index': ALL}, 'nClicks'),
      Input('config-list-table', 'nClicksButton')],
     [State('config-list-table', 'selectedRowKeys'),
      State('config-list-table', 'clickedContent'),
      State('config-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def config_delete_modal(delete_click, button_click,
+def config_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'config-operation-button'} or (
+            trigger_id == 'config-list-table' and clicked_content == '删除'):
 
-        if trigger_id == 'config-delete':
+        if trigger_id == {'index': 'delete', 'type': 'config-operation-button'}:
             config_ids = ','.join(selected_row_keys)
         else:
             if clicked_content == '删除':
@@ -322,7 +340,7 @@ def config_delete_modal(delete_click, button_click,
                 return dash.no_update
 
         return [
-            f'是否确认删除参数编号为{config_ids}的岗位？',
+            f'是否确认删除参数编号为{config_ids}的参数设置？',
             True,
             {'config_ids': config_ids}
         ]

@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -112,19 +112,41 @@ def hidden_post_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('post-edit', 'disabled'),
-     Output('post-delete', 'disabled')],
+    Output({'type': 'post-operation-button', 'index': 'edit'}, 'disabled'),
     Input('post-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_post_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_post_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'post-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('post-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_post_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -136,21 +158,21 @@ def change_post_edit_delete_button_status(table_rows_selected):
      Output('post-status', 'value'),
      Output('post-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('post-add', 'nClicks'),
-     Output('post-edit', 'nClicks'),
      Output('post-edit-id-store', 'data'),
      Output('post-operations-store-bk', 'data')],
-    [Input('post-add', 'nClicks'),
-     Input('post-edit', 'nClicks'),
+    [Input({'type': 'post-operation-button', 'index': ALL}, 'nClicks'),
      Input('post-list-table', 'nClicksButton')],
     [State('post-list-table', 'selectedRowKeys'),
      State('post-list-table', 'clickedContent'),
      State('post-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_post_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
-    if add_click or edit_click or button_click:
-        if add_click:
+def add_edit_post_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'post-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'post-operation-button'} \
+            or (trigger_id == 'post-list-table' and clicked_content == '修改'):
+        if trigger_id == {'index': 'add', 'type': 'post-operation-button'}:
             return [
                 True,
                 '新增岗位',
@@ -161,12 +183,10 @@ def add_edit_post_modal(add_click, edit_click, button_click, selected_row_keys, 
                 None,
                 dash.no_update,
                 None,
-                None,
-                None,
                 {'type': 'add'}
             ]
-        elif edit_click or (button_click and clicked_content == '修改'):
-            if edit_click:
+        elif trigger_id == {'index': 'edit', 'type': 'post-operation-button'} or (trigger_id == 'post-list-table' and clicked_content == '修改'):
+            if trigger_id == {'index': 'edit', 'type': 'post-operation-button'}:
                 post_id = int(','.join(selected_row_keys))
             else:
                 post_id = int(recently_button_clicked_row['key'])
@@ -182,15 +202,13 @@ def add_edit_post_modal(add_click, edit_click, button_click, selected_row_keys, 
                     post_info.get('status'),
                     post_info.get('remark'),
                     {'timestamp': time.time()},
-                    None,
-                    None,
                     post_info if post_info else None,
                     {'type': 'edit'}
                 ]
                     
-        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 8 + [None, None, None, None]
+    return [dash.no_update] * 8 + [None, None]
 
 
 @app.callback(
@@ -287,19 +305,19 @@ def post_confirm(confirm_trigger, operation_type, cur_post_info, post_name, post
     [Output('post-delete-text', 'children'),
      Output('post-delete-confirm-modal', 'visible'),
      Output('post-delete-ids-store', 'data')],
-    [Input('post-delete', 'nClicks'),
+    [Input({'type': 'post-operation-button', 'index': ALL}, 'nClicks'),
      Input('post-list-table', 'nClicksButton')],
     [State('post-list-table', 'selectedRowKeys'),
      State('post-list-table', 'clickedContent'),
      State('post-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def post_delete_modal(delete_click, button_click,
+def post_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'post-operation-button'} or (trigger_id == 'post-list-table' and clicked_content == '删除'):
 
-        if trigger_id == 'post-delete':
+        if trigger_id == {'index': 'delete', 'type': 'post-operation-button'}:
             post_ids = ','.join(selected_row_keys)
         else:
             if clicked_content == '删除':

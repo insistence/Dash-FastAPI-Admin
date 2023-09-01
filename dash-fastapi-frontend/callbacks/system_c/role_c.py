@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -127,19 +127,43 @@ def hidden_role_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('role-edit', 'disabled'),
-     Output('role-delete', 'disabled')],
+    Output({'type': 'role-operation-button', 'index': 'edit'}, 'disabled'),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_post_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_role_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1 or '1' in table_rows_selected:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'role-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('role-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_role_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if '1' in table_rows_selected:
+                return True
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -225,25 +249,25 @@ def change_role_menu_mode(parent_children, current_role_menu):
      Output('current-role-menu-store', 'data'),
      Output('role-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('role-add', 'nClicks'),
-     Output('role-edit', 'nClicks'),
      Output('role-edit-id-store', 'data'),
      Output('role-operations-store-bk', 'data')],
-    [Input('role-add', 'nClicks'),
-     Input('role-edit', 'nClicks'),
+    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
      Input('role-list-table', 'nClicksButton')],
     [State('role-list-table', 'selectedRowKeys'),
      State('role-list-table', 'clickedContent'),
      State('role-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
-    if add_click or edit_click or button_click:
+def add_edit_role_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'role-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'role-operation-button'} \
+            or (trigger_id == 'role-list-table' and clicked_content == '修改'):
         menu_params = dict(menu_name='', type='role')
         tree_info = get_menu_tree_api(menu_params)
         if tree_info.get('code') == 200:
             tree_data = tree_info['data']
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'role-operation-button'}:
                 return [
                     True,
                     '新增角色',
@@ -260,12 +284,10 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif edit_click or (button_click and clicked_content == '修改'):
-                if edit_click:
+            elif trigger_id == {'index': 'edit', 'type': 'role-operation-button'} or (trigger_id == 'role-list-table' and clicked_content == '修改'):
+                if trigger_id == {'index': 'edit', 'type': 'role-operation-button'}:
                     role_id = int(','.join(selected_row_keys))
                 else:
                     role_id = int(recently_button_clicked_row['key'])
@@ -300,15 +322,13 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         role_info.get('menu'),
                         role_info.get('role').get('remark'),
                         {'timestamp': time.time()},
-                        None,
-                        None,
                         role_info.get('role') if role_info else None,
                         {'type': 'edit'}
                     ]
                     
-        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 14 + [None, None, None, None]
+    return [dash.no_update] * 14 + [None, None]
 
 
 @app.callback(
@@ -445,19 +465,20 @@ def table_switch_role_status(recently_switch_data_index, recently_switch_status,
     [Output('role-delete-text', 'children'),
      Output('role-delete-confirm-modal', 'visible'),
      Output('role-delete-ids-store', 'data')],
-    [Input('role-delete', 'nClicks'),
+    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
      Input('role-list-table', 'nClicksButton')],
     [State('role-list-table', 'selectedRowKeys'),
      State('role-list-table', 'clickedContent'),
      State('role-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def role_delete_modal(delete_click, button_click,
+def role_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'role-operation-button'} or (
+            trigger_id == 'role-list-table' and clicked_content == '删除'):
 
-        if trigger_id == 'role-delete':
+        if trigger_id == {'index': 'delete', 'type': 'role-operation-button'}:
             role_ids = ','.join(selected_row_keys)
         else:
             if clicked_content == '删除':

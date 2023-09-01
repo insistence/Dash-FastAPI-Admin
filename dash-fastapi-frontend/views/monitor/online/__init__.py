@@ -106,26 +106,24 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-delete'
-                                                            ),
-                                                            '批量强退',
-                                                        ],
-                                                        id='online-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-delete'
                                                     ),
+                                                    '批量强退',
                                                 ],
-                                                hidden='monitor:online:batchLogout' not in button_perms
-                                            ),
+                                                id={
+                                                    'type': 'online-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'monitor:online:batchLogout' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

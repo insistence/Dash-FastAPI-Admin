@@ -153,65 +153,59 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='notice-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='system:notice:add' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'notice-operation-button',
+                                                    'index': 'add'
+                                                },
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff'
+                                                }
+                                            ) if 'system:notice:add' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-edit'
-                                                            ),
-                                                            '修改',
-                                                        ],
-                                                        id='notice-edit',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#71e2a3',
-                                                            'background': '#e7faf0',
-                                                            'border-color': '#d0f5e0'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-edit'
                                                     ),
+                                                    '修改',
                                                 ],
-                                                hidden='system:notice:edit' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'notice-operation-button',
+                                                    'index': 'edit'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#71e2a3',
+                                                    'background': '#e7faf0',
+                                                    'border-color': '#d0f5e0'
+                                                }
+                                            ) if 'system:notice:edit' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-minus'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='notice-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-minus'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='system:notice:remove' not in button_perms
-                                            ),
+                                                id={
+                                                    'type': 'notice-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'system:notice:remove' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

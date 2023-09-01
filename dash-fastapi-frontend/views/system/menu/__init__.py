@@ -140,13 +140,16 @@ def render(button_perms):
                                                     ),
                                                     '新增',
                                                 ],
-                                                id='menu-add',
+                                                id={
+                                                    'type': 'menu-operation-button',
+                                                    'index': 'add'
+                                                },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
                                                     'border-color': '#a3d3ff'
                                                 }
-                                            ),
+                                            ) if 'system:menu:add' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(

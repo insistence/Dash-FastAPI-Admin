@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from jsonpath_ng import parse
@@ -145,17 +145,17 @@ def get_select_icon(icon):
      Output('menu-menu_name', 'value'),
      Output('menu-order_num', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('menu-add', 'nClicks'),
      Output('menu-edit-id-store', 'data'),
      Output('menu-operations-store-bk', 'data')],
-    [Input('menu-add', 'nClicks'),
+    [Input({'type': 'menu-operation-button', 'index': ALL}, 'nClicks'),
      Input('menu-list-table', 'nClicksButton')],
     [State('menu-list-table', 'clickedContent'),
      State('menu-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_menu_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or (button_click and clicked_content != '删除'):
+def add_edit_menu_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'menu-operation-button'} or (trigger_id == 'menu-list-table' and clicked_content != '删除'):
         menu_params = dict(menu_name='')
         if clicked_content == '修改':
             tree_info = get_menu_tree_for_edit_option_api(menu_params)
@@ -164,7 +164,7 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'menu-operation-button'}:
                 return [
                     True,
                     '新增菜单',
@@ -177,10 +177,9 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '新增':
+            elif trigger_id == 'menu-list-table' and clicked_content == '新增':
                 return [
                     True,
                     '新增菜单',
@@ -193,10 +192,9 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '修改':
+            elif trigger_id == 'menu-list-table' and clicked_content == '修改':
                 menu_id = int(recently_button_clicked_row['key'])
                 menu_info_res = get_menu_detail_api(menu_id=menu_id)
                 if menu_info_res['code'] == 200:
@@ -212,14 +210,13 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                         menu_info.get('menu_name'),
                         menu_info.get('order_num'),
                         {'timestamp': time.time()},
-                        None,
                         menu_info,
                         {'type': 'edit'}
                     ]
 
-        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None, None]
+        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 10 + [None, None, None]
+    return [dash.no_update] * 10 + [None, None]
 
 
 @app.callback(

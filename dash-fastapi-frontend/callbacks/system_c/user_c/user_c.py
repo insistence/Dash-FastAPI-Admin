@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from jsonpath_ng import parse
@@ -158,19 +158,43 @@ def hidden_user_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('user-edit', 'disabled'),
-     Output('user-delete', 'disabled')],
+    Output({'type': 'user-operation-button', 'index': 'edit'}, 'disabled'),
     Input('user-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_user_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_user_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1 or '1' in table_rows_selected:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'user-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('user-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_user_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if '1' in table_rows_selected:
+                return True
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -301,24 +325,24 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
      Output('user-edit-remark', 'value'),
      Output('user-edit-id-store', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('user-edit', 'nClicks'),
+    [Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
     [State('user-list-table', 'selectedRowKeys'),
      State('user-list-table', 'recentlyClickedDropdownItemTitle'),
      State('user-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def user_edit_modal(edit_click, dropdown_click,
+def user_edit_modal(operation_click, dropdown_click,
                     selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
-    if edit_click or dropdown_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'edit', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '修改'):
 
         dept_params = dict(dept_name='')
         tree_data = get_dept_tree_api(dept_params)['data']
         post_option = get_post_select_option_api()['data']
         role_option = get_role_select_option_api()['data']
 
-        if trigger_id == 'user-edit':
+        if trigger_id == {'index': 'edit', 'type': 'user-operation-button'}:
             user_id = int(selected_row_keys[0])
         else:
             if recently_clicked_dropdown_item_title == '修改':
@@ -454,19 +478,19 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
     [Output('user-delete-text', 'children'),
      Output('user-delete-confirm-modal', 'visible'),
      Output('user-delete-ids-store', 'data')],
-    [Input('user-delete', 'nClicks'),
+    [Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
     [State('user-list-table', 'selectedRowKeys'),
      State('user-list-table', 'recentlyClickedDropdownItemTitle'),
      State('user-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def user_delete_modal(delete_click, dropdown_click,
+def user_delete_modal(operation_click, dropdown_click,
                       selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
-    if delete_click or dropdown_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '删除'):
 
-        if trigger_id == 'user-delete':
+        if trigger_id == {'index': 'delete', 'type': 'user-operation-button'}:
             user_ids = ','.join(selected_row_keys)
         else:
             if recently_clicked_dropdown_item_title == '删除':

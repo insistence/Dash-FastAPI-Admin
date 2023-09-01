@@ -1,7 +1,7 @@
 import dash
 import time
 import uuid
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_utils_components as fuc
 
 from server import app
@@ -96,36 +96,41 @@ def hidden_online_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    Output('online-delete', 'disabled'),
+    Output({'type': 'online-operation-button', 'index': 'delete'}, 'disabled'),
     Input('online-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
 def change_online_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
 
-        return False
+            return False
 
-    return True
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
     [Output('online-delete-text', 'children'),
      Output('online-delete-confirm-modal', 'visible'),
      Output('online-delete-ids-store', 'data')],
-    [Input('online-delete', 'nClicks'),
+    [Input({'type': 'online-operation-button', 'index': ALL}, 'nClicks'),
      Input('online-list-table', 'nClicksButton')],
     [State('online-list-table', 'selectedRowKeys'),
      State('online-list-table', 'clickedContent'),
      State('online-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def online_delete_modal(delete_click, button_click,
+def online_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'online-operation-button'} or (
+            trigger_id == 'online-list-table' and clicked_content == '强退'):
         logout_type = ''
 
-        if trigger_id == 'online-delete':
+        if trigger_id == {'index': 'delete', 'type': 'online-operation-button'}:
             session_ids = ','.join(selected_row_keys)
         else:
             if clicked_content == '强退':

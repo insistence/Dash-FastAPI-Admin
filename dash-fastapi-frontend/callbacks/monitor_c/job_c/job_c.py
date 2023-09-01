@@ -3,7 +3,7 @@ import time
 import uuid
 import json
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -138,19 +138,41 @@ def hidden_job_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('job-edit', 'disabled'),
-     Output('job-delete', 'disabled')],
+    Output({'type': 'job-operation-button', 'index': 'edit'}, 'disabled'),
     Input('job-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_job_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_job_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'job-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('job-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_job_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -166,22 +188,22 @@ def change_job_edit_delete_button_status(table_rows_selected):
      Output('job-concurrent', 'value'),
      Output('job-status', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('job-add', 'nClicks'),
-     Output('job-edit', 'nClicks'),
      Output('job-edit-id-store', 'data'),
      Output('job-operations-store-bk', 'data')],
-    [Input('job-add', 'nClicks'),
-     Input('job-edit', 'nClicks'),
+    [Input({'type': 'job-operation-button', 'index': ALL}, 'nClicks'),
      Input('job-list-table', 'nClicksDropdownItem')],
     [State('job-list-table', 'selectedRowKeys'),
      State('job-list-table', 'recentlyClickedDropdownItemTitle'),
      State('job-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys, recently_clicked_dropdown_item_title,
+def add_edit_job_modal(operation_click, dropdown_click, selected_row_keys, recently_clicked_dropdown_item_title,
                        recently_dropdown_item_clicked_row):
-    if add_click or edit_click or dropdown_click:
-        if add_click:
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'job-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'job-operation-button'} \
+            or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '修改'):
+        if trigger_id == {'index': 'add', 'type': 'job-operation-button'}:
             return [
                 True,
                 '新增任务',
@@ -196,12 +218,10 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
                 '0',
                 dash.no_update,
                 None,
-                None,
-                None,
                 {'type': 'add'}
             ]
-        elif edit_click or (dropdown_click and recently_clicked_dropdown_item_title == '修改'):
-            if edit_click:
+        elif trigger_id == {'index': 'edit', 'type': 'job-operation-button'} or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '修改'):
+            if trigger_id == {'index': 'edit', 'type': 'job-operation-button'}:
                 job_id = int(','.join(selected_row_keys))
             else:
                 job_id = int(recently_dropdown_item_clicked_row['key'])
@@ -221,15 +241,13 @@ def add_edit_job_modal(add_click, edit_click, dropdown_click, selected_row_keys,
                     job_info.get('concurrent'),
                     job_info.get('status'),
                     {'timestamp': time.time()},
-                    None,
-                    None,
                     job_info if job_info else None,
                     {'type': 'edit'}
                 ]
 
-        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 12 + [None, None, None, None]
+    return [dash.no_update] * 12 + [None, None]
 
 
 @app.callback(
@@ -465,19 +483,20 @@ def get_job_detail_modal(dropdown_click, recently_clicked_dropdown_item_title, r
     [Output('job-delete-text', 'children'),
      Output('job-delete-confirm-modal', 'visible'),
      Output('job-delete-ids-store', 'data')],
-    [Input('job-delete', 'nClicks'),
+    [Input({'type': 'job-operation-button', 'index': ALL}, 'nClicks'),
      Input('job-list-table', 'nClicksDropdownItem')],
     [State('job-list-table', 'selectedRowKeys'),
      State('job-list-table', 'recentlyClickedDropdownItemTitle'),
      State('job-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def job_delete_modal(delete_click, dropdown_click,
+def job_delete_modal(operation_click, dropdown_click,
                      selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
-    if delete_click or dropdown_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'job-operation-button'} or (
+            trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '删除'):
 
-        if trigger_id == 'job-delete':
+        if trigger_id == {'index': 'delete', 'type': 'job-operation-button'}:
             job_ids = ','.join(selected_row_keys)
         else:
             if recently_clicked_dropdown_item_title == '删除':
@@ -528,32 +547,31 @@ def job_delete_confirm(delete_confirm, job_ids_data):
      Output('job_to_job_log-modal', 'title'),
      Output('job_log-job_name-input', 'value', allow_duplicate=True),
      Output('job_log-job_group-select', 'options'),
-     Output('job-log', 'nClicks'),
      Output('job_log-search', 'nClicks'),
      Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('job-log', 'nClicks'),
+    [Input({'type': 'job-operation-log', 'index': ALL}, 'nClicks'),
      Input('job-list-table', 'nClicksDropdownItem')],
     [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
      State('job-list-table', 'recentlyDropdownItemClickedRow'),
      State('job_log-search', 'nClicks')],
     prevent_initial_call=True
 )
-def job_to_job_log_modal(job_log_click, dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, job_log_search_nclick):
+def job_to_job_log_modal(operation_click, dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, job_log_search_nclick):
 
-    if job_log_click or (dropdown_click and recently_clicked_dropdown_item_title == '调度日志'):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'log', 'type': 'job-operation-log'} or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '调度日志'):
         option_table = []
         info = query_dict_data_list_api(dict_type='sys_job_group')
         if info.get('code') == 200:
             data = info.get('data')
             option_table = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
 
-            if dropdown_click and recently_clicked_dropdown_item_title == '调度日志':
+            if trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '调度日志':
                 return [
                     True,
                     '任务调度日志',
                     recently_dropdown_item_clicked_row.get('job_name'),
                     option_table,
-                    None,
                     job_log_search_nclick + 1 if job_log_search_nclick else 1,
                     {'timestamp': time.time()},
                 ]
@@ -563,12 +581,11 @@ def job_to_job_log_modal(job_log_click, dropdown_click, recently_clicked_dropdow
                 '任务调度日志',
                 None,
                 option_table,
-                None,
                 job_log_search_nclick + 1 if job_log_search_nclick else 1,
                 {'timestamp': time.time()},
             ]
 
-    return [dash.no_update] * 7
+    return [dash.no_update] * 6
 
 
 @app.callback(

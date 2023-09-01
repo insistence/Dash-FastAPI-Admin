@@ -148,86 +148,79 @@ def render(button_perms):
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdSpace(
+                                    html.Div(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-plus'
-                                                            ),
-                                                            '新增',
-                                                        ],
-                                                        id='role-add',
-                                                        style={
-                                                            'color': '#1890ff',
-                                                            'background': '#e8f4ff',
-                                                            'border-color': '#a3d3ff'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-plus'
                                                     ),
+                                                    '新增',
                                                 ],
-                                                hidden='system:role:add' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'add'
+                                                },
+                                                style={
+                                                    'color': '#1890ff',
+                                                    'background': '#e8f4ff',
+                                                    'border-color': '#a3d3ff',
+                                                    'marginRight': '10px'
+                                                }
+                                            ) if 'system:role:add' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-edit'
-                                                            ),
-                                                            '修改',
-                                                        ],
-                                                        id='role-edit',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#71e2a3',
-                                                            'background': '#e7faf0',
-                                                            'border-color': '#d0f5e0'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-edit'
                                                     ),
+                                                    '修改',
                                                 ],
-                                                hidden='system:role:edit' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'edit'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#71e2a3',
+                                                    'background': '#e7faf0',
+                                                    'border-color': '#d0f5e0',
+                                                    'marginRight': '10px'
+                                                }
+                                            ) if 'system:role:edit' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-minus'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='role-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-minus'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='system:role:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb',
+                                                    'marginRight': '10px'
+                                                }
+                                            ) if 'system:role:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-down'
-                                                            ),
-                                                            '导出',
-                                                        ],
-                                                        id='role-export',
-                                                        style={
-                                                            'color': '#ffba00',
-                                                            'background': '#fff8e6',
-                                                            'border-color': '#ffe399'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-down'
                                                     ),
+                                                    '导出',
                                                 ],
-                                                hidden='system:role:export' not in button_perms
-                                            ),
+                                                id='role-export',
+                                                style={
+                                                    'color': '#ffba00',
+                                                    'background': '#fff8e6',
+                                                    'border-color': '#ffe399',
+                                                    'marginRight': '10px'
+                                                }
+                                            ) if 'system:role:export' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

@@ -3,7 +3,7 @@ import time
 import uuid
 import json
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -180,33 +180,36 @@ def add_edit_job_log_modal(button_click, clicked_content, recently_button_clicke
 
 
 @app.callback(
-    Output('job_log-delete', 'disabled'),
+    Output({'type': 'job_log-operation-button', 'index': 'delete'}, 'disabled'),
     Input('job_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
 def change_job_log_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
+
             return False
 
-        return False
+        return True
 
-    return True
+    return dash.no_update
 
 
 @app.callback(
     [Output('job_log-delete-text', 'children'),
      Output('job_log-delete-confirm-modal', 'visible'),
      Output('job_log-delete-ids-store', 'data')],
-    [Input('job_log-delete', 'nClicks'),
-     Input('job_log-clear', 'nClicks')],
+    Input({'type': 'job_log-operation-button', 'index': ALL}, 'nClicks'),
     State('job_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def job_log_delete_modal(delete_click, clear_click, selected_row_keys):
-    if delete_click or clear_click:
-        trigger_id = dash.ctx.triggered_id
-        if trigger_id == 'job_log-delete':
+def job_log_delete_modal(operation_click, selected_row_keys):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id.index in ['delete', 'clear']:
+        if trigger_id.index == 'delete':
             job_log_ids = ','.join(selected_row_keys)
 
             return [
@@ -215,7 +218,7 @@ def job_log_delete_modal(delete_click, clear_click, selected_row_keys):
                 {'oper_type': 'delete', 'job_log_ids': job_log_ids}
             ]
 
-        elif trigger_id == 'job_log-clear':
+        elif trigger_id.index == 'clear':
             return [
                 f'是否确认清除所有的任务执行日志？',
                 True,

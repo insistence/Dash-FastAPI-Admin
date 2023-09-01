@@ -173,64 +173,55 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdSpace(
                                         [
-                                            html.Div(
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-delete'
-                                                            ),
-                                                            '删除',
-                                                        ],
-                                                        id='operation_log-delete',
-                                                        disabled=True,
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-delete'
                                                     ),
+                                                    '删除',
                                                 ],
-                                                hidden='monitor:operlog:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'operation_log-operation-button',
+                                                    'index': 'delete'
+                                                },
+                                                disabled=True,
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'monitor:operlog:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-clear'
-                                                            ),
-                                                            '清空',
-                                                        ],
-                                                        id='operation_log-clear',
-                                                        style={
-                                                            'color': '#ff9292',
-                                                            'background': '#ffeded',
-                                                            'border-color': '#ffdbdb'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-clear'
                                                     ),
+                                                    '清空',
                                                 ],
-                                                hidden='monitor:operlog:remove' not in button_perms
-                                            ),
-                                            html.Div(
+                                                id={
+                                                    'type': 'operation_log-operation-button',
+                                                    'index': 'clear'
+                                                },
+                                                style={
+                                                    'color': '#ff9292',
+                                                    'background': '#ffeded',
+                                                    'border-color': '#ffdbdb'
+                                                }
+                                            ) if 'monitor:operlog:remove' in button_perms else [],
+                                            fac.AntdButton(
                                                 [
-                                                    fac.AntdButton(
-                                                        [
-                                                            fac.AntdIcon(
-                                                                icon='antd-arrow-down'
-                                                            ),
-                                                            '导出',
-                                                        ],
-                                                        id='operation_log-export',
-                                                        style={
-                                                            'color': '#ffba00',
-                                                            'background': '#fff8e6',
-                                                            'border-color': '#ffe399'
-                                                        }
+                                                    fac.AntdIcon(
+                                                        icon='antd-arrow-down'
                                                     ),
+                                                    '导出',
                                                 ],
-                                                hidden='monitor:operlog:export' not in button_perms
-                                            ),
+                                                id='operation_log-export',
+                                                style={
+                                                    'color': '#ffba00',
+                                                    'background': '#fff8e6',
+                                                    'border-color': '#ffe399'
+                                                }
+                                            ) if 'monitor:operlog:export' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

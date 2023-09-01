@@ -2,7 +2,7 @@ import dash
 import time
 import uuid
 from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -111,34 +111,55 @@ def hidden_login_log_search_form(hidden_click, hidden_status):
 
 
 @app.callback(
-    [Output('login_log-delete', 'disabled'),
-     Output('login_log-unlock', 'disabled')],
+    Output({'type': 'login_log-operation-button', 'index': 'delete'}, 'disabled'),
     Input('login_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_login_log_delete_unlock_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [False, True]
+def change_login_log_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return False
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output('login_log-unlock', 'disabled'),
+    Input('login_log-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_login_log_unlock_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1:
+                return True
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
     [Output('login_log-delete-text', 'children'),
      Output('login_log-delete-confirm-modal', 'visible'),
      Output('login_log-delete-ids-store', 'data')],
-    [Input('login_log-delete', 'nClicks'),
-     Input('login_log-clear', 'nClicks')],
+    Input({'type': 'login_log-operation-button', 'index': ALL}, 'nClicks'),
     State('login_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def login_log_delete_modal(delete_click, clear_click, selected_row_keys):
-    if delete_click or clear_click:
-        trigger_id = dash.ctx.triggered_id
-        if trigger_id == 'login_log-delete':
+def login_log_delete_modal(operation_click, selected_row_keys):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id.index in ['delete', 'clear']:
+        if trigger_id.index == 'delete':
             info_ids = ','.join(selected_row_keys)
 
             return [
@@ -147,7 +168,7 @@ def login_log_delete_modal(delete_click, clear_click, selected_row_keys):
                 {'oper_type': 'delete', 'info_ids': info_ids}
             ]
 
-        elif trigger_id == 'login_log-clear':
+        elif trigger_id.index == 'clear':
             return [
                 f'是否确认清除所有的登录日志？',
                 True,
