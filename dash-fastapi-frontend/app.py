@@ -32,6 +32,9 @@ app.layout = html.Div(
         # 注入页面内容挂载点
         html.Div(id='app-mount'),
 
+        # 注入全局配置容器
+        fac.AntdConfigProvider(id='app-config-provider'),
+
         # 辅助处理多输入 -> 存储接口返回token校验信息
         render_store_container(),
 
@@ -70,14 +73,15 @@ app.layout = html.Div(
      Output('menu-info-store-container', 'data'),
      Output('menu-list-store-container', 'data')],
     Input('url-container', 'pathname'),
-    State('url-container', 'trigger'),
+    [State('url-container', 'trigger'),
+     State('token-container', 'data')],
     prevent_initial_call=True
 )
-def router(pathname, trigger):
+def router(pathname, trigger, session_token):
     # 检查当前会话是否已经登录
     token_result = session.get('Authorization')
     # 若已登录
-    if token_result:
+    if token_result and session_token and token_result == session_token:
         try:
             current_user_result = get_current_user_info_api()
             if current_user_result['code'] == 200:

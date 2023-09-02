@@ -18,6 +18,7 @@ from api.login import login_api, get_captcha_image_api
      Output('login-captcha-form-item', 'help'),
      Output('login-captcha-image-container', 'n_clicks'),
      Output('login-submit', 'loading'),
+     Output('token-container', 'data'),
      Output('redirect-container', 'children', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
     Input('login-submit', 'nClicks'),
@@ -52,6 +53,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         None,
                         dash.no_update,
                         True,
+                        token,
                         dcc.Location(
                             pathname='/',
                             id='login-redirect'
@@ -71,6 +73,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         image_click + 1,
                         False,
                         None,
+                        None,
                         None
                     ]
 
@@ -85,6 +88,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         None,
                         image_click + 1,
                         False,
+                        None,
                         None,
                         None
                     ]
@@ -101,6 +105,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         image_click + 1,
                         False,
                         None,
+                        None,
                         None
                     ]
 
@@ -115,6 +120,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         '验证码错误',
                         image_click + 1,
                         False,
+                        None,
                         None,
                         None
                     ]
@@ -131,6 +137,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         image_click + 1,
                         False,
                         None,
+                        None,
                         fuc.FefferyFancyMessage(userinfo_result['message'], type='error'),
                     ]
             except Exception as e:
@@ -145,6 +152,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                     image_click + 1,
                     False,
                     None,
+                    None,
                     fuc.FefferyFancyMessage('接口异常', type='error'),
                 ]
 
@@ -158,10 +166,11 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
             dash.no_update,
             False,
             None,
+            None,
             None
         ]
 
-    return [dash.no_update] * 6 + [image_click + 1] + [dash.no_update] * 3
+    return [dash.no_update] * 6 + [image_click + 1] + [dash.no_update] * 4
 
 
 @app.callback(

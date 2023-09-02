@@ -33,6 +33,67 @@ def render_content(menu_info):
                 #     ]
                 # ),
 
+                # 布局设置抽屉
+                fac.AntdDrawer(
+                    [
+                        fac.AntdText(
+                            '主题颜色',
+                            style={
+                                'fontSize': 16,
+                                'fontWeight': 500
+                            }
+                        ),
+                        fuc.FefferyHexColorPicker(
+                            id='hex-color-picker',
+                            color='#1890ff',
+                            showAlpha=True,
+                            style={
+                                'width': '100%',
+                                'marginTop': '10px'
+                            }
+                        ),
+                        fac.AntdInput(
+                            id='selected-color-input',
+                            value='#1890ff',
+                            readOnly=True,
+                            style={
+                                'marginTop': '15px',
+                                'background': '#1890ff'
+                            }
+                        ),
+                        fac.AntdSpace(
+                            [
+                                fac.AntdButton(
+                                    [
+                                        fac.AntdIcon(
+                                            icon='antd-save'
+                                        ),
+                                        '保存配置',
+                                    ],
+                                    id='save-setting',
+                                    type='primary'
+                                ),
+                                fac.AntdButton(
+                                    [
+                                        fac.AntdIcon(
+                                            icon='antd-sync'
+                                        ),
+                                        '重置配置',
+                                    ],
+                                    id='reset-setting',
+                                ),
+                            ],
+                            style={
+                                'marginTop': '15px'
+                            }
+                        )
+                    ],
+                    id='layout-setting-drawer',
+                    visible=False,
+                    title='布局设置',
+                    width=320
+                ),
+
                 # 退出登录对话框提示
                 fac.AntdModal(
                     html.Div(

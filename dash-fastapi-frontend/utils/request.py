@@ -10,8 +10,9 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
     api_url = ApiBaseUrlConfig.BaseUrl + url
     method = method.lower().strip()
     user_agent = request.headers.get('User-Agent')
+    authorization = session.get('Authorization') if session.get('Authorization') else ''
     if is_headers:
-        api_headers = {'Authorization': 'Bearer ' + session.get('Authorization'), 'remote_addr': request.remote_addr,
+        api_headers = {'Authorization': 'Bearer ' + authorization, 'remote_addr': request.remote_addr,
                        'User-Agent': user_agent}
     else:
         api_headers = {'remote_addr': request.remote_addr, 'User-Agent': user_agent}

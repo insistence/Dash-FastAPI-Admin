@@ -77,6 +77,11 @@ def render_head_content():
                                 'icon': 'antd-idcard'
                             },
                             {
+                                'title': '布局设置',
+                                'key': '布局设置',
+                                'icon': 'antd-layout'
+                            },
+                            {
                                 'isDivider': True
                             },
                             {
