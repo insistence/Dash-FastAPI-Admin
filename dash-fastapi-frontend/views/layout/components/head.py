@@ -28,7 +28,8 @@ def render_head_content():
                     'display': 'flex',
                     'alignItems': 'center'
                 }
-            )
+            ),
+            flex='1'
         ),
 
         # 页首面包屑区域
@@ -46,29 +47,125 @@ def render_head_content():
             style={
                 'height': '100%',
                 'display': 'flex',
-                'alignItems': 'center',
-                'paddingLeft': '5px'
-            }
+                'alignItems': 'center'
+            },
+            flex='24'
+        ),
+
+        # 页首中部搜索区域
+        fac.AntdCol(
+            fac.AntdParagraph(
+                [
+                    fac.AntdText(
+                        'Ctrl',
+                        keyboard=True,
+                        style={
+                            'color': '#8c8c8c'
+                        }
+                    ),
+                    fac.AntdText(
+                        'K',
+                        keyboard=True,
+                        style={
+                            'color': '#8c8c8c'
+                        }
+                    ),
+                    fac.AntdText(
+                        '唤出搜索面板',
+                        style={
+                            'color': '#8c8c8c'
+                        }
+                    )
+                ],
+                style={
+                    'height': '100%',
+                    'display': 'flex',
+                    'alignItems': 'center'
+                }
+            ),
+            flex='6'
         ),
 
         # 页首右侧用户信息区域
         fac.AntdCol(
             fac.AntdSpace(
                 [
-                    fac.AntdTooltip(
-                        fac.AntdAvatar(
-                            id='avatar-info',
-                            mode='image',
-                            src=session.get('user_info').get('avatar'),
-                            size=36
+                    fac.AntdPopover(
+                        fac.AntdBadge(
+                            fac.AntdAvatar(
+                                id='avatar-info',
+                                mode='image',
+                                src=session.get('user_info').get('avatar'),
+                                size=36
+                            ),
+                            count=6,
+                            size='small'
                         ),
-                        title='当前用户：' + session.get('user_info').get('user_name'),
-                        placement='bottom'
+                        content=fac.AntdTabs(
+                            items=[
+                                {
+                                    'key': '未读消息',
+                                    'label': '未读消息',
+                                    'children': [
+                                        fac.AntdSpace(
+                                            [
+                                                html.Div(
+                                                    fac.AntdText(
+                                                        f'消息示例{i}'
+                                                    ),
+                                                    style={
+                                                        'padding': '5px 10px',
+                                                        'height': 40,
+                                                        'width': 300,
+                                                        'borderBottom': '1px solid #f1f3f5'
+                                                    }
+                                                )
+                                                for i in range(1, 8)
+                                            ],
+                                            direction='vertical',
+                                            style={
+                                                'height': 280,
+                                                'overflowY': 'auto'
+                                            }
+                                        )
+                                    ]
+                                },
+                                {
+                                    'key': '已读消息',
+                                    'label': '已读消息',
+                                    'children': [
+                                        fac.AntdSpace(
+                                            [
+                                                html.Div(
+                                                    fac.AntdText(
+                                                        f'消息示例{i}'
+                                                    ),
+                                                    style={
+                                                        'padding': '5px 10px',
+                                                        'height': 40,
+                                                        'width': 300,
+                                                        'borderBottom': '1px solid #f1f3f5'
+                                                    }
+                                                )
+                                                for i in range(8, 15)
+                                            ],
+                                            direction='vertical',
+                                            style={
+                                                'height': 280,
+                                                'overflowY': 'auto'
+                                            }
+                                        )
+                                    ]
+                                },
+                            ],
+                            centered=True
+                        ),
+                        placement='bottomRight'
                     ),
 
                     fac.AntdDropdown(
                         id='index-header-dropdown',
-                        title='个人中心',
+                        title=session.get('user_info').get('user_name'),
                         arrow=True,
                         menuItems=[
                             {
@@ -103,7 +200,7 @@ def render_head_content():
                     'alignItems': 'center'
                 }
             ),
-            flex=1
+            flex='3'
         ),
         fac.AntdCol(
             # 全局刷新按钮
@@ -131,6 +228,7 @@ def render_head_content():
                 'paddingRight': '3px',
                 'display': 'flex',
                 'alignItems': 'center'
-            }
+            },
+            flex='1'
         ),
     ]

@@ -231,3 +231,17 @@ def list_to_tree(permission_list: list) -> list:
             parent.update({'children': children})
 
     return container
+
+
+def get_search_panel_data(menu_list: list):
+    search_data = []
+    for item in menu_list:
+        if item.get('menu_type') == 'C' or item.get('is_frame') == 0:
+            item_dict = dict(
+                id=str(item.get('menu_id')),
+                title=item.get('menu_name'),
+                handler='() => window.open("%s", "_self")' % item.get('path')
+            )
+            search_data.append(item_dict)
+
+    return search_data

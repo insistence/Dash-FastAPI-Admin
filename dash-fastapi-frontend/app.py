@@ -15,7 +15,7 @@ import views
 
 from callbacks import app_c
 from api.login import get_current_user_info_api
-from utils.tree_tool import find_node_values, find_key_by_href, deal_user_menu_info
+from utils.tree_tool import find_node_values, find_key_by_href, deal_user_menu_info, get_search_panel_data
 
 app.layout = html.Div(
     [
@@ -34,6 +34,17 @@ app.layout = html.Div(
 
         # 注入全局配置容器
         fac.AntdConfigProvider(id='app-config-provider'),
+
+        # 注入快捷搜索面板
+        fuc.FefferyShortcutPanel(
+            id='search-panel',
+            data=[],
+            placeholder='输入你想要搜索的菜单...',
+            panelStyles={
+                'accentColor': '#1890ff',
+                'zIndex': 99999
+            }
+        ),
 
         # 辅助处理多输入 -> 存储接口返回token校验信息
         render_store_container(),
@@ -71,7 +82,8 @@ app.layout = html.Div(
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('current-key-container', 'data'),
      Output('menu-info-store-container', 'data'),
-     Output('menu-list-store-container', 'data')],
+     Output('menu-list-store-container', 'data'),
+     Output('search-panel', 'data')],
     Input('url-container', 'pathname'),
     [State('url-container', 'trigger'),
      State('token-container', 'data')],
@@ -90,6 +102,7 @@ def router(pathname, trigger, session_token):
                 user_menu_list = [item for item in menu_list if item.get('visible') == '0']
                 menu_info = deal_user_menu_info(0, menu_list)
                 user_menu_info = deal_user_menu_info(0, user_menu_list)
+                search_panel_data = get_search_panel_data(user_menu_list)
                 session['user_info'] = current_user['user']
                 session['dept_info'] = current_user['dept']
                 session['role_info'] = current_user['role']
@@ -117,7 +130,8 @@ def router(pathname, trigger, session_token):
                                 {'timestamp': time.time()},
                                 {'current_key': current_key},
                                 {'menu_info': menu_info},
-                                {'menu_list': menu_list}
+                                {'menu_list': menu_list},
+                                search_panel_data
                             ]
 
                         # 否则正常渲染主页面
@@ -128,7 +142,8 @@ def router(pathname, trigger, session_token):
                             {'timestamp': time.time()},
                             {'current_key': current_key},
                             {'menu_info': menu_info},
-                            {'menu_list': menu_list}
+                            {'menu_list': menu_list},
+                            search_panel_data
                         ]
 
                     # elif trigger == 'pushstate':
@@ -140,7 +155,8 @@ def router(pathname, trigger, session_token):
                             {'timestamp': time.time()},
                             {'current_key': current_key},
                             {'menu_info': menu_info},
-                            {'menu_list': menu_list}
+                            {'menu_list': menu_list},
+                            search_panel_data
                         ]
 
                     # else:
@@ -162,6 +178,7 @@ def router(pathname, trigger, session_token):
                         {'timestamp': time.time()},
                         dash.no_update,
                         dash.no_update,
+                        dash.no_update,
                         dash.no_update
                     ]
 
@@ -171,6 +188,7 @@ def router(pathname, trigger, session_token):
                     dash.no_update,
                     dash.no_update,
                     {'timestamp': time.time()},
+                    dash.no_update,
                     dash.no_update,
                     dash.no_update,
                     dash.no_update
@@ -184,6 +202,7 @@ def router(pathname, trigger, session_token):
                 None,
                 fuc.FefferyFancyNotification('接口异常', type='error', autoClose=2000),
                 {'timestamp': time.time()},
+                dash.no_update,
                 dash.no_update,
                 dash.no_update,
                 dash.no_update
@@ -201,6 +220,7 @@ def router(pathname, trigger, session_token):
                 {'timestamp': time.time()},
                 dash.no_update,
                 dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
 
@@ -212,6 +232,7 @@ def router(pathname, trigger, session_token):
                 {'timestamp': time.time()},
                 dash.no_update,
                 dash.no_update,
+                dash.no_update,
                 dash.no_update
             ]
 
@@ -221,6 +242,7 @@ def router(pathname, trigger, session_token):
                 None,
                 None,
                 {'timestamp': time.time()},
+                dash.no_update,
                 dash.no_update,
                 dash.no_update,
                 dash.no_update
@@ -235,6 +257,7 @@ def router(pathname, trigger, session_token):
             ),
             None,
             {'timestamp': time.time()},
+            dash.no_update,
             dash.no_update,
             dash.no_update,
             dash.no_update
