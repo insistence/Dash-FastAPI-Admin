@@ -1,4 +1,3 @@
-import uuid
 from fastapi import APIRouter
 from module_admin.service.login_service import *
 from module_admin.entity.vo.login_vo import *
@@ -60,6 +59,36 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
             data={'access_token': access_token, 'token_type': 'Bearer'},
             message='登录成功'
         )
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@loginController.post("/getSmsCode", response_model=SmsCode)
+async def get_sms_code(request: Request, user: ResetUserModel, query_db: Session = Depends(get_db)):
+    try:
+        sms_result = await get_sms_code_services(request, query_db, user)
+        if sms_result.is_success:
+            logger.info('获取成功')
+            return response_200(data=sms_result, message='获取成功')
+        else:
+            logger.warning(sms_result.message)
+            return response_400(data='', message=sms_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@loginController.post("/forgetPwd", response_model=CrudUserResponse)
+async def forget_user_pwd(request: Request, forget_user: ResetUserModel, query_db: Session = Depends(get_db)):
+    try:
+        forget_user_result = await forget_user_services(request, query_db, forget_user)
+        if forget_user_result.is_success:
+            logger.info(forget_user_result.message)
+            return response_200(data=forget_user_result, message=forget_user_result.message)
+        else:
+            logger.warning(forget_user_result.message)
+            return response_400(data="", message=forget_user_result.message)
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))

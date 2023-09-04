@@ -200,6 +200,8 @@ class ResetUserModel(UserModel):
     重置用户密码模型
     """
     old_password: Optional[str]
+    sms_code: Optional[str]
+    session_id: Optional[str]
 
 
 class DeleteUserModel(BaseModel):

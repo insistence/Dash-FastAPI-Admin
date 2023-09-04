@@ -3,7 +3,7 @@ from fastapi import Depends
 import base64
 from config.get_db import get_db
 from config.env import CachePathConfig
-from module_admin.service.login_service import get_current_user, get_password_hash
+from module_admin.service.login_service import get_current_user
 from module_admin.service.user_service import *
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
@@ -37,7 +37,7 @@ async def get_system_user_list(request: Request, user_page_query: UserPageObject
 @log_decorator(title='用户管理', business_type=1)
 async def add_system_user(request: Request, add_user: AddUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
-        add_user.password = get_password_hash(add_user.password)
+        add_user.password = PwdUtil.get_password_hash(add_user.password)
         add_user.create_by = current_user.user.user_name
         add_user.update_by = current_user.user.user_name
         add_user_result = UserService.add_user_services(query_db, add_user)
@@ -155,9 +155,9 @@ async def change_system_user_profile_info(request: Request, edit_user: AddUserMo
 @log_decorator(title='个人信息', business_type=2)
 async def reset_system_user_password(request: Request, reset_user: ResetUserModel,  query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
-        if not reset_user.user_id:
+        if not reset_user.user_id and reset_user.old_password:
             reset_user.user_id = current_user.user.user_id
-        reset_user.password = get_password_hash(reset_user.password)
+        reset_user.password = PwdUtil.get_password_hash(reset_user.password)
         reset_user.update_by = current_user.user.user_name
         reset_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         reset_user_result = UserService.reset_user_services(query_db, reset_user)

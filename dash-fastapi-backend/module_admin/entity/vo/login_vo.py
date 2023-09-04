@@ -14,3 +14,10 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class SmsCode(BaseModel):
+    is_success: Optional[bool]
+    sms_code: str
+    session_id: str
+    message: Optional[str]

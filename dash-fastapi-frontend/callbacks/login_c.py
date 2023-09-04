@@ -61,70 +61,6 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         fuc.FefferyFancyMessage('登录成功', type='success'),
                     ]
 
-                elif userinfo_result['message'] == '用户不存在':
-
-                    return [
-                        'error',
-                        None,
-                        None,
-                        '用户不存在',
-                        None,
-                        None,
-                        image_click + 1,
-                        False,
-                        None,
-                        None,
-                        None
-                    ]
-
-                elif userinfo_result['message'] == '密码错误':
-
-                    return [
-                        None,
-                        'error',
-                        None,
-                        None,
-                        '密码错误',
-                        None,
-                        image_click + 1,
-                        False,
-                        None,
-                        None,
-                        None
-                    ]
-
-                elif userinfo_result['message'] == '验证码已失效':
-
-                    return [
-                        None,
-                        None,
-                        'error',
-                        None,
-                        None,
-                        '验证码已失效',
-                        image_click + 1,
-                        False,
-                        None,
-                        None,
-                        None
-                    ]
-
-                elif userinfo_result['message'] == '验证码错误':
-
-                    return [
-                        None,
-                        None,
-                        'error',
-                        None,
-                        None,
-                        '验证码错误',
-                        image_click + 1,
-                        False,
-                        None,
-                        None,
-                        None
-                    ]
-
                 else:
 
                     return [
@@ -138,7 +74,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         False,
                         None,
                         None,
-                        fuc.FefferyFancyMessage(userinfo_result['message'], type='error'),
+                        fuc.FefferyFancyMessage(userinfo_result.get('message'), type='error'),
                     ]
             except Exception as e:
                 print(e)

@@ -1,6 +1,7 @@
+from fastapi import Request
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
-from module_admin.service.login_service import verify_password
+from utils.pwd_util import *
 from utils.common_util import export_list2excel
 
 
@@ -152,19 +153,26 @@ class UserService:
         :param page_object: 重置用户对象
         :return: 重置用户校验结果
         """
-        user = UserDao.get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
+        reset_user = page_object.dict(exclude_unset=True)
         if page_object.old_password:
-            if not verify_password(page_object.old_password, user.password):
-                result = CrudUserResponse(**dict(is_success=False, message='旧密码不正确'))
+            user = UserDao.get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
+            if not PwdUtil.verify_password(page_object.old_password, user.password):
+                result = dict(is_success=False, message='旧密码不正确')
+                return CrudUserResponse(**result)
             else:
-                reset_user = page_object.dict(exclude_unset=True)
                 del reset_user['old_password']
-                result = UserDao.edit_user_dao(result_db, reset_user)
-        else:
-            reset_user = page_object.dict(exclude_unset=True)
-            result = UserDao.edit_user_dao(result_db, reset_user)
+        if page_object.sms_code and page_object.session_id:
+            del reset_user['sms_code']
+            del reset_user['session_id']
+        try:
+            UserDao.edit_user_dao(result_db, reset_user)
+            result_db.commit()
+            result = dict(is_success=True, message='重置成功')
+        except Exception as e:
+            result_db.rollback()
+            result = dict(is_success=False, message=str(e))
 
-        return result
+        return CrudUserResponse(**result)
 
     @staticmethod
     def export_user_list_services(user_list: List):

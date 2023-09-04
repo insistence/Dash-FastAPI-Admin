@@ -1,9 +1,9 @@
 from utils.request import api_request
 
 
-def change_password_api(page_obj: dict):
+def forget_user_pwd_api(page_obj: dict):
 
-    return api_request(method='post', url='/login/loginByAccount', is_headers=False, json=page_obj)
+    return api_request(method='post', url='/login/forgetPwd', is_headers=False, json=page_obj)
 
 
 def get_user_list_api(page_obj: dict):

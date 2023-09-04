@@ -1,19 +1,22 @@
 from module_admin.entity.vo.user_vo import *
-from module_admin.entity.vo.login_vo import UserLogin
+from module_admin.entity.vo.login_vo import *
 from module_admin.dao.login_dao import *
+from module_admin.service.user_service import UserService
 from module_admin.dao.user_dao import *
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import random
+import uuid
 from config.env import JwtConfig
+from utils.pwd_util import *
 from utils.response_util import *
 from utils.log_util import *
+from utils.message_util import *
 from datetime import datetime, timedelta
 from fastapi import Request, Form
 from fastapi import Depends, Header
 from config.get_db import get_db
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login/loginByAccount")
 
 
@@ -94,6 +97,53 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
         raise AuthException(data="", message="用户token已失效，请重新登录")
 
 
+async def get_sms_code_services(request: Request, result_db: Session, user: ResetUserModel):
+    """
+    获取短信验证码service
+    :param request: Request对象
+    :param result_db: orm对象
+    :param user: 用户对象
+    :return: 短信验证码对象
+    """
+    redis_sms_result = await request.app.state.redis.get(f"sms_code:{user.session_id}")
+    if redis_sms_result:
+        return SmsCode(**dict(is_success=False, sms_code='', session_id='', message='短信验证码仍在有效期内'))
+    is_user = UserDao.get_user_by_name(result_db, user.user_name)
+    if is_user:
+        sms_code = str(random.randint(100000, 999999))
+        session_id = str(uuid.uuid4())
+        await request.app.state.redis.set(f"sms_code:{session_id}", sms_code, ex=timedelta(minutes=2))
+        # 此处模拟调用短信服务
+        message_service(sms_code)
+
+        return SmsCode(**dict(is_success=True, sms_code=sms_code, session_id=session_id, message='获取成功'))
+
+    return SmsCode(**dict(is_success=False, sms_code='', session_id='', message='用户不存在'))
+
+
+async def forget_user_services(request: Request, result_db: Session, forget_user: ResetUserModel):
+    """
+    用户忘记密码services
+    :param request: Request对象
+    :param result_db: orm对象
+    :param forget_user: 重置用户对象
+    :return: 重置结果
+    """
+    redis_sms_result = await request.app.state.redis.get(f"sms_code:{forget_user.session_id}")
+    if forget_user.sms_code == redis_sms_result:
+        forget_user.password = PwdUtil.get_password_hash(forget_user.password)
+        forget_user.user_id = UserDao.get_user_by_name(result_db, forget_user.user_name).user_id
+        edit_result = UserService.reset_user_services(result_db, forget_user)
+        result = edit_result.dict()
+    elif not redis_sms_result:
+        result = dict(is_success=False, message='短信验证码已过期')
+    else:
+        await request.app.state.redis.delete(f"sms_code:{forget_user.session_id}")
+        result = dict(is_success=False, message='短信验证码不正确')
+
+    return CrudUserResponse(**result)
+
+
 async def logout_services(request: Request, session_id: str):
     """
     退出登录services
@@ -106,25 +156,6 @@ async def logout_services(request: Request, session_id: str):
     # await request.app.state.redis.delete(f'{current_user.user.user_id}_session_id')
 
     return True
-
-
-def verify_password(plain_password, hashed_password):
-    """
-    工具方法：校验当前输入的密码与数据库存储的密码是否一致
-    :param plain_password: 当前输入的密码
-    :param hashed_password: 数据库存储的密码
-    :return: 校验结果
-    """
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(input_password):
-    """
-    工具方法：对当前输入的密码进行加密
-    :param input_password: 输入的密码
-    :return: 加密成功的密码
-    """
-    return pwd_context.hash(input_password)
 
 
 async def check_login_captcha(request: Request, login_user: UserLogin):
@@ -160,10 +191,10 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     if login_user.captcha_enabled:
         await check_login_captcha(request, login_user)
     user = login_by_account(query_db, login_user.user_name)
-    if not user[0]:
+    if not user:
         logger.warning("用户不存在")
         raise LoginException(data="", message="用户不存在")
-    if not verify_password(login_user.password, user[0].password):
+    if not PwdUtil.verify_password(login_user.password, user[0].password):
         cache_password_error_count = await request.app.state.redis.get(f"password_error_count:{login_user.user_name}")
         password_error_counted = 0
         if cache_password_error_count:
