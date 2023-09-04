@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from fastapi import Depends, UploadFile, File, Form
+from fastapi import Depends, File, Form
 from config.env import CachePathConfig
 from module_admin.service.login_service import get_current_user
 from module_admin.service.common_service import *

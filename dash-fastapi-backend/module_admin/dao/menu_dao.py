@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.do.user_do import SysUser, SysUserRole
 from module_admin.entity.do.role_do import SysRole, SysRoleMenu
-from module_admin.entity.vo.menu_vo import MenuModel, MenuResponse, CrudMenuResponse
+from module_admin.entity.vo.menu_vo import MenuModel, MenuResponse
 from utils.time_format_util import list_format_datetime
 
 
@@ -15,7 +15,7 @@ class MenuDao:
     @classmethod
     def get_menu_detail_by_id(cls, db: Session, menu_id: int):
         """
-        根据菜单id获取岗位详细信息
+        根据菜单id获取菜单详细信息
         :param db: orm对象
         :param menu_id: 菜单id
         :return: 菜单信息对象

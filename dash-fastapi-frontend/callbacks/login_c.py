@@ -5,7 +5,7 @@ from dash.dependencies import Input, Output, State
 from flask import session
 import time
 
-from server import app, logger
+from server import app
 from api.login import login_api, get_captcha_image_api
 
 

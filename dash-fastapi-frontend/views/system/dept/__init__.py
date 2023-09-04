@@ -14,10 +14,6 @@ def render(button_perms):
         table_data = table_info['data']['rows']
         for item in table_data:
             default_expanded_row_keys.append(str(item['dept_id']))
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
             item['key'] = str(item['dept_id'])
             if item['parent_id'] == 0:
                 item['operation'] = [
@@ -31,6 +27,19 @@ def render(button_perms):
                         'type': 'link',
                         'icon': 'antd-plus'
                     } if 'system:dept:add' in button_perms else {},
+                ]
+            elif item['status'] == '1':
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:dept:edit' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:dept:remove' in button_perms else {},
                 ]
             else:
                 item['operation'] = [
@@ -50,6 +59,10 @@ def render(button_perms):
                         'icon': 'antd-delete'
                     } if 'system:dept:remove' in button_perms else {},
                 ]
+            if item['status'] == '0':
+                item['status'] = dict(tag='正常', color='blue')
+            else:
+                item['status'] = dict(tag='停用', color='volcano')
         table_data_new = get_dept_tree(0, table_data)
 
     return [

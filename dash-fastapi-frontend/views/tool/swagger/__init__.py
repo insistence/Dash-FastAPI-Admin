@@ -1,6 +1,5 @@
 from dash import html
 import feffery_utils_components as fuc
-import feffery_antd_components as fac
 from config.global_config import ApiBaseUrlConfig
 
 

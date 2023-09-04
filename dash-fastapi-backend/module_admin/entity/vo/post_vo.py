@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional, List
+from typing import Union, List
 from module_admin.entity.vo.user_vo import PostModel
 
 

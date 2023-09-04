@@ -15,7 +15,7 @@ class DeptService:
         :param page_object: 查询参数对象
         :return: 部门树信息对象
         """
-        dept_list_result = get_dept_list_for_tree(result_db, page_object)
+        dept_list_result = DeptDao.get_dept_list_for_tree(result_db, page_object)
         dept_tree_result = cls.get_dept_tree(0, DeptTree(dept_tree=dept_list_result))
 
         return dept_tree_result
@@ -28,7 +28,7 @@ class DeptService:
         :param page_object: 查询参数对象
         :return: 部门树信息对象
         """
-        dept_list_result = get_dept_info_for_edit_option(result_db, page_object)
+        dept_list_result = DeptDao.get_dept_info_for_edit_option(result_db, page_object)
         dept_tree_result = cls.get_dept_tree(0, DeptTree(dept_tree=dept_list_result))
 
         return dept_tree_result
@@ -41,7 +41,7 @@ class DeptService:
         :param page_object: 分页查询参数对象
         :return: 部门列表信息对象
         """
-        dept_list_result = get_dept_list(result_db, page_object)
+        dept_list_result = DeptDao.get_dept_list(result_db, page_object)
 
         return dept_list_result
 
@@ -53,14 +53,24 @@ class DeptService:
         :param page_object: 新增部门对象
         :return: 新增部门校验结果
         """
-        parent_info = get_dept_by_id(result_db, page_object.parent_id)
+        parent_info = DeptDao.get_dept_by_id(result_db, page_object.parent_id)
         if parent_info:
             page_object.ancestors = f'{parent_info.ancestors},{page_object.parent_id}'
         else:
             page_object.ancestors = '0'
-        add_dept_result = add_dept_dao(result_db, page_object)
+        dept = DeptDao.get_dept_detail_by_info(result_db, DeptModel(**dict(parent_id=page_object.parent_id, dept_name=page_object.dept_name)))
+        if dept:
+            result = dict(is_success=False, message='同一部门下不允许存在同名的部门')
+        else:
+            try:
+                DeptDao.add_dept_dao(result_db, page_object)
+                result_db.commit()
+                result = dict(is_success=True, message='新增成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
 
-        return add_dept_result
+        return CrudDeptResponse(**result)
 
     @classmethod
     def edit_dept_services(cls, result_db: Session, page_object: DeptModel):
@@ -70,21 +80,37 @@ class DeptService:
         :param page_object: 编辑部门对象
         :return: 编辑部门校验结果
         """
-        parent_info = get_dept_by_id(result_db, page_object.parent_id)
+        parent_info = DeptDao.get_dept_by_id(result_db, page_object.parent_id)
         if parent_info:
             page_object.ancestors = f'{parent_info.ancestors},{page_object.parent_id}'
         else:
             page_object.ancestors = '0'
         edit_dept = page_object.dict(exclude_unset=True)
-        edit_dept_result = edit_dept_dao(result_db, edit_dept)
-        cls.update_children_info(result_db, DeptModel(dept_id=page_object.dept_id,
-                                                      ancestors=page_object.ancestors,
-                                                      update_by=page_object.update_by,
-                                                      update_time=page_object.update_time
-                                                      )
-                                 )
+        dept_info = cls.detail_dept_services(result_db, edit_dept.get('dept_id'))
+        if dept_info:
+            if dept_info.parent_id != page_object.parent_id or dept_info.dept_name != page_object.dept_name:
+                dept = DeptDao.get_dept_detail_by_info(result_db, DeptModel(
+                    **dict(parent_id=page_object.parent_id, dept_name=page_object.dept_name)))
+                if dept:
+                    result = dict(is_success=False, message='同一部门下不允许存在同名的部门')
+                    return CrudDeptResponse(**result)
+            try:
+                DeptDao.edit_dept_dao(result_db, edit_dept)
+                cls.update_children_info(result_db, DeptModel(dept_id=page_object.dept_id,
+                                                              ancestors=page_object.ancestors,
+                                                              update_by=page_object.update_by,
+                                                              update_time=page_object.update_time
+                                                              )
+                                         )
+                result_db.commit()
+                result = dict(is_success=True, message='更新成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='部门不存在')
 
-        return edit_dept_result
+        return CrudDeptResponse(**result)
 
     @classmethod
     def delete_dept_services(cls, result_db: Session, page_object: DeleteDeptModel):
@@ -96,17 +122,22 @@ class DeptService:
         """
         if page_object.dept_ids.split(','):
             dept_id_list = page_object.dept_ids.split(',')
-            ancestors = get_dept_all_ancestors(result_db)
-            for dept_id in dept_id_list:
-                for ancestor in ancestors:
-                    if dept_id in ancestor[0]:
-                        result = dict(is_success=False, message='该部门下有子部门，不允许删除')
+            ancestors = DeptDao.get_dept_all_ancestors(result_db)
+            try:
+                for dept_id in dept_id_list:
+                    for ancestor in ancestors:
+                        if dept_id in ancestor[0]:
+                            result = dict(is_success=False, message='该部门下有子部门，不允许删除')
 
-                        return CrudDeptResponse(**result)
+                            return CrudDeptResponse(**result)
 
-                dept_id_dict = dict(dept_id=dept_id)
-                delete_dept_dao(result_db, DeptModel(**dept_id_dict))
-            result = dict(is_success=True, message='删除成功')
+                    dept_id_dict = dict(dept_id=dept_id)
+                    DeptDao.delete_dept_dao(result_db, DeptModel(**dept_id_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='删除成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
         else:
             result = dict(is_success=False, message='传入部门id为空')
         return CrudDeptResponse(**result)
@@ -119,9 +150,9 @@ class DeptService:
         :param dept_id: 部门id
         :return: 部门id对应的信息
         """
-        post = get_dept_detail_by_id(result_db, dept_id=dept_id)
+        dept = DeptDao.get_dept_detail_by_id(result_db, dept_id=dept_id)
 
-        return post
+        return dept
 
     @classmethod
     def get_dept_tree(cls, pid: int, permission_list: DeptTree):
@@ -157,17 +188,17 @@ class DeptService:
         :param page_object: 编辑部门对象
         :return:
         """
-        children_info = get_children_dept(result_db, page_object.dept_id)
+        children_info = DeptDao.get_children_dept(result_db, page_object.dept_id)
         if children_info:
             for child in children_info:
                 child.ancestors = f'{page_object.ancestors},{page_object.dept_id}'
-                edit_dept_dao(result_db,
-                              dict(dept_id=child.dept_id,
-                                   ancestors=child.ancestors,
-                                   update_by=page_object.update_by,
-                                   update_time=page_object.update_time
-                                   )
-                              )
+                DeptDao.edit_dept_dao(result_db,
+                                      dict(dept_id=child.dept_id,
+                                           ancestors=child.ancestors,
+                                           update_by=page_object.update_by,
+                                           update_time=page_object.update_time
+                                           )
+                                      )
                 cls.update_children_info(result_db, DeptModel(dept_id=child.dept_id,
                                                               ancestors=child.ancestors,
                                                               update_by=page_object.update_by,

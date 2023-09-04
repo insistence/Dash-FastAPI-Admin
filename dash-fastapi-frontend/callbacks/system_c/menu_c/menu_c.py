@@ -1,13 +1,9 @@
 import dash
 import time
 import uuid
-from dash import html
 from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-from jsonpath_ng import parse
-from flask import session, json
-from collections import OrderedDict
 
 from server import app
 from utils.tree_tool import list_to_tree
@@ -44,10 +40,6 @@ def get_menu_table_data(search_click, refresh_click, operations, fold_click, men
             table_data = table_info['data']['rows']
             for item in table_data:
                 default_expanded_row_keys.append(str(item['menu_id']))
-                if item['status'] == '0':
-                    item['status'] = dict(tag='正常', color='blue')
-                else:
-                    item['status'] = dict(tag='停用', color='volcano')
                 item['key'] = str(item['menu_id'])
                 item['icon'] = [
                     {
@@ -59,23 +51,41 @@ def get_menu_table_data(search_click, refresh_click, operations, fold_click, men
                         }
                     },
                 ]
-                item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    } if 'system:menu:edit' in button_perms else {},
-                    {
-                        'content': '新增',
-                        'type': 'link',
-                        'icon': 'antd-plus'
-                    } if 'system:menu:add' in button_perms else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    } if 'system:menu:remove' in button_perms else {},
-                ]
+                if item['status'] == '1':
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:menu:edit' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:menu:remove' in button_perms else {},
+                    ]
+                else:
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:menu:edit' in button_perms else {},
+                        {
+                            'content': '新增',
+                            'type': 'link',
+                            'icon': 'antd-plus'
+                        } if 'system:menu:add' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:menu:remove' in button_perms else {},
+                    ]
+                if item['status'] == '0':
+                    item['status'] = dict(tag='正常', color='blue')
+                else:
+                    item['status'] = dict(tag='停用', color='volcano')
             table_data_new = list_to_tree(table_data)
 
             if fold_click:

@@ -1,4 +1,3 @@
-from fastapi import Request
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
 from utils.pwd_util import *

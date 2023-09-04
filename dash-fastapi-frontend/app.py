@@ -4,9 +4,9 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-from flask import session, request, json
+from flask import session
 
-from server import app, logger, server
+from server import app
 from config.global_config import RouterConfig
 from store.store import render_store_container
 
@@ -146,7 +146,6 @@ def router(pathname, trigger, session_token):
                             search_panel_data
                         ]
 
-                    # elif trigger == 'pushstate':
                     else:
                         return [
                             dash.no_update,
@@ -158,16 +157,6 @@ def router(pathname, trigger, session_token):
                             {'menu_list': menu_list},
                             search_panel_data
                         ]
-
-                    # else:
-                    #
-                    #     return [
-                    #         dash.no_update,
-                    #         dash.no_update,
-                    #         dash.no_update,
-                    #         {'timestamp': time.time()},
-                    #         dash.no_update
-                    #     ]
 
                 else:
                     # 渲染404状态页

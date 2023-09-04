@@ -2,7 +2,6 @@ import dash
 from dash import dcc
 import feffery_utils_components as fuc
 from flask import session
-import time
 from dash.dependencies import Input, Output, State
 
 from server import app

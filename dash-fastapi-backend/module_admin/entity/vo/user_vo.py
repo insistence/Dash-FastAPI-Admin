@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Optional, List, Dict
+from typing import Union, Optional, List
 
 
 class TokenData(BaseModel):

@@ -90,7 +90,7 @@ class MenuService:
         edit_menu = page_object.dict(exclude_unset=True)
         menu_info = cls.detail_menu_services(result_db, edit_menu.get('menu_id'))
         if menu_info:
-            if menu_info.page_id != page_object.parent_id or menu_info.menu_name != page_object.menu_name or menu_info.menu_type != page_object.menu_type:
+            if menu_info.parent_id != page_object.parent_id or menu_info.menu_name != page_object.menu_name or menu_info.menu_type != page_object.menu_type:
                 menu = MenuDao.get_menu_detail_by_info(result_db, MenuModel(
                     **dict(parent_id=page_object.parent_id, menu_name=page_object.menu_name, menu_type=page_object.menu_type)))
                 if menu:

@@ -23,10 +23,10 @@ app.server.config['COMPRESS_ALGORITHM'] = 'br'
 app.server.config['COMPRESS_BR_LEVEL'] = 8
 
 log_time = time.strftime("%Y%m%d", time.localtime())
-sys_log_file_path = os.path.join(PathConfig.ABS_ROOT_PATH, 'log', 'sys_log', f'sys_request_log_{log_time}.log')
+# sys_log_file_path = os.path.join(PathConfig.ABS_ROOT_PATH, 'log', 'sys_log', f'sys_request_log_{log_time}.log')
 api_log_file_path = os.path.join(PathConfig.ABS_ROOT_PATH, 'log', 'api_log', f'api_request_log_{log_time}.log')
-logger.add(sys_log_file_path, filter=lambda x: '[sys]' in x['message'],
-           rotation="50MB", encoding="utf-8", enqueue=True, compression="zip")
+# logger.add(sys_log_file_path, filter=lambda x: '[sys]' in x['message'],
+#            rotation="50MB", encoding="utf-8", enqueue=True, compression="zip")
 logger.add(api_log_file_path, filter=lambda x: '[api]' in x['message'],
            rotation="50MB", encoding="utf-8", enqueue=True, compression="zip")
 
@@ -56,32 +56,3 @@ def get_user_agent_info():
 #                 session.get('name'), request.remote_addr, request.method, request.data.decode("utf-8"))
 #
 #     return response
-
-
-# 这里的app即为Dash实例
-@app.server.route('/upload/', methods=['POST'])
-def upload():
-    """
-    构建文件上传服务
-    :return:
-    """
-
-    # 获取上传id参数，用于指向保存路径
-    upload_id = request.values.get('uploadId')
-
-    # 获取上传的文件名称
-    filename = request.files['file'].filename
-
-    # 基于上传id，若本地不存在则会自动创建目录
-    try:
-        os.mkdir(os.path.join(PathConfig.ABS_ROOT_PATH, 'cache', 'upload', f'{upload_id}'))
-    except FileExistsError:
-        pass
-
-    # 流式写出文件到指定目录
-    with open(os.path.join(PathConfig.ABS_ROOT_PATH, 'cache', 'upload', f'{upload_id}', filename), 'wb') as f:
-        # 流式写出大型文件，这里的10代表10MB
-        for chunk in iter(lambda: request.files['file'].read(1024 * 1024 * 10), b''):
-            f.write(chunk)
-
-    return {'filename': filename}

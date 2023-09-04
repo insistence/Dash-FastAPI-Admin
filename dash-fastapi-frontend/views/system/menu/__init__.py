@@ -13,10 +13,6 @@ def render(button_perms):
     if table_info['code'] == 200:
         table_data = table_info['data']['rows']
         for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
             item['key'] = str(item['menu_id'])
             item['icon'] = [
                 {
@@ -28,23 +24,41 @@ def render(button_perms):
                     }
                 },
             ]
-            item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                } if 'system:menu:edit' in button_perms else {},
-                {
-                    'content': '新增',
-                    'type': 'link',
-                    'icon': 'antd-plus'
-                } if 'system:menu:add' in button_perms else {},
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'system:menu:remove' in button_perms else {},
-            ]
+            if item['status'] == '1':
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:menu:edit' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:menu:remove' in button_perms else {},
+                ]
+            else:
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:menu:edit' in button_perms else {},
+                    {
+                        'content': '新增',
+                        'type': 'link',
+                        'icon': 'antd-plus'
+                    } if 'system:menu:add' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:menu:remove' in button_perms else {},
+                ]
+            if item['status'] == '0':
+                item['status'] = dict(tag='正常', color='blue')
+            else:
+                item['status'] = dict(tag='停用', color='volcano')
         table_data_new = list_to_tree(table_data)
 
     return [

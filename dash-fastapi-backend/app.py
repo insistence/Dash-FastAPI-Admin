@@ -1,7 +1,5 @@
 from fastapi import FastAPI, Request
 import uvicorn
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from module_admin.controller.login_controller import loginController

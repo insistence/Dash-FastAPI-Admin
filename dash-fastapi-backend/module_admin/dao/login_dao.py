@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from module_admin.entity.do.user_do import SysUser
 from module_admin.entity.do.dept_do import SysDept
-from utils.time_format_util import object_format_datetime
 
 
 def login_by_account(db: Session, user_name: str):

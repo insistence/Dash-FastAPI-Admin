@@ -1,13 +1,9 @@
 import dash
 import time
 import uuid
-from dash import html, dcc
+from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
-import feffery_antd_components as fac
 import feffery_utils_components as fuc
-from jsonpath_ng import parse
-from flask import session, json
-from collections import OrderedDict
 
 from server import app
 from api.dept import get_dept_tree_api
