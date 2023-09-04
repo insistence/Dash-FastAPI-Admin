@@ -1,14 +1,14 @@
 from pydantic import BaseModel
-from typing import Union, Optional, List
-from module_admin.entity.vo.user_schema import PostModel
+from typing import Union, List
+from module_admin.entity.vo.user_vo import PostModel
 
 
 class PostPageObject(PostModel):
     """
     岗位管理分页查询模型
     """
-    page_num: Optional[int]
-    page_size: Optional[int]
+    page_num: int
+    page_size: int
 
 
 class PostPageObjectResponse(BaseModel):

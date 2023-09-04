@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Union, Optional, List
-from module_admin.entity.vo.user_schema import RoleModel
-from module_admin.entity.vo.menu_schema import MenuModel
+from module_admin.entity.vo.user_vo import RoleModel
+from module_admin.entity.vo.menu_vo import MenuModel
 
 
 class RoleMenuModel(BaseModel):
@@ -15,14 +15,20 @@ class RoleMenuModel(BaseModel):
         orm_mode = True
 
 
-class RolePageObject(RoleModel):
+class RoleQueryModel(RoleModel):
     """
-    角色管理分页查询模型
+    角色管理不分页查询模型
     """
     create_time_start: Optional[str]
     create_time_end: Optional[str]
-    page_num: Optional[int]
-    page_size: Optional[int]
+
+
+class RolePageObject(RoleQueryModel):
+    """
+    角色管理分页查询模型
+    """
+    page_num: int
+    page_size: int
     
     
 class RolePageObjectResponse(BaseModel):

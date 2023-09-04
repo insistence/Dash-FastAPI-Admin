@@ -152,39 +152,27 @@ class CurrentUserInfoServiceResponse(UserDetailModel):
     menu: Union[List, None]
 
 
-class UserPageObject(UserModel):
+class UserQueryModel(UserModel):
     """
-    用户管理分页查询模型
+    用户管理不分页查询模型
     """
     create_time_start: Optional[str]
     create_time_end: Optional[str]
+
+
+class UserPageObject(UserQueryModel):
+    """
+    用户管理分页查询模型
+    """
     page_num: int
     page_size: int
 
 
-class UserInfoJoinDept(BaseModel):
+class UserInfoJoinDept(UserModel):
     """
     数据库查询用户列表返回模型
     """
-    user_id: Optional[int]
-    dept_id: Optional[int]
     dept_name: Optional[str]
-    user_name: Optional[str]
-    nick_name: Optional[str]
-    user_type: Optional[str]
-    email: Optional[str]
-    phonenumber: Optional[str]
-    sex: Optional[str]
-    avatar: Optional[str]
-    status: Optional[str]
-    del_flag: Optional[str]
-    login_ip: Optional[str]
-    login_date: Optional[str]
-    create_by: Optional[str]
-    create_time: Optional[str]
-    update_by: Optional[str]
-    update_time: Optional[str]
-    remark: Optional[str]
 
 
 class UserPageObjectResponse(BaseModel):
@@ -205,6 +193,15 @@ class AddUserModel(UserModel):
     role_id: Optional[str]
     post_id: Optional[str]
     type: Optional[str]
+
+
+class ResetUserModel(UserModel):
+    """
+    重置用户密码模型
+    """
+    old_password: Optional[str]
+    sms_code: Optional[str]
+    session_id: Optional[str]
 
 
 class DeleteUserModel(BaseModel):

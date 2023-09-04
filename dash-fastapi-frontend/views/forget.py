@@ -1,4 +1,4 @@
-from dash import html
+from dash import html, dcc
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -8,8 +8,10 @@ import callbacks.forget_c
 def render_forget_content():
     return html.Div(
         [
+
             fac.AntdCard(
                 [
+                    dcc.Store(id='sms_code-session_id-container', storage_type='session'),
                     fac.AntdForm(
                         [
                             fac.AntdFormItem(
@@ -82,6 +84,8 @@ def render_forget_content():
                                     '保存',
                                     id='forget-submit',
                                     type='primary',
+                                    loadingChildren='保存中',
+                                    autoSpin=True,
                                     block=True,
                                     size='large',
                                 ),
@@ -96,8 +100,6 @@ def render_forget_content():
                         }
                     ),
 
-                    # 重定向容器
-                    html.Div(id='forget-redirect-container'),
                     fuc.FefferyCountDown(id='message-code-count-down')
                 ],
                 id='forget-form-container',
@@ -125,9 +127,6 @@ def render_forget_content():
                     'transform': 'translateX(-50%)'
                 }
             ),
-            # 消息提示
-            html.Div(id='forget-message-container'),
-            html.Div(id='forget-sms-container'),
         ]
     )
 

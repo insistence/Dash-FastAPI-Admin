@@ -5,12 +5,11 @@ import feffery_antd_components as fac
 from views.layout.components.head import render_head_content
 from views.layout.components.content import render_main_content
 from views.layout.components.aside import render_aside_content
-# import callbacks.index_c
 import callbacks.layout_c.fold_side_menu
 import callbacks.layout_c.index_c
 
 
-def render_content(user_name, nick_name, phone_number, menu_info):
+def render_content(menu_info):
 
     return fuc.FefferyTopProgress(
         html.Div(
@@ -21,45 +20,78 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                 html.Div(id='idle-placeholder-container'),
 
                 # 注入相关modal
-                html.Div(
+                # html.Div(
+                #     [
+                #         # 个人资料面板
+                #         fac.AntdModal(
+                #             render_user_profile(),
+                #             id='index-personal-info-modal',
+                #             title='个人资料',
+                #             width=1000,
+                #             mask=False
+                #         )
+                #     ]
+                # ),
+
+                # 布局设置抽屉
+                fac.AntdDrawer(
                     [
-                        # 个人资料面板
-                        fac.AntdModal(
-                            [
-                                fac.AntdForm(
-                                    [
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                user_name,
-                                                copyable=True
-                                            ),
-                                            label='账号'
-                                        ),
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                nick_name,
-                                                copyable=True
-                                            ),
-                                            label='姓名'
-                                        ),
-                                        fac.AntdFormItem(
-                                            fac.AntdText(
-                                                phone_number,
-                                                copyable=True
-                                            ),
-                                            label='电话'
-                                        )
-                                    ],
-                                    labelCol={
-                                        'span': 4
-                                    }
-                                )
-                            ],
-                            id='index-personal-info-modal',
-                            title='个人资料',
-                            mask=False
+                        fac.AntdText(
+                            '主题颜色',
+                            style={
+                                'fontSize': 16,
+                                'fontWeight': 500
+                            }
                         ),
-                    ]
+                        fuc.FefferyHexColorPicker(
+                            id='hex-color-picker',
+                            color='#1890ff',
+                            showAlpha=True,
+                            style={
+                                'width': '100%',
+                                'marginTop': '10px'
+                            }
+                        ),
+                        fac.AntdInput(
+                            id='selected-color-input',
+                            value='#1890ff',
+                            readOnly=True,
+                            style={
+                                'marginTop': '15px',
+                                'background': '#1890ff'
+                            }
+                        ),
+                        fac.AntdSpace(
+                            [
+                                fac.AntdButton(
+                                    [
+                                        fac.AntdIcon(
+                                            icon='antd-save'
+                                        ),
+                                        '保存配置',
+                                    ],
+                                    id='save-setting',
+                                    type='primary'
+                                ),
+                                fac.AntdButton(
+                                    [
+                                        fac.AntdIcon(
+                                            icon='antd-sync'
+                                        ),
+                                        '重置配置',
+                                    ],
+                                    id='reset-setting',
+                                ),
+                            ],
+                            style={
+                                'marginTop': '15px'
+                            }
+                        )
+                    ],
+                    id='layout-setting-drawer',
+                    visible=False,
+                    title='布局设置',
+                    width=320
                 ),
 
                 # 退出登录对话框提示
@@ -94,18 +126,17 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                                     }
                                 ),
                             ),
-                            # flex='1',
                             id='left-side-menu-container',
-                            style={
-                                'flex': '1'
-                            }
+                            # style={
+                            #     'flex': '1'
+                            # }
                         ),
 
                         # 右侧区域
                         fac.AntdCol(
                             [
                                 fac.AntdRow(
-                                    render_head_content(user_name),
+                                    render_head_content(),
                                     style={
                                         'height': '50px',
                                         'boxShadow': 'rgb(240 241 242) 0px 2px 14px',
@@ -117,11 +148,10 @@ def render_content(user_name, nick_name, phone_number, menu_info):
                                     }
                                 ),
                                 fac.AntdRow(
-                                    render_main_content(user_name, nick_name, phone_number),
+                                    render_main_content(),
                                     wrap=False
                                 )
                             ],
-                            # flex='5',
                             style={
                                 'flex': '6',
                                 'width': '300px'

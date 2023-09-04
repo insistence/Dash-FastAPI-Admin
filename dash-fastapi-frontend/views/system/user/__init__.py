@@ -1,12 +1,14 @@
-from dash import dcc
+from dash import dcc, html
 import feffery_antd_components as fac
 
-import callbacks.system_c.user_c
+from . import profile
 from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
 
+import callbacks.system_c.user_c.user_c
 
-def render():
+
+def render(button_perms):
     dept_params = dict(dept_name='')
     user_params = dict(page_num=1, page_size=10)
     tree_info = get_dept_tree_api(dept_params)
@@ -29,22 +31,30 @@ def render():
             else:
                 item['status'] = dict(checked=False)
             item['key'] = str(item['user_id'])
-            item['operation'] = [
-                {
-                    'title': '修改',
-                    'icon': 'antd-edit'
-                },
-                {
-                    'title': '删除',
-                    'icon': 'antd-delete'
-                },
-                {
-                    'title': '重置密码',
-                    'icon': 'antd-key'
-                }
-            ]
+            if item['user_id'] == 1:
+                item['operation'] = []
+            else:
+                item['operation'] = [
+                    {
+                        'title': '修改',
+                        'icon': 'antd-edit'
+                    } if 'system:user:edit' in button_perms else None,
+                    {
+                        'title': '删除',
+                        'icon': 'antd-delete'
+                    } if 'system:user:remove' in button_perms else None,
+                    {
+                        'title': '重置密码',
+                        'icon': 'antd-key'
+                    } if 'system:user:resetPwd' in button_perms else None
+                ]
 
     return [
+        dcc.Store(id='user-button-perms-container', data=button_perms),
+        # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
+        dcc.Store(id='user-export-complete-judge-container'),
+        # 绑定的导出组件
+        dcc.Download(id='user-export-container'),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -78,97 +88,103 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdSpace(
+                                            fac.AntdForm(
                                                 [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='user-user_name-input',
-                                                            placeholder='请输入用户名称',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='用户名称'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='user-user_name-input',
+                                                                    placeholder='请输入用户名称',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='用户名称'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='user-phone_number-input',
+                                                                    placeholder='请输入手机号码',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='手机号码'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdSelect(
+                                                                    id='user-status-select',
+                                                                    placeholder='用户状态',
+                                                                    options=[
+                                                                        {
+                                                                            'label': '正常',
+                                                                            'value': '0'
+                                                                        },
+                                                                        {
+                                                                            'label': '停用',
+                                                                            'value': '1'
+                                                                        }
+                                                                    ],
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='用户状态'
+                                                            ),
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='user-phone_number-input',
-                                                            placeholder='请输入手机号码',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='手机号码'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdSelect(
-                                                            id='user-status-select',
-                                                            placeholder='用户状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='用户状态'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdDateRangePicker(
+                                                                    id='user-create_time-range',
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='创建时间'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '搜索',
+                                                                    id='user-search',
+                                                                    type='primary',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-search'
+                                                                    )
+                                                                )
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '重置',
+                                                                    id='user-reset',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-sync'
+                                                                    )
+                                                                )
+                                                            )
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
                                                 ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
-                                            fac.AntdSpace(
-                                                [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdDateRangePicker(
-                                                            id='user-create_time-range',
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='创建时间'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '搜索',
-                                                            id='user-search',
-                                                            type='primary',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-search'
-                                                            )
-                                                        )
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '重置',
-                                                            id='user-reset',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            )
-                                                        )
-                                                    )
-                                                ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
+                                                layout='inline',
+                                            )
                                         ],
-                                        layout='inline',
-                                    )
+                                        id='user-search-form-container',
+                                        hidden=False
+                                    ),
                                 )
                             ]
                         ),
@@ -190,7 +206,7 @@ def render():
                                                     'background': '#e8f4ff',
                                                     'border-color': '#a3d3ff'
                                                 }
-                                            ),
+                                            ) if 'system:user:add' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -198,14 +214,17 @@ def render():
                                                     ),
                                                     '修改',
                                                 ],
-                                                id='user-edit',
+                                                id={
+                                                    'type': 'user-operation-button',
+                                                    'index': 'edit'
+                                                },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
                                                     'border-color': '#d0f5e0'
                                                 }
-                                            ),
+                                            ) if 'system:user:edit' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -213,14 +232,17 @@ def render():
                                                     ),
                                                     '删除',
                                                 ],
-                                                id='user-delete',
+                                                id={
+                                                    'type': 'user-operation-button',
+                                                    'index': 'delete'
+                                                },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
                                                     'border-color': '#ffdbdb'
                                                 }
-                                            ),
+                                            ) if 'system:user:remove' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -234,7 +256,7 @@ def render():
                                                     'background': '#f4f4f5',
                                                     'border-color': '#d3d4d6'
                                                 }
-                                            ),
+                                            ) if 'system:user:export' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -248,14 +270,59 @@ def render():
                                                     'background': '#fff8e6',
                                                     'border-color': '#ffe399'
                                                 }
-                                            ),
+                                            ) if 'system:user:import' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'
                                         }
                                     ),
+                                    span=16
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdSpace(
+                                        [
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            ),
+                                                        ],
+                                                        id='user-hidden',
+                                                        shape='circle'
+                                                    ),
+                                                    id='user-hidden-tooltip',
+                                                    title='隐藏搜索'
+                                                )
+                                            ),
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            ),
+                                                        ],
+                                                        id='user-refresh',
+                                                        shape='circle'
+                                                    ),
+                                                    title='刷新'
+                                                )
+                                            ),
+                                        ],
+                                        style={
+                                            'float': 'right',
+                                            'paddingBottom': '10px'
+                                        }
+                                    ),
+                                    span=8,
+                                    style={
+                                        'paddingRight': '10px'
+                                    }
                                 )
-                            ]
+                            ],
+                            gutter=5
                         ),
                         fac.AntdRow(
                             [
@@ -346,7 +413,7 @@ def render():
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
+                                                'paddingRight': '10px'
                                             }
                                         ),
                                         text='数据加载中'
@@ -803,20 +870,24 @@ def render():
 
         # 重置密码modal
         fac.AntdModal(
-            fac.AntdForm(
-                [
-                    fac.AntdFormItem(
-                        fac.AntdInput(
-                            id='reset-password-input',
-                            mode='password'
+            [
+                fac.AntdForm(
+                    [
+                        fac.AntdFormItem(
+                            fac.AntdInput(
+                                id='reset-password-input',
+                                mode='password'
+                            ),
+                            label='请输入新密码'
                         ),
-                    ),
-                ],
-                layout='vertical'
-            ),
+                    ],
+                    layout='vertical'
+                ),
+                dcc.Store(id='reset-password-row-key-store')
+            ],
             id='user-reset-password-confirm-modal',
             visible=False,
-            title='提示',
+            title='重置密码',
             renderFooter=True,
             centered=True
         ),

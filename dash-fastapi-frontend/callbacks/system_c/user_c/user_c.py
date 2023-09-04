@@ -1,17 +1,13 @@
 import dash
 import time
 import uuid
-from dash import html
-from dash.dependencies import Input, Output, State
-import feffery_antd_components as fac
+from dash import dcc
+from dash.dependencies import Input, Output, State, ALL
 import feffery_utils_components as fuc
-from jsonpath_ng import parse
-from flask import session, json
-from collections import OrderedDict
 
 from server import app
 from api.dept import get_dept_tree_api
-from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api
+from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, export_user_list_api
 from api.role import get_role_select_option_api
 from api.post import get_post_select_option_api
 
@@ -37,19 +33,22 @@ def get_search_dept_tree(dept_input):
     [Output('user-list-table', 'data', allow_duplicate=True),
      Output('user-list-table', 'pagination', allow_duplicate=True),
      Output('user-list-table', 'key'),
+     Output('user-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('dept-tree', 'selectedKeys'),
      Input('user-search', 'nClicks'),
+     Input('user-refresh', 'nClicks'),
      Input('user-list-table', 'pagination'),
      Input('user-operations-store', 'data')],
     [State('user-user_name-input', 'value'),
      State('user-phone_number-input', 'value'),
      State('user-status-select', 'value'),
-     State('user-create_time-range', 'value')],
+     State('user-create_time-range', 'value'),
+     State('user-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, pagination, operations,
-                                     user_name, phone_number, status_select, create_time_range):
+def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_click, pagination, operations,
+                                     user_name, phone_number, status_select, create_time_range, button_perms):
     dept_id = None
     create_time_start = None
     create_time_end = None
@@ -68,7 +67,8 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'user-list-table':
         query_params = dict(
             dept_id=dept_id,
             user_name=user_name,
@@ -79,7 +79,7 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if selected_dept_tree or search_click or pagination or operations:
+    if selected_dept_tree or search_click or refresh_click or pagination or operations:
         table_info = get_user_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -97,26 +97,29 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, paginatio
                 else:
                     item['status'] = dict(checked=False)
                 item['key'] = str(item['user_id'])
-                item['operation'] = [
-                    {
-                        'title': '修改',
-                        'icon': 'antd-edit'
-                    },
-                    {
-                        'title': '删除',
-                        'icon': 'antd-delete'
-                    },
-                    {
-                        'title': '重置密码',
-                        'icon': 'antd-key'
-                    }
-                ]
+                if item['user_id'] == 1:
+                    item['operation'] = []
+                else:
+                    item['operation'] = [
+                        {
+                            'title': '修改',
+                            'icon': 'antd-edit'
+                        } if 'system:user:edit' in button_perms else None,
+                        {
+                            'title': '删除',
+                            'icon': 'antd-delete'
+                        } if 'system:user:remove' in button_perms else None,
+                        {
+                            'title': '重置密码',
+                            'icon': 'antd-key'
+                        } if 'system:user:resetPwd' in button_perms else None
+                    ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 5
 
 
 @app.callback(
@@ -137,19 +140,57 @@ def reset_user_query_params(reset_click):
 
 
 @app.callback(
-    [Output('user-edit', 'disabled'),
-     Output('user-delete', 'disabled')],
+    [Output('user-search-form-container', 'hidden'),
+     Output('user-hidden-tooltip', 'title')],
+    Input('user-hidden', 'nClicks'),
+    State('user-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_user_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
+
+
+@app.callback(
+    Output({'type': 'user-operation-button', 'index': 'edit'}, 'disabled'),
     Input('user-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_user_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_user_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1 or '1' in table_rows_selected:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'user-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('user-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_user_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if '1' in table_rows_selected:
+                return True
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -280,24 +321,24 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
      Output('user-edit-remark', 'value'),
      Output('user-edit-id-store', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('user-edit', 'nClicks'),
+    [Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
     [State('user-list-table', 'selectedRowKeys'),
      State('user-list-table', 'recentlyClickedDropdownItemTitle'),
      State('user-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def user_edit_modal(edit_click, dropdown_click,
+def user_edit_modal(operation_click, dropdown_click,
                     selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
-    if edit_click or dropdown_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'edit', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '修改'):
 
         dept_params = dict(dept_name='')
         tree_data = get_dept_tree_api(dept_params)['data']
         post_option = get_post_select_option_api()['data']
         role_option = get_role_select_option_api()['data']
 
-        if trigger_id == 'user-edit':
+        if trigger_id == {'index': 'edit', 'type': 'user-operation-button'}:
             user_id = int(selected_row_keys[0])
         else:
             if recently_clicked_dropdown_item_title == '修改':
@@ -433,19 +474,19 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
     [Output('user-delete-text', 'children'),
      Output('user-delete-confirm-modal', 'visible'),
      Output('user-delete-ids-store', 'data')],
-    [Input('user-delete', 'nClicks'),
+    [Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
      Input('user-list-table', 'nClicksDropdownItem')],
     [State('user-list-table', 'selectedRowKeys'),
      State('user-list-table', 'recentlyClickedDropdownItemTitle'),
      State('user-list-table', 'recentlyDropdownItemClickedRow')],
     prevent_initial_call=True
 )
-def user_delete_modal(delete_click, dropdown_click,
+def user_delete_modal(operation_click, dropdown_click,
                       selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
-    if delete_click or dropdown_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '删除'):
 
-        if trigger_id == 'user-delete':
+        if trigger_id == {'index': 'delete', 'type': 'user-operation-button'}:
             user_ids = ','.join(selected_row_keys)
         else:
             if recently_clicked_dropdown_item_title == '删除':
@@ -489,3 +530,104 @@ def user_delete_confirm(delete_confirm, user_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-reset-password-confirm-modal', 'visible'),
+     Output('reset-password-row-key-store', 'data'),
+     Output('reset-password-input', 'value')],
+    Input('user-list-table', 'nClicksDropdownItem'),
+    [State('user-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('user-list-table', 'recentlyDropdownItemClickedRow')],
+    prevent_initial_call=True
+)
+def user_reset_password_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    if dropdown_click:
+        if recently_clicked_dropdown_item_title == '重置密码':
+            user_id = recently_dropdown_item_clicked_row['key']
+        else:
+            return [dash.no_update] * 3
+
+        return [
+            True,
+            {'user_id': user_id},
+            None
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-reset-password-confirm-modal', 'okCounts'),
+    [State('reset-password-row-key-store', 'data'),
+     State('reset-password-input', 'value')],
+    prevent_initial_call=True
+)
+def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
+    if reset_confirm:
+
+        user_id_data['password'] = reset_password
+        params = user_id_data
+        reset_button_info = reset_user_password_api(params)
+        if reset_button_info['code'] == 200:
+            return [
+                {'type': 'reset-password'},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('重置成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('重置失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user-export-container', 'data', allow_duplicate=True),
+     Output('user-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_user_list(export_click):
+    if export_click:
+        export_user_res = export_user_list_api({})
+        if export_user_res.status_code == 200:
+            export_user = export_user_res.content
+
+            return [
+                dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('user-export-container', 'data', allow_duplicate=True),
+    Input('user-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_user_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

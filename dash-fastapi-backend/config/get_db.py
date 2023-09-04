@@ -1,4 +1,5 @@
 from config.database import *
+from utils.log_util import logger
 
 
 def get_db_pro():
@@ -11,6 +12,16 @@ def get_db_pro():
         yield current_db
     finally:
         current_db.close()
+
+
+async def init_create_table():
+    """
+    应用启动时初始化数据库连接
+    :return:
+    """
+    logger.info("初始化数据库连接...")
+    Base.metadata.create_all(bind=engine)
+    logger.info("数据库连接成功")
 
 
 get_db = get_db_pro

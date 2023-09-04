@@ -1,13 +1,9 @@
 import dash
 import time
 import uuid
-from dash import html
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-from jsonpath_ng import parse
-from flask import session, json
-from collections import OrderedDict
 
 from server import app
 from utils.tree_tool import list_to_tree
@@ -22,30 +18,28 @@ from api.menu import get_menu_tree_api, get_menu_tree_for_edit_option_api, get_m
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('menu-fold', 'nClicks')],
     [Input('menu-search', 'nClicks'),
+     Input('menu-refresh', 'nClicks'),
      Input('menu-operations-store', 'data'),
      Input('menu-fold', 'nClicks')],
     [State('menu-menu_name-input', 'value'),
      State('menu-status-select', 'value'),
-     State('menu-list-table', 'defaultExpandedRowKeys')],
+     State('menu-list-table', 'defaultExpandedRowKeys'),
+     State('menu-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_menu_table_data(search_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys):
+def get_menu_table_data(search_click, refresh_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         menu_name=menu_name,
         status=status_select
     )
-    if search_click or operations or fold_click:
+    if search_click or refresh_click or operations or fold_click:
         table_info = get_menu_list_api(query_params)
         default_expanded_row_keys = []
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
             for item in table_data:
                 default_expanded_row_keys.append(str(item['menu_id']))
-                if item['status'] == '0':
-                    item['status'] = dict(tag='正常', color='blue')
-                else:
-                    item['status'] = dict(tag='停用', color='volcano')
                 item['key'] = str(item['menu_id'])
                 item['icon'] = [
                     {
@@ -57,23 +51,41 @@ def get_menu_table_data(search_click, operations, fold_click, menu_name, status_
                         }
                     },
                 ]
-                item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    },
-                    {
-                        'content': '新增',
-                        'type': 'link',
-                        'icon': 'antd-plus'
-                    },
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    },
-                ]
+                if item['status'] == '1':
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:menu:edit' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:menu:remove' in button_perms else {},
+                    ]
+                else:
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:menu:edit' in button_perms else {},
+                        {
+                            'content': '新增',
+                            'type': 'link',
+                            'icon': 'antd-plus'
+                        } if 'system:menu:add' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:menu:remove' in button_perms else {},
+                    ]
+                if item['status'] == '0':
+                    item['status'] = dict(tag='正常', color='blue')
+                else:
+                    item['status'] = dict(tag='停用', color='volcano')
             table_data_new = list_to_tree(table_data)
 
             if fold_click:
@@ -99,6 +111,20 @@ def reset_menu_query_params(reset_click):
         return [None, None, {'type': 'reset'}]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('menu-search-form-container', 'hidden'),
+     Output('menu-hidden-tooltip', 'title')],
+    Input('menu-hidden', 'nClicks'),
+    State('menu-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_menu_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
 
 
 @app.callback(
@@ -129,17 +155,17 @@ def get_select_icon(icon):
      Output('menu-menu_name', 'value'),
      Output('menu-order_num', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('menu-add', 'nClicks'),
      Output('menu-edit-id-store', 'data'),
      Output('menu-operations-store-bk', 'data')],
-    [Input('menu-add', 'nClicks'),
+    [Input({'type': 'menu-operation-button', 'index': ALL}, 'nClicks'),
      Input('menu-list-table', 'nClicksButton')],
     [State('menu-list-table', 'clickedContent'),
      State('menu-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_menu_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or (button_click and clicked_content != '删除'):
+def add_edit_menu_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'menu-operation-button'} or (trigger_id == 'menu-list-table' and clicked_content != '删除'):
         menu_params = dict(menu_name='')
         if clicked_content == '修改':
             tree_info = get_menu_tree_for_edit_option_api(menu_params)
@@ -148,7 +174,7 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'menu-operation-button'}:
                 return [
                     True,
                     '新增菜单',
@@ -161,10 +187,9 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '新增':
+            elif trigger_id == 'menu-list-table' and clicked_content == '新增':
                 return [
                     True,
                     '新增菜单',
@@ -177,10 +202,9 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '修改':
+            elif trigger_id == 'menu-list-table' and clicked_content == '修改':
                 menu_id = int(recently_button_clicked_row['key'])
                 menu_info_res = get_menu_detail_api(menu_id=menu_id)
                 if menu_info_res['code'] == 200:
@@ -196,14 +220,13 @@ def add_edit_menu_modal(add_click, button_click, clicked_content, recently_butto
                         menu_info.get('menu_name'),
                         menu_info.get('order_num'),
                         {'timestamp': time.time()},
-                        None,
                         menu_info,
                         {'type': 'edit'}
                     ]
 
-        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None, None]
+        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 10 + [None, None, None]
+    return [dash.no_update] * 10 + [None, None]
 
 
 @app.callback(

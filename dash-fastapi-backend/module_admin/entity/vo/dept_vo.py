@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Union, Optional, List
-from module_admin.entity.vo.user_schema import DeptModel
+from module_admin.entity.vo.user_vo import DeptModel
 
 
 class DeptPageObject(DeptModel):

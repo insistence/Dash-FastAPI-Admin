@@ -1,4 +1,4 @@
-from dash import dcc
+from dash import dcc, html
 import feffery_antd_components as fac
 
 import callbacks.system_c.dept_c
@@ -6,7 +6,7 @@ from api.dept import get_dept_list_api
 from utils.tree_tool import get_dept_tree
 
 
-def render():
+def render(button_perms):
     table_data_new = []
     default_expanded_row_keys = []
     table_info = get_dept_list_api({})
@@ -14,34 +14,59 @@ def render():
         table_data = table_info['data']['rows']
         for item in table_data:
             default_expanded_row_keys.append(str(item['dept_id']))
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
             item['key'] = str(item['dept_id'])
             if item['parent_id'] == 0:
-                item['operation'] = []
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:dept:edit' in button_perms else {},
+                    {
+                        'content': '新增',
+                        'type': 'link',
+                        'icon': 'antd-plus'
+                    } if 'system:dept:add' in button_perms else {},
+                ]
+            elif item['status'] == '1':
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:dept:edit' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:dept:remove' in button_perms else {},
+                ]
             else:
                 item['operation'] = [
                     {
                         'content': '修改',
                         'type': 'link',
                         'icon': 'antd-edit'
-                    },
+                    } if 'system:dept:edit' in button_perms else {},
                     {
                         'content': '新增',
                         'type': 'link',
                         'icon': 'antd-plus'
-                    },
+                    } if 'system:dept:add' in button_perms else {},
                     {
                         'content': '删除',
                         'type': 'link',
                         'icon': 'antd-delete'
-                    },
+                    } if 'system:dept:remove' in button_perms else {},
                 ]
+            if item['status'] == '0':
+                item['status'] = dict(tag='正常', color='blue')
+            else:
+                item['status'] = dict(tag='停用', color='volcano')
         table_data_new = get_dept_tree(0, table_data)
 
     return [
+        dcc.Store(id='dept-button-perms-container', data=button_perms),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -49,69 +74,75 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdSpace(
+                                            fac.AntdForm(
                                                 [
-                                                    fac.AntdFormItem(
-                                                        fac.AntdInput(
-                                                            id='dept-dept_name-input',
-                                                            placeholder='请输入部门名称',
-                                                            autoComplete='off',
-                                                            allowClear=True,
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='部门名称'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdSelect(
-                                                            id='dept-status-select',
-                                                            placeholder='部门状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
-                                                            style={
-                                                                'width': 240
-                                                            }
-                                                        ),
-                                                        label='部门状态'
-                                                    ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '搜索',
-                                                            id='dept-search',
-                                                            type='primary',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-search'
+                                                    fac.AntdSpace(
+                                                        [
+                                                            fac.AntdFormItem(
+                                                                fac.AntdInput(
+                                                                    id='dept-dept_name-input',
+                                                                    placeholder='请输入部门名称',
+                                                                    autoComplete='off',
+                                                                    allowClear=True,
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='部门名称'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdSelect(
+                                                                    id='dept-status-select',
+                                                                    placeholder='部门状态',
+                                                                    options=[
+                                                                        {
+                                                                            'label': '正常',
+                                                                            'value': '0'
+                                                                        },
+                                                                        {
+                                                                            'label': '停用',
+                                                                            'value': '1'
+                                                                        }
+                                                                    ],
+                                                                    style={
+                                                                        'width': 240
+                                                                    }
+                                                                ),
+                                                                label='部门状态'
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '搜索',
+                                                                    id='dept-search',
+                                                                    type='primary',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-search'
+                                                                    )
+                                                                )
+                                                            ),
+                                                            fac.AntdFormItem(
+                                                                fac.AntdButton(
+                                                                    '重置',
+                                                                    id='dept-reset',
+                                                                    icon=fac.AntdIcon(
+                                                                        icon='antd-sync'
+                                                                    )
+                                                                )
                                                             )
-                                                        )
+                                                        ],
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        }
                                                     ),
-                                                    fac.AntdFormItem(
-                                                        fac.AntdButton(
-                                                            '重置',
-                                                            id='dept-reset',
-                                                            icon=fac.AntdIcon(
-                                                                icon='antd-sync'
-                                                            )
-                                                        )
-                                                    )
                                                 ],
-                                                style={
-                                                    'paddingBottom': '10px'
-                                                }
-                                            ),
+                                                layout='inline',
+                                            )
                                         ],
-                                        layout='inline',
-                                    )
+                                        hidden=False,
+                                        id='dept-search-form-container',
+                                    ),
                                 )
                             ]
                         ),
@@ -127,13 +158,16 @@ def render():
                                                     ),
                                                     '新增',
                                                 ],
-                                                id='dept-add',
+                                                id={
+                                                    'type': 'dept-operation-button',
+                                                    'index': 'add'
+                                                },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
                                                     'border-color': '#a3d3ff'
                                                 }
-                                            ),
+                                            ) if 'system:dept:add' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -153,8 +187,53 @@ def render():
                                             'paddingBottom': '10px'
                                         }
                                     ),
+                                    span=16
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdSpace(
+                                        [
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            ),
+                                                        ],
+                                                        id='dept-hidden',
+                                                        shape='circle'
+                                                    ),
+                                                    id='dept-hidden-tooltip',
+                                                    title='隐藏搜索'
+                                                )
+                                            ),
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            ),
+                                                        ],
+                                                        id='dept-refresh',
+                                                        shape='circle'
+                                                    ),
+                                                    title='刷新'
+                                                )
+                                            ),
+                                        ],
+                                        style={
+                                            'float': 'right',
+                                            'paddingBottom': '10px'
+                                        }
+                                    ),
+                                    span=8,
+                                    style={
+                                        'paddingRight': '10px'
+                                    }
                                 )
-                            ]
+                            ],
+                            gutter=5
                         ),
                         fac.AntdRow(
                             [
@@ -239,25 +318,31 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdFormItem(
-                                        fac.AntdTreeSelect(
-                                            id='dept-parent_id',
-                                            placeholder='请选择上级部门',
-                                            treeData=[],
-                                            treeNodeFilterProp='title',
-                                            style={
-                                                'width': '100%'
-                                            }
-                                        ),
-                                        label='上级部门',
-                                        required=True,
-                                        id='dept-parent_id-form-item',
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                    html.Div(
+                                        [
+                                            fac.AntdFormItem(
+                                                fac.AntdTreeSelect(
+                                                    id='dept-parent_id',
+                                                    placeholder='请选择上级部门',
+                                                    treeData=[],
+                                                    treeNodeFilterProp='title',
+                                                    style={
+                                                        'width': '100%'
+                                                    }
+                                                ),
+                                                label='上级部门',
+                                                required=True,
+                                                id='dept-parent_id-form-item',
+                                                labelCol={
+                                                    'span': 4
+                                                },
+                                                wrapperCol={
+                                                    'span': 20
+                                                }
+                                            ),
+                                        ],
+                                        id='dept-parent_id-div',
+                                        hidden=False
                                     ),
                                     span=24
                                 ),

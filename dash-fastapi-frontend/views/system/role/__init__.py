@@ -5,7 +5,7 @@ import callbacks.system_c.role_c
 from api.role import get_role_list_api
 
 
-def render():
+def render(button_perms):
 
     role_params = dict(page_num=1, page_size=10)
     table_info = get_role_list_api(role_params)
@@ -24,20 +24,28 @@ def render():
             else:
                 item['status'] = dict(checked=False)
             item['key'] = str(item['role_id'])
-            item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                },
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                },
-            ]
+            if item['role_id'] == 1:
+                item['operation'] = []
+            else:
+                item['operation'] = [
+                    {
+                        'content': '修改',
+                        'type': 'link',
+                        'icon': 'antd-edit'
+                    } if 'system:role:edit' in button_perms else {},
+                    {
+                        'content': '删除',
+                        'type': 'link',
+                        'icon': 'antd-delete'
+                    } if 'system:role:remove' in button_perms else {},
+                ]
 
     return [
+        dcc.Store(id='role-button-perms-container', data=button_perms),
+        # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
+        dcc.Store(id='role-export-complete-judge-container'),
+        # 绑定的导出组件
+        dcc.Download(id='role-export-container'),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -45,96 +53,102 @@ def render():
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdForm(
+                                    html.Div(
                                         [
-                                            fac.AntdFormItem(
-                                                fac.AntdInput(
-                                                    id='role-role_name-input',
-                                                    placeholder='请输入角色名称',
-                                                    autoComplete='off',
-                                                    allowClear=True,
-                                                    style={
-                                                        'width': 220
-                                                    }
-                                                ),
-                                                label='角色名称',
-                                                style={ 'paddingBottom': '10px' },
-                                            ),
-                                            fac.AntdFormItem(
-                                                fac.AntdInput(
-                                                    id='role-role_key-input',
-                                                    placeholder='请输入权限字符',
-                                                    autoComplete='off',
-                                                    allowClear=True,
-                                                    style={
-                                                        'width': 220
-                                                    }
-                                                ),
-                                                label='权限字符',
-                                                style={ 'paddingBottom': '10px' },
-                                            ),
-                                            fac.AntdFormItem(
-                                                fac.AntdSelect(
-                                                    id='role-status-select',
-                                                    placeholder='角色状态',
-                                                    options=[
-                                                        {
-                                                            'label': '正常',
-                                                            'value': '0'
-                                                        },
-                                                        {
-                                                            'label': '停用',
-                                                            'value': '1'
-                                                        }
-                                                    ],
-                                                    style={
-                                                        'width': 220
-                                                    }
-                                                ),
-                                                label='状态',
-                                                style={ 'paddingBottom': '10px' },
-                                            ),
-                                            fac.AntdFormItem(
-                                                fac.AntdDateRangePicker(
-                                                    id='role-create_time-range',
-                                                    style={
-                                                        'width': 240
-                                                    }
-                                                ),
-                                                label='创建时间',
-                                                style={ 'paddingBottom': '10px' },
-                                            ),
-                                            fac.AntdFormItem(
-                                                fac.AntdButton(
-                                                    '搜索',
-                                                    id='role-search',
-                                                    type='primary',
-                                                    icon=fac.AntdIcon(
-                                                        icon='antd-search'
+                                            fac.AntdForm(
+                                                [
+                                                    fac.AntdFormItem(
+                                                        fac.AntdInput(
+                                                            id='role-role_name-input',
+                                                            placeholder='请输入角色名称',
+                                                            autoComplete='off',
+                                                            allowClear=True,
+                                                            style={
+                                                                'width': 220
+                                                            }
+                                                        ),
+                                                        label='角色名称',
+                                                        style={'paddingBottom': '10px'},
+                                                    ),
+                                                    fac.AntdFormItem(
+                                                        fac.AntdInput(
+                                                            id='role-role_key-input',
+                                                            placeholder='请输入权限字符',
+                                                            autoComplete='off',
+                                                            allowClear=True,
+                                                            style={
+                                                                'width': 220
+                                                            }
+                                                        ),
+                                                        label='权限字符',
+                                                        style={'paddingBottom': '10px'},
+                                                    ),
+                                                    fac.AntdFormItem(
+                                                        fac.AntdSelect(
+                                                            id='role-status-select',
+                                                            placeholder='角色状态',
+                                                            options=[
+                                                                {
+                                                                    'label': '正常',
+                                                                    'value': '0'
+                                                                },
+                                                                {
+                                                                    'label': '停用',
+                                                                    'value': '1'
+                                                                }
+                                                            ],
+                                                            style={
+                                                                'width': 220
+                                                            }
+                                                        ),
+                                                        label='状态',
+                                                        style={'paddingBottom': '10px'},
+                                                    ),
+                                                    fac.AntdFormItem(
+                                                        fac.AntdDateRangePicker(
+                                                            id='role-create_time-range',
+                                                            style={
+                                                                'width': 240
+                                                            }
+                                                        ),
+                                                        label='创建时间',
+                                                        style={'paddingBottom': '10px'},
+                                                    ),
+                                                    fac.AntdFormItem(
+                                                        fac.AntdButton(
+                                                            '搜索',
+                                                            id='role-search',
+                                                            type='primary',
+                                                            icon=fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            )
+                                                        ),
+                                                        style={'paddingBottom': '10px'},
+                                                    ),
+                                                    fac.AntdFormItem(
+                                                        fac.AntdButton(
+                                                            '重置',
+                                                            id='role-reset',
+                                                            icon=fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            )
+                                                        ),
+                                                        style={'paddingBottom': '10px'},
                                                     )
-                                                ),
-                                                style={ 'paddingBottom': '10px' },
-                                            ),
-                                            fac.AntdFormItem(
-                                                fac.AntdButton(
-                                                    '重置',
-                                                    id='role-reset',
-                                                    icon=fac.AntdIcon(
-                                                        icon='antd-sync'
-                                                    )
-                                                ),
-                                                style={ 'paddingBottom': '10px' },
+                                                ],
+                                                layout='inline',
                                             )
                                         ],
-                                        layout='inline',
-                                    )
+                                        id='role-search-form-container',
+                                        hidden=False
+                                    ),
                                 )
                             ]
                         ),
                         fac.AntdRow(
                             [
                                 fac.AntdCol(
-                                    fac.AntdSpace(
+                                    html.Div(
                                         [
                                             fac.AntdButton(
                                                 [
@@ -143,13 +157,17 @@ def render():
                                                     ),
                                                     '新增',
                                                 ],
-                                                id='role-add',
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'add'
+                                                },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
+                                                    'border-color': '#a3d3ff',
+                                                    'marginRight': '10px'
                                                 }
-                                            ),
+                                            ) if 'system:role:add' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -157,14 +175,18 @@ def render():
                                                     ),
                                                     '修改',
                                                 ],
-                                                id='role-edit',
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'edit'
+                                                },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
+                                                    'border-color': '#d0f5e0',
+                                                    'marginRight': '10px'
                                                 }
-                                            ),
+                                            ) if 'system:role:edit' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -172,14 +194,18 @@ def render():
                                                     ),
                                                     '删除',
                                                 ],
-                                                id='role-delete',
+                                                id={
+                                                    'type': 'role-operation-button',
+                                                    'index': 'delete'
+                                                },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
+                                                    'border-color': '#ffdbdb',
+                                                    'marginRight': '10px'
                                                 }
-                                            ),
+                                            ) if 'system:role:remove' in button_perms else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -191,16 +217,62 @@ def render():
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
+                                                    'border-color': '#ffe399',
+                                                    'marginRight': '10px'
                                                 }
-                                            ),
+                                            ) if 'system:role:export' in button_perms else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'
                                         }
                                     ),
+                                    span=16
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdSpace(
+                                        [
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-search'
+                                                            ),
+                                                        ],
+                                                        id='role-hidden',
+                                                        shape='circle'
+                                                    ),
+                                                    id='role-hidden-tooltip',
+                                                    title='隐藏搜索'
+                                                )
+                                            ),
+                                            html.Div(
+                                                fac.AntdTooltip(
+                                                    fac.AntdButton(
+                                                        [
+                                                            fac.AntdIcon(
+                                                                icon='antd-sync'
+                                                            ),
+                                                        ],
+                                                        id='role-refresh',
+                                                        shape='circle'
+                                                    ),
+                                                    title='刷新'
+                                                )
+                                            ),
+                                        ],
+                                        style={
+                                            'float': 'right',
+                                            'paddingBottom': '10px'
+                                        }
+                                    ),
+                                    span=8,
+                                    style={
+                                        'paddingRight': '10px'
+                                    }
                                 )
-                            ]
+                            ],
+                            gutter=5
                         ),
                         fac.AntdRow(
                             [

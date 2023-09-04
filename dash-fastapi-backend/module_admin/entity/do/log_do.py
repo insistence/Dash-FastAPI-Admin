@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, BigInteger, Index
-from config.database import Base, engine
+from config.database import Base
 from datetime import datetime
 
 
@@ -50,6 +50,3 @@ class SysOperLog(Base):
     idx_sys_oper_log_bt = Index('idx_sys_oper_log_bt', business_type)
     idx_sys_oper_log_s = Index('idx_sys_oper_log_s', status)
     idx_sys_oper_log_ot = Index('idx_sys_oper_log_ot', oper_time)
-
-
-Base.metadata.create_all(bind=engine)

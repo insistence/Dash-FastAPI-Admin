@@ -1,13 +1,12 @@
 import dash
 import time
 import uuid
-from dash import html
-from dash.dependencies import Input, Output, State
-import feffery_antd_components as fac
+from dash import dcc
+from dash.dependencies import Input, Output, State, ALL
 import feffery_utils_components as fuc
 
 from server import app
-from api.role import get_role_list_api, get_role_detail_api, add_role_api, edit_role_api, delete_role_api
+from api.role import get_role_list_api, get_role_detail_api, add_role_api, edit_role_api, delete_role_api, export_role_list_api
 from api.menu import get_menu_tree_api
 
 
@@ -15,17 +14,20 @@ from api.menu import get_menu_tree_api
     [Output('role-list-table', 'data', allow_duplicate=True),
      Output('role-list-table', 'pagination', allow_duplicate=True),
      Output('role-list-table', 'key'),
+     Output('role-list-table', 'selectedRowKeys'),
      Output('api-check-token', 'data', allow_duplicate=True)],
     [Input('role-search', 'nClicks'),
+     Input('role-refresh', 'nClicks'),
      Input('role-list-table', 'pagination'),
      Input('role-operations-store', 'data')],
     [State('role-role_name-input', 'value'),
      State('role-role_key-input', 'value'),
      State('role-status-select', 'value'),
-     State('role-create_time-range', 'value')],
+     State('role-create_time-range', 'value'),
+     State('role-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_role_table_data(search_click, pagination, operations, role_name, role_key, status_select, create_time_range):
+def get_role_table_data(search_click, refresh_click, pagination, operations, role_name, role_key, status_select, create_time_range, button_perms):
 
     create_time_start = None
     create_time_end = None
@@ -41,7 +43,8 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
         page_num=1,
         page_size=10
     )
-    if pagination:
+    triggered_id = dash.ctx.triggered_id
+    if triggered_id == 'role-list-table':
         query_params = dict(
             role_name=role_name,
             role_key=role_key,
@@ -51,7 +54,7 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
-    if search_click or pagination or operations:
+    if search_click or refresh_click or pagination or operations:
         table_info = get_role_list_api(query_params)
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
@@ -69,24 +72,27 @@ def get_role_table_data(search_click, pagination, operations, role_name, role_ke
                 else:
                     item['status'] = dict(checked=False)
                 item['key'] = str(item['role_id'])
-                item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    },
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    },
-                ]
+                if item['role_id'] == 1:
+                    item['operation'] = []
+                else:
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:role:edit' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:role:remove' in button_perms else {},
+                    ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), {'timestamp': time.time()}]
+            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
 
-    return [dash.no_update] * 4
+    return [dash.no_update] * 5
 
 
 @app.callback(
@@ -106,19 +112,57 @@ def reset_role_query_params(reset_click):
 
 
 @app.callback(
-    [Output('role-edit', 'disabled'),
-     Output('role-delete', 'disabled')],
+    [Output('role-search-form-container', 'hidden'),
+     Output('role-hidden-tooltip', 'title')],
+    Input('role-hidden', 'nClicks'),
+    State('role-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_role_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
+
+
+@app.callback(
+    Output({'type': 'role-operation-button', 'index': 'edit'}, 'disabled'),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def change_post_edit_delete_button_status(table_rows_selected):
-    if table_rows_selected:
-        if len(table_rows_selected) > 1:
-            return [True, False]
+def change_role_edit_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if len(table_rows_selected) > 1 or '1' in table_rows_selected:
+                return True
 
-        return [False, False]
+            return False
 
-    return [True, True]
+        return True
+
+    return dash.no_update
+
+
+@app.callback(
+    Output({'type': 'role-operation-button', 'index': 'delete'}, 'disabled'),
+    Input('role-list-table', 'selectedRowKeys'),
+    prevent_initial_call=True
+)
+def change_role_delete_button_status(table_rows_selected):
+    outputs_list = dash.ctx.outputs_list
+    if outputs_list:
+        if table_rows_selected:
+            if '1' in table_rows_selected:
+                return True
+            if len(table_rows_selected) > 1:
+                return False
+
+            return False
+
+        return True
+
+    return dash.no_update
 
 
 @app.callback(
@@ -143,8 +187,8 @@ def fold_unfold_role_menu(fold_unfold, menu_info):
 
 
 @app.callback(
-     Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
-     Input('role-menu-perms-radio-all-none', 'checked'),
+    Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
+    Input('role-menu-perms-radio-all-none', 'checked'),
     State('role-menu-store', 'data'),
     prevent_initial_call=True
 )
@@ -164,15 +208,29 @@ def all_none_role_menu_mode(all_none, menu_info):
 
 
 @app.callback(
-    Output('role-menu-perms', 'checkStrictly'),
+    [Output('role-menu-perms', 'checkStrictly'),
+     Output('role-menu-perms', 'checkedKeys', allow_duplicate=True)],
     Input('role-menu-perms-radio-parent-children', 'checked'),
+    State('current-role-menu-store', 'data'),
     prevent_initial_call=True
 )
-def change_role_menu_mode(parent_children):
+def change_role_menu_mode(parent_children, current_role_menu):
+    checked_menu = []
     if parent_children:
-        return False
+        if current_role_menu:
+            for item in current_role_menu:
+                has_children = False
+                for other_item in current_role_menu:
+                    if other_item['parent_id'] == item['menu_id']:
+                        has_children = True
+                        break
+                if not has_children:
+                    checked_menu.append(str(item.get('menu_id')))
+        return [False, checked_menu]
     else:
-        return True
+        if current_role_menu:
+            checked_menu = [str(item.get('menu_id')) for item in current_role_menu if item] or []
+        return [True, checked_menu]
 
 
 @app.callback(
@@ -185,28 +243,30 @@ def change_role_menu_mode(parent_children):
      Output('role-menu-perms', 'treeData'),
      Output('role-menu-perms', 'expandedKeys', allow_duplicate=True),
      Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
+     Output('role-menu-perms', 'halfCheckedKeys', allow_duplicate=True),
      Output('role-menu-store', 'data'),
+     Output('current-role-menu-store', 'data'),
      Output('role-remark', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('role-add', 'nClicks'),
-     Output('role-edit', 'nClicks'),
      Output('role-edit-id-store', 'data'),
      Output('role-operations-store-bk', 'data')],
-    [Input('role-add', 'nClicks'),
-     Input('role-edit', 'nClicks'),
+    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
      Input('role-list-table', 'nClicksButton')],
     [State('role-list-table', 'selectedRowKeys'),
      State('role-list-table', 'clickedContent'),
      State('role-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
-    if add_click or edit_click or button_click:
+def add_edit_role_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'role-operation-button'} \
+            or trigger_id == {'index': 'edit', 'type': 'role-operation-button'} \
+            or (trigger_id == 'role-list-table' and clicked_content == '修改'):
         menu_params = dict(menu_name='', type='role')
         tree_info = get_menu_tree_api(menu_params)
         if tree_info.get('code') == 200:
             tree_data = tree_info['data']
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'role-operation-button'}:
                 return [
                     True,
                     '新增角色',
@@ -217,23 +277,35 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                     tree_data[0],
                     [],
                     None,
+                    None,
                     tree_data[1],
+                    None,
                     None,
                     {'timestamp': time.time()},
                     None,
-                    None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif edit_click or (button_click and clicked_content == '修改'):
-                if edit_click:
+            elif trigger_id == {'index': 'edit', 'type': 'role-operation-button'} or (trigger_id == 'role-list-table' and clicked_content == '修改'):
+                if trigger_id == {'index': 'edit', 'type': 'role-operation-button'}:
                     role_id = int(','.join(selected_row_keys))
                 else:
                     role_id = int(recently_button_clicked_row['key'])
                 role_info_res = get_role_detail_api(role_id=role_id)
                 if role_info_res['code'] == 200:
                     role_info = role_info_res['data']
-                    checked_menu = [str(item.get('menu_id')) for item in role_info.get('menu') if item] or []
+                    checked_menu = []
+                    checked_menu_all = []
+                    if role_info.get('menu')[0]:
+                        for item in role_info.get('menu'):
+                            checked_menu_all.append(str(item.get('menu_id')))
+                            has_children = False
+                            for other_item in role_info.get('menu'):
+                                if other_item['parent_id'] == item['menu_id']:
+                                    has_children = True
+                                    break
+                            if not has_children:
+                                checked_menu.append(str(item.get('menu_id')))
+                    half_checked_menu = [x for x in checked_menu_all if x not in checked_menu]
                     return [
                         True,
                         '编辑角色',
@@ -244,18 +316,18 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
                         tree_data[0],
                         [],
                         checked_menu,
+                        half_checked_menu,
                         tree_data[1],
+                        role_info.get('menu'),
                         role_info.get('role').get('remark'),
                         {'timestamp': time.time()},
-                        None,
-                        None,
                         role_info.get('role') if role_info else None,
                         {'type': 'edit'}
                     ]
                     
-        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None, None, None]
+        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 12 + [None, None, None, None]
+    return [dash.no_update] * 14 + [None, None]
 
 
 @app.callback(
@@ -277,12 +349,18 @@ def add_edit_role_modal(add_click, edit_click, button_click, selected_row_keys, 
      State('role-role_sort', 'value'),
      State('role-status', 'value'),
      State('role-menu-perms', 'checkedKeys'),
+     State('role-menu-perms', 'halfCheckedKeys'),
+     State('role-menu-perms-radio-parent-children', 'checked'),
      State('role-remark', 'value')],
     prevent_initial_call=True
 )
-def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_perms, remark):
+def role_confirm(confirm_trigger, operation_type, cur_role_info, role_name, role_key, role_sort, status, menu_checked_keys, menu_half_checked_keys, parent_checked, remark):
     if confirm_trigger:
         if all([role_name, role_key, role_sort]):
+            if parent_checked:
+                menu_perms = menu_half_checked_keys + menu_checked_keys
+            else:
+                menu_perms = menu_checked_keys
             params_add = dict(role_name=role_name, role_key=role_key, role_sort=role_sort, menu_id=','.join(menu_perms) if menu_perms else None, status=status, remark=remark)
             params_edit = dict(role_id=cur_role_info.get('role_id') if cur_role_info else None, role_name=role_name, role_key=role_key, role_sort=role_sort, 
                                menu_id=','.join(menu_perms) if menu_perms else '', status=status, remark=remark)
@@ -386,19 +464,20 @@ def table_switch_role_status(recently_switch_data_index, recently_switch_status,
     [Output('role-delete-text', 'children'),
      Output('role-delete-confirm-modal', 'visible'),
      Output('role-delete-ids-store', 'data')],
-    [Input('role-delete', 'nClicks'),
+    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
      Input('role-list-table', 'nClicksButton')],
     [State('role-list-table', 'selectedRowKeys'),
      State('role-list-table', 'clickedContent'),
      State('role-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def role_delete_modal(delete_click, button_click,
+def role_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
-    if delete_click or button_click:
-        trigger_id = dash.ctx.triggered_id
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'delete', 'type': 'role-operation-button'} or (
+            trigger_id == 'role-list-table' and clicked_content == '删除'):
 
-        if trigger_id == 'role-delete':
+        if trigger_id == {'index': 'delete', 'type': 'role-operation-button'}:
             role_ids = ','.join(selected_row_keys)
         else:
             if clicked_content == '删除':
@@ -407,7 +486,7 @@ def role_delete_modal(delete_click, button_click,
                 return dash.no_update
 
         return [
-            f'是否确认删除角色编号为{role_ids}的用户？',
+            f'是否确认删除角色编号为{role_ids}的角色？',
             True,
             {'role_ids': role_ids}
         ]
@@ -442,3 +521,48 @@ def role_delete_confirm(delete_confirm, role_ids_data):
         ]
 
     return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('role-export-container', 'data', allow_duplicate=True),
+     Output('role-export-complete-judge-container', 'data'),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('role-export', 'nClicks'),
+    prevent_initial_call=True
+)
+def export_role_list(export_click):
+    if export_click:
+        export_role_res = export_role_list_api({})
+        if export_role_res.status_code == 200:
+            export_role = export_role_res.content
+
+            return [
+                dcc.send_bytes(export_role, f'角色信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                {'timestamp': time.time()},
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导出成功', type='success')
+            ]
+
+        return [
+            dash.no_update,
+            dash.no_update,
+            {'timestamp': time.time()},
+            fuc.FefferyFancyMessage('导出失败', type='error')
+        ]
+
+    return [dash.no_update] * 4
+
+
+@app.callback(
+    Output('role-export-container', 'data', allow_duplicate=True),
+    Input('role-export-complete-judge-container', 'data'),
+    prevent_initial_call=True
+)
+def reset_role_export_status(data):
+    time.sleep(0.5)
+    if data:
+
+        return None
+
+    return dash.no_update

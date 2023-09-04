@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from config.database import Base, engine
+from config.database import Base
 from datetime import datetime
 
 
@@ -48,6 +48,3 @@ class SysUserPost(Base):
 
     user_id = Column(Integer, primary_key=True, nullable=False, comment='用户ID')
     post_id = Column(Integer, primary_key=True, nullable=False, comment='岗位ID')
-
-
-Base.metadata.create_all(bind=engine)

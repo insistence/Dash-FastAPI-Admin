@@ -1,10 +1,8 @@
 import dash
-from dash import html
 from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
-import feffery_utils_components as fuc
 from jsonpath_ng import parse
-from flask import session, json
+from flask import json
 from collections import OrderedDict
 
 from server import app
@@ -18,10 +16,12 @@ from utils.tree_tool import find_title_by_key, find_modules_by_key, find_href_by
     [Input('index-side-menu', 'currentKey'),
      Input('tabs-container', 'latestDeletePane')],
     [State('tabs-container', 'items'),
-     State('tabs-container', 'activeKey')],
+     State('tabs-container', 'activeKey'),
+     State('menu-info-store-container', 'data'),
+     State('menu-list-store-container', 'data')],
     prevent_initial_call=True
 )
-def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, activeKey):
+def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, activeKey, menu_info, menu_list):
     """
     这个回调函数用于处理标签页子项的新建、切换及删除
     具体策略：
@@ -47,24 +47,33 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
                 currentKey
             ]
 
-        menu_title = find_title_by_key(session.get('menu_info'), currentKey)
-        # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
-        menu_modules = find_modules_by_key(session.get('menu_info'), currentKey)
+        if currentKey == '个人资料':
+            menu_title = '个人资料'
+            button_perms = []
+            menu_modules = 'system.user.profile'
+        else:
+            menu_title = find_title_by_key(menu_info.get('menu_info'), currentKey)
+            button_perms = [item.get('perms') for item in menu_list.get('menu_list') if str(item.get('parent_id')) == currentKey]
+            # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
+            menu_modules = find_modules_by_key(menu_info.get('menu_info'), currentKey)
 
         if menu_modules:
-            # 否则追加子项返回
-            # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
-            return [
-                [
-                    *origin_items,
-                    {
-                        'label': menu_title,
-                        'key': currentKey,
-                        'children': eval('views.' + menu_modules + '.render()'),
-                    }
-                ],
-                currentKey
-            ]
+            if menu_modules == 'link':
+                return [dash.no_update] * 2
+            else:
+                # 否则追加子项返回
+                # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
+                return [
+                    [
+                        *origin_items,
+                        {
+                            'label': menu_title,
+                            'key': currentKey,
+                            'children': eval('views.' + menu_modules + '.render(button_perms)'),
+                        }
+                    ],
+                    currentKey
+                ]
 
         return [
             [
@@ -113,11 +122,12 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
 # 页首面包屑和hash回调
 @app.callback(
     [Output('header-breadcrumb', 'items'),
-     Output('dcc-url', 'pathname')],
+     Output('dcc-url', 'pathname', allow_duplicate=True)],
     Input('tabs-container', 'activeKey'),
+    State('menu-info-store-container', 'data'),
     prevent_initial_call=True
 )
-def get_current_breadcrumbs(active_key):
+def get_current_breadcrumbs(active_key, menu_info):
     if active_key:
 
         if active_key == '首页':
@@ -132,12 +142,27 @@ def get_current_breadcrumbs(active_key):
                 '/'
             ]
 
+        elif active_key == '个人资料':
+            return [
+                [
+                    {
+                        'title': '首页',
+                        'icon': 'antd-dashboard',
+                        'href': '/'
+                    },
+                    {
+                        'title': '个人资料',
+                    }
+                ],
+                '/user/profile'
+            ]
+
         else:
-            result = find_parents(session.get('menu_info'), active_key)
+            result = find_parents(menu_info.get('menu_info'), active_key)
             # 去除result的重复项
             parent_info = list(OrderedDict((json.dumps(d, ensure_ascii=False), d) for d in result).values())
             if parent_info:
-                current_href = find_href_by_key(session.get('menu_info'), active_key)
+                current_href = find_href_by_key(menu_info.get('menu_info'), active_key)
 
                 return [
                     [

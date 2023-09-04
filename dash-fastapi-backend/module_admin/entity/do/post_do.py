@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from config.database import Base, engine
+from config.database import Base
 from datetime import datetime
 
 
@@ -19,6 +19,3 @@ class SysPost(Base):
     update_by = Column(String(64), default='', comment='更新者')
     update_time = Column(DateTime, nullable=True, default=datetime.now(), comment='更新时间')
     remark = Column(String(500), nullable=True, default='', comment='备注')
-
-
-Base.metadata.create_all(bind=engine)

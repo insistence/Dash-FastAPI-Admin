@@ -5,12 +5,19 @@ from typing import Optional
 class UserLogin(BaseModel):
     user_name: str
     password: str
-    user_request: Optional[str] = None
+    captcha: Optional[str]
+    session_id: Optional[str]
+    login_info: Optional[dict]
+    captcha_enabled: Optional[bool]
 
 
 class Token(BaseModel):
-    token: str
-    account: str
-    phone: str
-    name: str
+    access_token: str
+    token_type: str
 
+
+class SmsCode(BaseModel):
+    is_success: Optional[bool]
+    sms_code: str
+    session_id: str
+    message: Optional[str]

@@ -3,7 +3,12 @@ from utils.request import api_request
 
 def login_api(page_obj: dict):
 
-    return api_request(method='post', url='/login/loginByAccount', is_headers=False, json=page_obj)
+    return api_request(method='post', url='/login/loginByAccount', is_headers=False, data=page_obj)
+
+
+def get_captcha_image_api():
+
+    return api_request(method='post', url='/captcha/captchaImage', is_headers=False)
 
 
 def get_current_user_info_api():

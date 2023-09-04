@@ -65,7 +65,7 @@ def find_href_by_key(data, key):
             if result is not None:
                 return result
         elif 'key' in item['props'] and item['props']['key'] == key:
-            return item['props']['href']
+            return item['props'].get('href')
     return None
 
 
@@ -82,7 +82,7 @@ def find_modules_by_key(data, key):
             if result is not None:
                 return result
         elif 'key' in item['props'] and item['props']['key'] == key:
-            return item['props']['modules']
+            return item['props'].get('modules')
     return None
 
 
@@ -116,6 +116,68 @@ def find_parents(tree, target_key):
             break
 
     return result[::-1]
+
+
+def deal_user_menu_info(pid: int, permission_list: list):
+    """
+    工具方法：根据菜单信息生成树形嵌套数据
+    :param pid: 菜单id
+    :param permission_list: 菜单列表信息
+    :return: 菜单树形嵌套数据
+    """
+    menu_list = []
+    for permission in permission_list:
+        if permission['parent_id'] == pid:
+            children = deal_user_menu_info(permission['menu_id'], permission_list)
+            antd_menu_list_data = {}
+            if children and permission['menu_type'] == 'M':
+                antd_menu_list_data['component'] = 'SubMenu'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'modules': permission['component']
+                }
+                antd_menu_list_data['children'] = children
+            elif permission['menu_type'] == 'C':
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                    'modules': permission['component']
+                }
+                antd_menu_list_data['button'] = children
+            elif permission['menu_type'] == 'F':
+                antd_menu_list_data['component'] = 'Button'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon']
+                }
+            elif permission['is_frame'] == 0:
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                    'target': '_blank',
+                    'modules': 'link'
+                }
+            else:
+                antd_menu_list_data['component'] = 'Item'
+                antd_menu_list_data['props'] = {
+                    'key': str(permission['menu_id']),
+                    'title': permission['menu_name'],
+                    'icon': permission['icon'],
+                    'href': permission['path'],
+                    'modules': permission['component']
+                }
+            menu_list.append(antd_menu_list_data)
+
+    return menu_list
 
 
 def get_dept_tree(pid: int, permission_list: list):
@@ -169,3 +231,17 @@ def list_to_tree(permission_list: list) -> list:
             parent.update({'children': children})
 
     return container
+
+
+def get_search_panel_data(menu_list: list):
+    search_data = []
+    for item in menu_list:
+        if item.get('menu_type') == 'C' or item.get('is_frame') == 0:
+            item_dict = dict(
+                id=str(item.get('menu_id')),
+                title=item.get('menu_name'),
+                handler='() => window.open("%s", "_self")' % item.get('path')
+            )
+            search_data.append(item_dict)
+
+    return search_data

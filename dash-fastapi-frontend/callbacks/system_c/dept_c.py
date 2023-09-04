@@ -1,13 +1,8 @@
 import dash
 import time
 import uuid
-from dash import html
-from dash.dependencies import Input, Output, State
-import feffery_antd_components as fac
+from dash.dependencies import Input, Output, State, ALL
 import feffery_utils_components as fuc
-from jsonpath_ng import parse
-from flask import session, json
-from collections import OrderedDict
 
 from server import app
 from utils.tree_tool import get_dept_tree
@@ -22,51 +17,77 @@ from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_de
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('dept-fold', 'nClicks')],
     [Input('dept-search', 'nClicks'),
+     Input('dept-refresh', 'nClicks'),
      Input('dept-operations-store', 'data'),
      Input('dept-fold', 'nClicks')],
     [State('dept-dept_name-input', 'value'),
      State('dept-status-select', 'value'),
-     State('dept-list-table', 'defaultExpandedRowKeys')],
+     State('dept-list-table', 'defaultExpandedRowKeys'),
+     State('dept-button-perms-container', 'data')],
     prevent_initial_call=True
 )
-def get_dept_table_data(search_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys):
+def get_dept_table_data(search_click, refresh_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys, button_perms):
 
     query_params = dict(
         dept_name=dept_name,
         status=status_select
     )
-    if search_click or operations or fold_click:
+    if search_click or refresh_click or operations or fold_click:
         table_info = get_dept_list_api(query_params)
         default_expanded_row_keys = []
         if table_info['code'] == 200:
             table_data = table_info['data']['rows']
             for item in table_data:
                 default_expanded_row_keys.append(str(item['dept_id']))
-                if item['status'] == '0':
-                    item['status'] = dict(tag='正常', color='blue')
-                else:
-                    item['status'] = dict(tag='停用', color='volcano')
                 item['key'] = str(item['dept_id'])
                 if item['parent_id'] == 0:
-                    item['operation'] = []
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:dept:edit' in button_perms else {},
+                        {
+                            'content': '新增',
+                            'type': 'link',
+                            'icon': 'antd-plus'
+                        } if 'system:dept:add' in button_perms else {},
+                    ]
+                elif item['status'] == '1':
+                    item['operation'] = [
+                        {
+                            'content': '修改',
+                            'type': 'link',
+                            'icon': 'antd-edit'
+                        } if 'system:dept:edit' in button_perms else {},
+                        {
+                            'content': '删除',
+                            'type': 'link',
+                            'icon': 'antd-delete'
+                        } if 'system:dept:remove' in button_perms else {},
+                    ]
                 else:
                     item['operation'] = [
                         {
                             'content': '修改',
                             'type': 'link',
                             'icon': 'antd-edit'
-                        },
+                        } if 'system:dept:edit' in button_perms else {},
                         {
                             'content': '新增',
                             'type': 'link',
                             'icon': 'antd-plus'
-                        },
+                        } if 'system:dept:add' in button_perms else {},
                         {
                             'content': '删除',
                             'type': 'link',
                             'icon': 'antd-delete'
-                        },
+                        } if 'system:dept:remove' in button_perms else {},
                     ]
+                if item['status'] == '0':
+                    item['status'] = dict(tag='正常', color='blue')
+                else:
+                    item['status'] = dict(tag='停用', color='volcano')
             table_data_new = get_dept_tree(0, table_data)
 
             if fold_click:
@@ -95,8 +116,23 @@ def reset_dept_query_params(reset_click):
 
 
 @app.callback(
+    [Output('dept-search-form-container', 'hidden'),
+     Output('dept-hidden-tooltip', 'title')],
+    Input('dept-hidden', 'nClicks'),
+    State('dept-search-form-container', 'hidden'),
+    prevent_initial_call=True
+)
+def hidden_dept_search_form(hidden_click, hidden_status):
+    if hidden_click:
+
+        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
+    return [dash.no_update] * 2
+
+
+@app.callback(
     [Output('dept-modal', 'visible', allow_duplicate=True),
      Output('dept-modal', 'title'),
+     Output('dept-parent_id-div', 'hidden'),
      Output('dept-parent_id', 'treeData'),
      Output('dept-parent_id', 'value'),
      Output('dept-dept_name', 'value'),
@@ -106,29 +142,31 @@ def reset_dept_query_params(reset_click):
      Output('dept-email', 'value'),
      Output('dept-status', 'value'),
      Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dept-add', 'nClicks'),
      Output('dept-edit-id-store', 'data'),
      Output('dept-operations-store-bk', 'data')],
-    [Input('dept-add', 'nClicks'),
+    [Input({'type': 'dept-operation-button', 'index': ALL}, 'nClicks'),
      Input('dept-list-table', 'nClicksButton')],
     [State('dept-list-table', 'clickedContent'),
      State('dept-list-table', 'recentlyButtonClickedRow')],
     prevent_initial_call=True
 )
-def add_edit_dept_modal(add_click, button_click, clicked_content, recently_button_clicked_row):
-    if add_click or (button_click and clicked_content != '删除'):
+def add_edit_dept_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} or (trigger_id == 'dept-list-table' and clicked_content != '删除'):
         dept_params = dict(dept_name='')
-        if clicked_content == '修改':
+        if trigger_id == 'dept-list-table' and clicked_content == '修改':
+            dept_params['dept_id'] = int(recently_button_clicked_row['key'])
             tree_info = get_dept_tree_for_edit_option_api(dept_params)
         else:
             tree_info = get_dept_tree_api(dept_params)
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            if add_click:
+            if trigger_id == {'index': 'add', 'type': 'dept-operation-button'}:
                 return [
                     True,
                     '新增部门',
+                    False,
                     tree_data,
                     None,
                     None,
@@ -139,13 +177,13 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                     '0',
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '新增':
+            elif trigger_id == 'dept-list-table' and clicked_content == '新增':
                 return [
                     True,
                     '新增部门',
+                    False,
                     tree_data,
                     str(recently_button_clicked_row['key']),
                     None,
@@ -156,34 +194,51 @@ def add_edit_dept_modal(add_click, button_click, clicked_content, recently_butto
                     '0',
                     {'timestamp': time.time()},
                     None,
-                    None,
                     {'type': 'add'}
                 ]
-            elif button_click and clicked_content == '修改':
+            elif trigger_id == 'dept-list-table' and clicked_content == '修改':
                 dept_id = int(recently_button_clicked_row['key'])
                 dept_info_res = get_dept_detail_api(dept_id=dept_id)
                 if dept_info_res['code'] == 200:
                     dept_info = dept_info_res['data']
-                    return [
-                        True,
-                        '编辑部门',
-                        tree_data,
-                        str(dept_info.get('parent_id')),
-                        dept_info.get('dept_name'),
-                        dept_info.get('order_num'),
-                        dept_info.get('leader'),
-                        dept_info.get('phone'),
-                        dept_info.get('email'),
-                        dept_info.get('status'),
-                        {'timestamp': time.time()},
-                        None,
-                        dept_info,
-                        {'type': 'edit'}
-                    ]
+                    if dept_info.get('parent_id') == 0:
+                        return [
+                            True,
+                            '编辑部门',
+                            True,
+                            tree_data,
+                            str(dept_info.get('parent_id')),
+                            dept_info.get('dept_name'),
+                            dept_info.get('order_num'),
+                            dept_info.get('leader'),
+                            dept_info.get('phone'),
+                            dept_info.get('email'),
+                            dept_info.get('status'),
+                            {'timestamp': time.time()},
+                            dept_info,
+                            {'type': 'edit'}
+                        ]
+                    else:
+                        return [
+                            True,
+                            '编辑部门',
+                            False,
+                            tree_data,
+                            str(dept_info.get('parent_id')),
+                            dept_info.get('dept_name'),
+                            dept_info.get('order_num'),
+                            dept_info.get('leader'),
+                            dept_info.get('phone'),
+                            dept_info.get('email'),
+                            dept_info.get('status'),
+                            {'timestamp': time.time()},
+                            dept_info,
+                            {'type': 'edit'}
+                        ]
 
-        return [dash.no_update] * 10 + [{'timestamp': time.time()}, None, None, None]
+        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None]
 
-    return [dash.no_update] * 11 + [None, None, None]
+    return [dash.no_update] * 12 + [None, None]
 
 
 @app.callback(
