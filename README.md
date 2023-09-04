@@ -125,3 +125,9 @@ python3 app.py
 # 浏览器访问
 地址：http://127.0.0.1:8088
 ```
+
+## 交流
+如果有对本项目及FastAPI感兴趣的朋友，欢迎加入知识星球一起交流学习。
+<p align="center">
+	<img alt="zsxq" src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/zsxq.jpg">
+</p>
