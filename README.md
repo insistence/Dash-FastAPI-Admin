@@ -17,7 +17,7 @@ Dash-FastAPI是一套全部开源的快速开发平台，毫无保留给个人�
 * 后端采用FastAPI、sqlalchemy、Redis & Jwt。
 * 权限认证使用Jwt，支持多终端认证系统。
 * 支持加载动态权限菜单，多方式轻松权限控制。
-* 特别鸣谢：<u>[RuoYi](https://gitee.com/y_project/RuoYi-Vue)</u> ，[feffery-antd-components](https://github.com/CNFeffery/feffery-antd-components)，[feffery-utils-components](https://github.com/CNFeffery/feffery-utils-components)。
+* 特别鸣谢：<u>[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue)</u> ，[feffery-antd-components](https://github.com/CNFeffery/feffery-antd-components)，[feffery-utils-components](https://github.com/CNFeffery/feffery-utils-components)。
 
 ## 内置功能
 
@@ -76,3 +76,52 @@ Dash-FastAPI是一套全部开源的快速开发平台，毫无保留给个人�
         <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3.png"/></td>
     </tr>
 </table>
+
+## 项目运行
+
+```bash
+# 克隆项目
+git clone https://gitee.com/insistence2022/dash-fastapi-admin.git
+
+# 进入项目根目录
+cd Dash-FastAPI-Admin
+
+# 安装项目依赖环境
+pip3 install -r requirements.txt
+```
+
+### 前端
+```bash
+# 进入前端目录
+cd dash-fastapi-frontend
+
+# 运行前端
+python3 wsgi.py
+```
+
+### 后端
+```bash
+# 进入后端目录
+cd dash-fastapi-backend
+
+# 配置环境
+1.在config/env.py的DataBaseConfig类中配置数据库环境
+2.在config/env.py的RedisConfig类中配置redis环境
+
+# 运行sql文件
+1.新建数据库dash-fastapi(默认，可修改)
+2.使用数据库连接工具运行sql文件夹下的dash-fastapi.sql
+
+# 运行后端
+python3 app.py
+```
+
+### 访问
+```bash
+# 默认账号密码
+账号：admin
+密码：admin123
+
+# 浏览器访问
+路径：http://127.0.0.1:8088
+```
