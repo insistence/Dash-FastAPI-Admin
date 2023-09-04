@@ -41,38 +41,38 @@ Dash-FastAPI是一套全部开源的快速开发平台，毫无保留给个人�
 
 <table>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E7%99%BB%E5%BD%95.png)</td>
-        <td>![输入图片说明](demo-pictures/%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%99%BB%E5%BD%95.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86.png)</td>
-        <td>![输入图片说明](demo-pictures/%E8%A7%92%E8%89%B2%E7%AE%A1%E7%90%86.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E8%A7%92%E8%89%B2%E7%AE%A1%E7%90%86.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E8%8F%9C%E5%8D%95%E7%AE%A1%E7%90%86.png)</td>
-        <td>![输入图片说明](demo-pictures/%E9%83%A8%E9%97%A8%E7%AE%A1%E7%90%86.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E8%8F%9C%E5%8D%95%E7%AE%A1%E7%90%86.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E9%83%A8%E9%97%A8%E7%AE%A1%E7%90%86.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E5%B2%97%E4%BD%8D%E7%AE%A1%E7%90%86.png)</td>
-        <td>![输入图片说明](demo-pictures/%E5%AD%97%E5%85%B8%E7%AE%A1%E7%90%86.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%B2%97%E4%BD%8D%E7%AE%A1%E7%90%86.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%AD%97%E5%85%B8%E7%AE%A1%E7%90%86.png"/></td>
     </tr>	 
     <tr>
-        <td>![输入图片说明](demo-pictures/%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE.png)</td>
-        <td>![输入图片说明](demo-pictures/%E9%80%9A%E7%9F%A5%E5%85%AC%E5%91%8A.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E9%80%9A%E7%9F%A5%E5%85%AC%E5%91%8A.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97.png)</td>
-        <td>![输入图片说明](demo-pictures/%E7%99%BB%E5%BD%95%E6%97%A5%E5%BF%97.png)</td>
-    </tr>
-	<tr>
-        <td>![输入图片说明](demo-pictures/%E5%9C%A8%E7%BA%BF%E7%94%A8%E6%88%B7.png)</td>
-        <td>![输入图片说明](demo-pictures/%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E6%93%8D%E4%BD%9C%E6%97%A5%E5%BF%97.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%99%BB%E5%BD%95%E6%97%A5%E5%BF%97.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7.png)</td>
-        <td>![输入图片说明](demo-pictures/%E7%BC%93%E5%AD%98%E7%9B%91%E6%8E%A7.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%9C%A8%E7%BA%BF%E7%94%A8%E6%88%B7.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1.png"/></td>
     </tr>
     <tr>
-        <td>![输入图片说明](demo-pictures/%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3.png)</td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E6%9C%8D%E5%8A%A1%E7%9B%91%E6%8E%A7.png"/></td>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%BC%93%E5%AD%98%E7%9B%91%E6%8E%A7.png"/></td>
+    </tr>
+    <tr>
+        <td><img src="https://gitee.com/insistence2022/dash-fastapi/blob/develop/demo-pictures/%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3.png"/></td>
     </tr>
 </table>
