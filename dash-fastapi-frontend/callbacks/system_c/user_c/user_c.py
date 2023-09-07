@@ -122,7 +122,15 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
     return [dash.no_update] * 5
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (reset_click) => {
+        if (reset_click) {
+            return [null, null, null, null, null, {'type': 'reset'}]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('dept-tree', 'selectedKeys'),
      Output('user-user_name-input', 'value'),
      Output('user-phone_number-input', 'value'),
@@ -132,25 +140,26 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
     Input('user-reset', 'nClicks'),
     prevent_initial_call=True
 )
-def reset_user_query_params(reset_click):
-    if reset_click:
-        return [None, None, None, None, None, {'type': 'reset'}]
-
-    return [dash.no_update] * 6
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (hidden_click, hidden_status) => {
+        if (hidden_click) {
+            return [
+                !hidden_status,
+                hidden_status ? '隐藏搜索' : '显示搜索'
+            ]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('user-search-form-container', 'hidden'),
      Output('user-hidden-tooltip', 'title')],
     Input('user-hidden', 'nClicks'),
     State('user-search-form-container', 'hidden'),
     prevent_initial_call=True
 )
-def hidden_user_search_form(hidden_click, hidden_status):
-    if hidden_click:
-
-        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
-    return [dash.no_update] * 2
 
 
 @app.callback(

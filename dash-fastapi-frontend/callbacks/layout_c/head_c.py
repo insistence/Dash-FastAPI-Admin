@@ -9,7 +9,31 @@ from api.login import logout_api
 
 
 # 页首右侧个人中心选项卡回调
-@app.callback(
+app.clientside_callback(
+    '''
+    (nClicks, clickedKey) => {
+        if (clickedKey == '退出登录') {
+            return [
+                window.dash_clientside.no_update,
+                true,
+                false
+            ];
+        } else if (clickedKey == '个人资料') {
+            return [
+                '/user/profile',
+                false,
+                false
+            ];
+        } else if ( clickedKey == '布局设置') {
+            return [
+                window.dash_clientside.no_update,
+                false,
+                true
+            ]
+        }
+        return window.dash_clientside.no_update;
+     }
+    ''',
     [Output('dcc-url', 'pathname', allow_duplicate=True),
      Output('logout-modal', 'visible'),
      Output('layout-setting-drawer', 'visible')],
@@ -17,29 +41,6 @@ from api.login import logout_api
     State('index-header-dropdown', 'clickedKey'),
     prevent_initial_call=True
 )
-def index_dropdown_click(nClicks, clickedKey):
-    if clickedKey == '退出登录':
-        return [
-            dash.no_update,
-            True,
-            False
-        ]
-
-    elif clickedKey == '个人资料':
-        return [
-            '/user/profile',
-            False,
-            False
-        ]
-
-    elif clickedKey == '布局设置':
-        return [
-            dash.no_update,
-            False,
-            True
-        ]
-
-    return [dash.no_update] * 3
 
 
 # 退出登录回调
@@ -65,27 +66,35 @@ def logout_confirm(okCounts):
 
 
 # 全局页面重载回调
-@app.callback(
+app.clientside_callback(
+    '''
+    (nClicks) => {
+        return true;
+    }
+    ''',
     Output('trigger-reload-output', 'reload'),
     Input('index-reload', 'nClicks'),
     prevent_initial_call=True
 )
-def reload_page(nClicks):
-    return True
 
 
 # 布局设置回调
-@app.callback(
+app.clientside_callback(
+    '''
+    (visible, custom_color) => {
+        if (visible) {
+            if (custom_color) {
+                return custom_color;
+            }
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     Output('hex-color-picker', 'color', allow_duplicate=True),
     Input('layout-setting-drawer', 'visible'),
     State('custom-app-primary-color-container', 'data'),
     prevent_initial_call=True
 )
-def init_hex_color_picker(visible, custom_color):
-    if visible:
-        if custom_color:
-            return custom_color
-    return dash.no_update
 
 
 @app.callback(

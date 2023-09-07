@@ -99,32 +99,41 @@ def get_menu_table_data(search_click, refresh_click, operations, fold_click, men
     return [dash.no_update] * 4 + [None]
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (reset_click) => {
+        if (reset_click) {
+            return [null, null, {'type': 'reset'}]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('menu-menu_name-input', 'value'),
      Output('menu-status-select', 'value'),
      Output('menu-operations-store', 'data')],
     Input('menu-reset', 'nClicks'),
     prevent_initial_call=True
 )
-def reset_menu_query_params(reset_click):
-    if reset_click:
-        return [None, None, {'type': 'reset'}]
-
-    return [dash.no_update] * 3
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (hidden_click, hidden_status) => {
+        if (hidden_click) {
+            return [
+                !hidden_status,
+                hidden_status ? '隐藏搜索' : '显示搜索'
+            ]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('menu-search-form-container', 'hidden'),
      Output('menu-hidden-tooltip', 'title')],
     Input('menu-hidden', 'nClicks'),
     State('menu-search-form-container', 'hidden'),
     prevent_initial_call=True
 )
-def hidden_menu_search_form(hidden_click, hidden_status):
-    if hidden_click:
-
-        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
-    return [dash.no_update] * 2
 
 
 @app.callback(
