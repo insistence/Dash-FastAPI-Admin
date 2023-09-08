@@ -153,7 +153,7 @@ async def change_system_user_profile_info(request: Request, edit_user: AddUserMo
 
 @userController.patch("/user/profile/resetPwd", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
-async def reset_system_user_password(request: Request, reset_user: ResetUserModel,  query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+async def reset_system_user_password(request: Request, reset_user: ResetUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         if not reset_user.user_id and reset_user.old_password:
             reset_user.user_id = current_user.user.user_id
@@ -167,6 +167,33 @@ async def reset_system_user_password(request: Request, reset_user: ResetUserMode
         else:
             logger.warning(reset_user_result.message)
             return response_400(data="", message=reset_user_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/importData", dependencies=[Depends(CheckUserInterfaceAuth('system:user:import'))])
+@log_decorator(title='用户管理', business_type=6)
+async def batch_import_system_user(request: Request, user_import: ImportUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+    try:
+        batch_import_result = UserService.batch_import_user_services(query_db, user_import, current_user)
+        if batch_import_result.is_success:
+            logger.info(batch_import_result.message)
+            return response_200(data=batch_import_result, message=batch_import_result.message)
+        else:
+            logger.warning(batch_import_result.message)
+            return response_400(data="", message=batch_import_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/importTemplate", dependencies=[Depends(CheckUserInterfaceAuth('system:user:import'))])
+async def export_system_user_template(request: Request, query_db: Session = Depends(get_db)):
+    try:
+        user_import_template_result = UserService.get_user_import_template_services()
+        logger.info('获取成功')
+        return streaming_response_200(data=bytes2file_response(user_import_template_result))
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))

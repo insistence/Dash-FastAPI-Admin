@@ -7,7 +7,7 @@ import feffery_utils_components as fuc
 
 from server import app
 from api.dept import get_dept_tree_api
-from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, export_user_list_api
+from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, batch_import_user_api, download_user_import_template_api, export_user_list_api
 from api.role import get_role_select_option_api
 from api.post import get_post_select_option_api
 
@@ -597,33 +597,133 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
     return [dash.no_update] * 3
 
 
+app.clientside_callback(
+    '''
+    (nClicks) => {
+        if (nClicks) {
+            return [
+                true, 
+                [], 
+                [],
+                false
+            ];
+        }
+        return [
+            false,
+            window.dash_clientside.no_update,
+            window.dash_clientside.no_update,
+            window.dash_clientside.no_update
+        ];
+    }
+    ''',
+    [Output('user-import-confirm-modal', 'visible'),
+     Output('user-upload-choose', 'listUploadTaskRecord'),
+     Output('user-upload-choose', 'defaultFileList'),
+     Output('user-import-update-check', 'checked')],
+    Input('user-import', 'nClicks'),
+    prevent_initial_call=True
+)
+
+
+@app.callback(
+    [Output('user-import-confirm-modal', 'confirmLoading'),
+     Output('batch-result-modal', 'visible'),
+     Output('batch-result-content', 'children'),
+     Output('user-operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-import-confirm-modal', 'okCounts'),
+    [State('user-upload-choose', 'listUploadTaskRecord'),
+     State('user-import-update-check', 'checked')],
+    prevent_initial_call=True
+)
+def user_import_confirm(import_confirm, list_upload_task_record, is_update):
+    if import_confirm:
+        if list_upload_task_record:
+            url = list_upload_task_record[-1].get('url')
+            batch_param = dict(url=url, is_update=is_update)
+            batch_import_result = batch_import_user_api(batch_param)
+            if batch_import_result.get('code') == 200:
+                return [
+                    False,
+                    True if batch_import_result.get('message') else False,
+                    batch_import_result.get('message'),
+                    {'type': 'batch-import'},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('导入成功', type='success')
+                ]
+
+            return [
+                False,
+                True,
+                batch_import_result.get('message'),
+                dash.no_update,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导入失败', type='error')
+            ]
+        else:
+            return [
+                False,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                fuc.FefferyFancyMessage('请上传需要导入的文件', type='error')
+            ]
+
+    return [dash.no_update] * 6
+
+
 @app.callback(
     [Output('user-export-container', 'data', allow_duplicate=True),
      Output('user-export-complete-judge-container', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('user-export', 'nClicks'),
+    [Input('user-export', 'nClicks'),
+     Input('download-user-import-template', 'nClicks')],
     prevent_initial_call=True
 )
-def export_user_list(export_click):
-    if export_click:
-        export_user_res = export_user_list_api({})
-        if export_user_res.status_code == 200:
-            export_user = export_user_res.content
+def export_user_list(export_click, download_click):
+    trigger_id = dash.ctx.triggered_id
+    if export_click or download_click:
+
+        if trigger_id == 'user-export':
+            export_user_res = export_user_list_api({})
+            if export_user_res.status_code == 200:
+                export_user = export_user_res.content
+
+                return [
+                    dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                    {'timestamp': time.time()},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('导出成功', type='success')
+                ]
 
             return [
-                dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                dash.no_update,
+                dash.no_update,
                 {'timestamp': time.time()},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('导出成功', type='success')
+                fuc.FefferyFancyMessage('导出失败', type='error')
             ]
 
-        return [
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('导出失败', type='error')
-        ]
+        if trigger_id == 'download-user-import-template':
+            download_template_res = download_user_import_template_api()
+            if download_template_res.status_code == 200:
+                download_template = download_template_res.content
+
+                return [
+                    dcc.send_bytes(download_template, f'用户导入模板_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                    {'timestamp': time.time()},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('下载成功', type='success')
+                ]
+
+            return [
+                dash.no_update,
+                dash.no_update,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('下载失败', type='error')
+            ]
 
     return [dash.no_update] * 4
 

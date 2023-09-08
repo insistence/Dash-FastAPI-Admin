@@ -1,9 +1,11 @@
 from dash import dcc, html
 import feffery_antd_components as fac
+from flask import session
 
 from . import profile
 from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
+from config.global_config import ApiBaseUrlConfig
 
 import callbacks.system_c.user_c.user_c
 
@@ -865,6 +867,83 @@ def render(button_perms):
             visible=False,
             title='提示',
             renderFooter=True,
+            centered=True
+        ),
+
+        # 用户导入modal
+        fac.AntdModal(
+            [
+                html.Div(
+                    fac.AntdDraggerUpload(
+                        id='user-upload-choose',
+                        apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
+                        downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
+                        headers={'Authorization': 'Bearer ' + session.get('Authorization')},
+                        fileTypes=['xls', 'xlsx'],
+                        fileListMaxLength=1,
+                        text='用户导入',
+                        hint='点击或拖拽文件至此处进行上传'
+                    ),
+                    style={
+                        'marginTop': '10px'
+                    }
+                ),
+                html.Div(
+                    [
+                        fac.AntdCheckbox(
+                            id='user-import-update-check',
+                            checked=False
+                        ),
+                        fac.AntdText(
+                            '是否更新已经存在的用户数据',
+                            style={
+                                'marginLeft': '5px'
+                            }
+                        )
+                    ],
+                    style={
+                        'textAlign': 'center',
+                        'marginTop': '10px'
+                    }
+                ),
+                html.Div(
+                    [
+                        fac.AntdText('仅允许导入xls、xlsx格式文件。'),
+                        fac.AntdButton(
+                            '下载模板',
+                            id='download-user-import-template',
+                            type='link'
+                        )
+                    ],
+                    style={
+                        'textAlign': 'center',
+                        'marginTop': '10px'
+                    }
+                )
+            ],
+            id='user-import-confirm-modal',
+            visible=False,
+            title='用户导入',
+            width=600,
+            renderFooter=True,
+            centered=True,
+            okText='导入',
+            confirmAutoSpin=True,
+            loadingOkText='导入中',
+            okClickClose=False
+        ),
+
+        fac.AntdModal(
+            fac.AntdText(
+                id='batch-result-content',
+                className={
+                    'whiteSpace': 'break-spaces'
+                }
+            ),
+            id='batch-result-modal',
+            visible=False,
+            title='用户导入结果',
+            renderFooter=False,
             centered=True
         ),
 

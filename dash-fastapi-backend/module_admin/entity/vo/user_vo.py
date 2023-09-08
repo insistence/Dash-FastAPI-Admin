@@ -213,6 +213,14 @@ class DeleteUserModel(BaseModel):
     update_time: Optional[str]
 
 
+class ImportUserModel(BaseModel):
+    """
+    批量导入用户模型
+    """
+    url: str
+    is_update: bool
+
+
 class CrudUserResponse(BaseModel):
     """
     操作用户响应模型
