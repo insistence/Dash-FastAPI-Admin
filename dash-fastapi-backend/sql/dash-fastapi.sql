@@ -107,6 +107,7 @@ CREATE TABLE `sys_config`  (
 INSERT INTO `sys_config` VALUES (1, '主框架页-默认皮肤样式名称', 'sys.index.skinName', '#1890ff', 'Y', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '蓝色 #1890ff');
 INSERT INTO `sys_config` VALUES (2, '账号自助-验证码开关', 'sys.account.captchaEnabled', 'true', 'Y', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '是否开启验证码功能（true开启，false关闭）');
 INSERT INTO `sys_config` VALUES (3, '用户登录-黑名单列表', 'sys.login.blackIPList', '', 'Y', 'admin', '2023-05-23 16:13:34', '', NULL, '设置登录IP黑名单限制，多个匹配项以;分隔，支持匹配（*通配、网段）');
+INSERT INTO `sys_config` VALUES (4, '账号自助-是否开启忘记密码功能', 'sys.account.forgetUser', 'true', 'Y', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '是否开启忘记密码功能（true开启，false关闭）');
 
 -- ----------------------------
 -- Table structure for sys_dept
