@@ -67,6 +67,13 @@ def render(button_perms):
 
     return [
         dcc.Store(id='dept-button-perms-container', data=button_perms),
+        # 部门管理模块操作类型存储容器
+        dcc.Store(id='dept-operations-store'),
+        dcc.Store(id='dept-operations-store-bk'),
+        # 部门管理模块修改操作行key存储容器
+        dcc.Store(id='dept-edit-id-store'),
+        # 部门管理模块删除操作行key存储容器
+        dcc.Store(id='dept-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

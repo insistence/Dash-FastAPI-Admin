@@ -31,6 +31,10 @@ def render(button_perms):
         dcc.Store(id='login_log-export-complete-judge-container'),
         # 绑定的导出组件
         dcc.Download(id='login_log-export-container'),
+        # 登录日志管理模块操作类型存储容器
+        dcc.Store(id='login_log-operations-store'),
+        # 登录日志管理模块删除操作行key存储容器
+        dcc.Store(id='login_log-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

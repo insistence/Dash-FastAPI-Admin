@@ -61,6 +61,12 @@ def render(button_perms):
         dcc.Store(id='user-export-complete-judge-container'),
         # 绑定的导出组件
         dcc.Download(id='user-export-container'),
+        # 用户管理模块操作类型存储容器
+        dcc.Store(id='user-operations-store'),
+        # 用户管理模块修改操作行key存储容器
+        dcc.Store(id='user-edit-id-store'),
+        # 用户管理模块删除操作行key存储容器
+        dcc.Store(id='user-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -824,7 +830,7 @@ def render(button_perms):
                                             'width': 200
                                         }
                                     ),
-                                    label='岗位',
+                                    label='角色',
                                     id='user-edit-role-form-item',
                                     labelCol={
                                         'offset': 7

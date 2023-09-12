@@ -43,6 +43,13 @@ def render(button_perms):
         dcc.Store(id='config-export-complete-judge-container'),
         # 绑定的导出组件
         dcc.Download(id='config-export-container'),
+        # 参数管理模块操作类型存储容器
+        dcc.Store(id='config-operations-store'),
+        dcc.Store(id='config-operations-store-bk'),
+        # 参数管理模块修改操作行key存储容器
+        dcc.Store(id='config-edit-id-store'),
+        # 参数管理模块删除操作行key存储容器
+        dcc.Store(id='config-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

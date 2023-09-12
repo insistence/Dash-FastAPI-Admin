@@ -271,8 +271,8 @@ def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_n
         if all([nick_name, user_name, password]):
             params = dict(nick_name=nick_name, dept_id=dept_id, phonenumber=phone_number,
                           email=email, user_name=user_name, password=password, sex=sex,
-                          status=status, post_id=','.join(map(str, post)), role_id=','.join(map(str, role)),
-                          remark=remark)
+                          status=status, post_id=','.join(map(str, post)) if post else '',
+                          role_id=','.join(map(str, role)) if role else '', remark=remark)
             add_button_result = add_user_api(params)
 
             if add_button_result['code'] == 200:

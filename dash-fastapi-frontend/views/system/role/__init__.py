@@ -119,6 +119,16 @@ def render(button_perms):
         dcc.Store(id='role-export-complete-judge-container'),
         # 绑定的导出组件
         dcc.Download(id='role-export-container'),
+        # 角色管理模块操作类型存储容器
+        dcc.Store(id='role-operations-store'),
+        dcc.Store(id='role-operations-store-bk'),
+        # 角色管理模块修改操作行key存储容器
+        dcc.Store(id='role-edit-id-store'),
+        # 角色管理模块删除操作行key存储容器
+        dcc.Store(id='role-delete-ids-store'),
+        # 角色管理模块菜单权限存储容器
+        dcc.Store(id='role-menu-store'),
+        dcc.Store(id='current-role-menu-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

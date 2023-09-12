@@ -7,9 +7,13 @@ from api.config import query_config_list_api
 
 def render_content():
     captcha_enabled_info = query_config_list_api(config_key='sys.account.captchaEnabled')
+    forget_enabled_info = query_config_list_api(config_key='sys.account.forgetUser')
     captcha_hidden = False
+    forget_show = True
     if captcha_enabled_info.get('code') == 200:
         captcha_hidden = False if captcha_enabled_info.get('data') == 'true' else True
+    if forget_enabled_info.get('code') == 200:
+        forget_show = False if forget_enabled_info.get('data') == 'false' else True
 
     return html.Div(
         [
@@ -139,7 +143,7 @@ def render_content():
                                 ],
                                 align='center',
                                 size=240
-                            ),
+                            ) if forget_show else [],
                             fac.AntdFormItem(
                                 fac.AntdButton(
                                     '登录',
@@ -176,7 +180,7 @@ def render_content():
             fac.AntdFooter(
                 html.Div(
                     fac.AntdText(
-                        '版权所有©2023 Dash-FastAPI',
+                        '版权所有©2023 Dash-FastAPI-Admin',
                         style={
                             'margin': '0'
                         }
