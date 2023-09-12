@@ -213,6 +213,51 @@ class DeleteUserModel(BaseModel):
     update_time: Optional[str]
 
 
+class UserRoleQueryModel(UserRoleModel):
+    """
+    用户角色关联管理不分页查询模型
+    """
+    user_name: Optional[str]
+    phonenumber: Optional[str]
+    role_name: Optional[str]
+    role_key: Optional[str]
+
+
+class UserRolePageObject(UserRoleQueryModel):
+    """
+    用户角色关联管理分页查询模型
+    """
+    page_num: int
+    page_size: int
+
+
+class UserRolePageObjectResponse(BaseModel):
+    """
+    用户角色关联管理列表分页查询返回模型
+    """
+    rows: List = []
+    page_num: int
+    page_size: int
+    total: int
+    has_next: bool
+
+
+class CrudUserRoleModel(BaseModel):
+    """
+    新增、删除用户关联角色及角色关联用户模型
+    """
+    user_ids: Optional[str]
+    role_ids: Optional[str]
+
+
+class ImportUserModel(BaseModel):
+    """
+    批量导入用户模型
+    """
+    url: str
+    is_update: bool
+
+
 class CrudUserResponse(BaseModel):
     """
     操作用户响应模型

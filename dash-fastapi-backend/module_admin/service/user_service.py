@@ -1,7 +1,7 @@
 from module_admin.entity.vo.user_vo import *
 from module_admin.dao.user_dao import *
 from utils.pwd_util import *
-from utils.common_util import export_list2excel
+from utils.common_util import *
 
 
 class UserService:
@@ -173,6 +173,98 @@ class UserService:
 
         return CrudUserResponse(**result)
 
+    @classmethod
+    def batch_import_user_services(cls, result_db: Session, user_import: ImportUserModel, current_user: CurrentUserInfoServiceResponse):
+        """
+        批量导入用户service
+        :param user_import: 用户导入参数对象
+        :param result_db: orm对象
+        :param current_user: 当前用户对象
+        :return: 批量导入用户结果
+        """
+        header_dict = {
+            "部门编号": "dept_id",
+            "登录名称": "user_name",
+            "用户名称": "nick_name",
+            "用户邮箱": "email",
+            "手机号码": "phonenumber",
+            "用户性别": "sex",
+            "帐号状态": "status"
+        }
+        filepath = get_filepath_from_url(user_import.url)
+        df = pd.read_excel(filepath)
+        df.rename(columns=header_dict, inplace=True)
+        add_error_result = []
+        count = 0
+        try:
+            for index, row in df.iterrows():
+                count = count + 1
+                if row['sex'] == '男':
+                    row['sex'] = '0'
+                if row['sex'] == '女':
+                    row['sex'] = '1'
+                if row['sex'] == '未知':
+                    row['sex'] = '2'
+                if row['status'] == '正常':
+                    row['status'] = '0'
+                if row['status'] == '停用':
+                    row['status'] = '1'
+                add_user = UserModel(
+                    **dict(
+                        dept_id=row['dept_id'],
+                        user_name=row['user_name'],
+                        password=PwdUtil.get_password_hash('123456'),
+                        nick_name=row['nick_name'],
+                        email=row['email'],
+                        phonenumber=row['phonenumber'],
+                        sex=row['sex'],
+                        status=row['status'],
+                        create_by=current_user.user.user_name,
+                        update_by=current_user.user.user_name
+                    )
+                )
+                user_info = UserDao.get_user_by_info(result_db, UserModel(**dict(user_name=row['user_name'])))
+                if user_info:
+                    if user_import.is_update:
+                        edit_user = UserModel(
+                            **dict(
+                                user_id=user_info.user_id,
+                                dept_id=row['dept_id'],
+                                user_name=row['user_name'],
+                                nick_name=row['nick_name'],
+                                email=row['email'],
+                                phonenumber=row['phonenumber'],
+                                sex=row['sex'],
+                                status=row['status'],
+                                update_by=current_user.user.user_name
+                            )
+                        ).dict(exclude_unset=True)
+                        UserDao.edit_user_dao(result_db, edit_user)
+                    else:
+                        add_error_result.append(f"{count}.用户账号{row['user_name']}已存在")
+                else:
+                    UserDao.add_user_dao(result_db, add_user)
+            result_db.commit()
+            result = dict(is_success=True, message='\n'.join(add_error_result))
+        except Exception as e:
+            result_db.rollback()
+            result = dict(is_success=False, message=str(e))
+
+        return CrudUserResponse(**result)
+
+    @staticmethod
+    def get_user_import_template_services():
+        """
+        获取用户导入模板service
+        :return: 用户导入模板excel的二进制数据
+        """
+        header_list = ["部门编号", "登录名称", "用户名称", "用户邮箱", "手机号码", "用户性别", "帐号状态"]
+        selector_header_list = ["用户性别", "帐号状态"]
+        option_list = [{"用户性别": ["男", "女", "未知"]}, {"帐号状态": ["正常", "停用"]}]
+        binary_data = get_excel_template(header_list=header_list, selector_header_list=selector_header_list, option_list=option_list)
+
+        return binary_data
+
     @staticmethod
     def export_user_list_services(user_list: List):
         """
@@ -214,3 +306,129 @@ class UserService:
         binary_data = export_list2excel(new_data)
 
         return binary_data
+
+    @classmethod
+    def get_user_role_allocated_list_services(cls, result_db: Session, page_object: UserRoleQueryModel):
+        """
+        根据用户id获取已分配角色列表或根据角色id获取已分配用户列表
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 已分配角色列表或已分配用户列表
+        """
+        allocated_list = []
+        if page_object.user_id:
+            allocated_list = UserDao.get_user_role_allocated_list_by_user_id(result_db, page_object)
+        if page_object.role_id:
+            allocated_list = UserDao.get_user_role_allocated_list_by_role_id(result_db, page_object)
+
+        return allocated_list
+
+    @classmethod
+    def get_user_role_unallocated_list_services(cls, result_db: Session, page_object: UserRoleQueryModel):
+        """
+        根据用户id获取未分配角色列表或根据角色id获取未分配用户列表
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 未分配角色列表或未分配用户列表
+        """
+        unallocated_list = []
+        if page_object.user_id:
+            unallocated_list = UserDao.get_user_role_unallocated_list_by_user_id(result_db, page_object)
+        if page_object.role_id:
+            unallocated_list = UserDao.get_user_role_unallocated_list_by_role_id(result_db, page_object)
+
+        return unallocated_list
+
+    @classmethod
+    def add_user_role_services(cls, result_db: Session, page_object: CrudUserRoleModel):
+        """
+        新增用户关联角色信息service
+        :param result_db: orm对象
+        :param page_object: 新增用户关联角色对象
+        :return: 新增用户关联角色校验结果
+        """
+        if page_object.user_ids and page_object.role_ids:
+            user_id_list = page_object.user_ids.split(',')
+            role_id_list = page_object.role_ids.split(',')
+            if len(user_id_list) == 1 and len(role_id_list) >= 1:
+                try:
+                    for role_id in role_id_list:
+                        user_role_dict = dict(user_id=page_object.user_ids, role_id=role_id)
+                        user_role = cls.detail_user_role_services(result_db, UserRoleModel(**user_role_dict))
+                        if user_role:
+                            continue
+                        else:
+                            UserDao.add_user_role_dao(result_db, UserRoleModel(**user_role_dict))
+                    result_db.commit()
+                    result = dict(is_success=True, message='新增成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            elif len(user_id_list) >= 1 and len(role_id_list) == 1:
+                try:
+                    for user_id in user_id_list:
+                        user_role_dict = dict(user_id=user_id, role_id=page_object.role_ids)
+                        user_role = cls.detail_user_role_services(result_db, UserRoleModel(**user_role_dict))
+                        if user_role:
+                            continue
+                        else:
+                            UserDao.add_user_role_dao(result_db, UserRoleModel(**user_role_dict))
+                    result_db.commit()
+                    result = dict(is_success=True, message='新增成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            else:
+                result = dict(is_success=False, message='不满足新增条件')
+        else:
+            result = dict(is_success=False, message='传入用户角色关联信息为空')
+
+        return CrudUserResponse(**result)
+
+    @classmethod
+    def delete_user_role_services(cls, result_db: Session, page_object: CrudUserRoleModel):
+        """
+        删除用户关联角色信息service
+        :param result_db: orm对象
+        :param page_object: 删除用户关联角色对象
+        :return: 删除用户关联角色校验结果
+        """
+        if page_object.user_ids and page_object.role_ids:
+            user_id_list = page_object.user_ids.split(',')
+            role_id_list = page_object.role_ids.split(',')
+            if len(user_id_list) == 1 and len(role_id_list) >= 1:
+                try:
+                    for role_id in role_id_list:
+                        UserDao.delete_user_role_by_user_and_role_dao(result_db, UserRoleModel(**dict(user_id=page_object.user_ids, role_id=role_id)))
+                    result_db.commit()
+                    result = dict(is_success=True, message='删除成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            elif len(user_id_list) >= 1 and len(role_id_list) == 1:
+                try:
+                    for user_id in user_id_list:
+                        UserDao.delete_user_role_by_user_and_role_dao(result_db, UserRoleModel(**dict(user_id=user_id, role_id=page_object.role_ids)))
+                    result_db.commit()
+                    result = dict(is_success=True, message='删除成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            else:
+                result = dict(is_success=False, message='不满足删除条件')
+        else:
+            result = dict(is_success=False, message='传入用户角色关联信息为空')
+
+        return CrudUserResponse(**result)
+
+    @classmethod
+    def detail_user_role_services(cls, result_db: Session, page_object: UserRoleModel):
+        """
+        获取用户关联角色详细信息service
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 用户关联角色详细信息
+        """
+        user_role = UserDao.get_user_role_detail(result_db, page_object)
+
+        return user_role

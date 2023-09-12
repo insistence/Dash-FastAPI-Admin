@@ -121,75 +121,82 @@ def login_auth(nClicks, username, password, password_again, input_captcha, sessi
 
 @app.callback(
     [Output('message-code-count-down', 'delay'),
-     Output('get-message-code', 'disabled'),
+     Output('get-message-code', 'disabled', allow_duplicate=True),
      Output('sms_code-session_id-container', 'data'),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    [Input('get-message-code', 'nClicks'),
-     Input('message-code-count-down', 'countdown')],
+    Input('get-message-code', 'nClicks'),
     [State('forget-username', 'value'),
      State('sms_code-session_id-container', 'data')],
     prevent_initial_call=True
 )
-def message_countdown(nClicks, countdown, username, session_id):
+def message_countdown(nClicks, username, session_id):
     if nClicks:
 
-        if dash.ctx.triggered_id == 'get-message-code':
+        try:
+            if username:
+                send_result = send_message_api(dict(user_name=username, session_id=session_id))
+                if send_result.get('code') == 200:
 
-            try:
-                if username:
-                    send_result = send_message_api(dict(user_name=username, session_id=session_id))
-                    if send_result.get('code') == 200:
-
-                        return [
-                            120,
-                            True,
-                            send_result.get('data').get('session_id'),
-                            fuc.FefferyFancyMessage(send_result.get('message'), type='success')
-                        ]
-                    else:
-
-                        return [
-                            dash.no_update,
-                            False,
-                            dash.no_update,
-                            fuc.FefferyFancyMessage(send_result.get('message'), type='error')
-                        ]
-
+                    return [
+                        120,
+                        True,
+                        send_result.get('data').get('session_id'),
+                        fuc.FefferyFancyMessage(send_result.get('message'), type='success')
+                    ]
                 else:
+
                     return [
                         dash.no_update,
                         False,
                         dash.no_update,
-                        fuc.FefferyFancyMessage('请输入用户名', type='error')
+                        fuc.FefferyFancyMessage(send_result.get('message'), type='error')
                     ]
 
-            except Exception as e:
-
+            else:
                 return [
                     dash.no_update,
                     False,
                     dash.no_update,
-                    fuc.FefferyFancyMessage(str(e), type='error')
+                    fuc.FefferyFancyMessage('请输入用户名', type='error')
                 ]
 
-        if dash.ctx.triggered_id == 'message-code-count-down':
-            if countdown:
-                return [
-                    dash.no_update, True, dash.no_update, dash.no_update
-                ]
+        except Exception as e:
 
-            return dash.no_update, False, dash.no_update, dash.no_update
+            return [
+                dash.no_update,
+                False,
+                dash.no_update,
+                fuc.FefferyFancyMessage(str(e), type='error')
+            ]
 
     return [dash.no_update] * 4
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (countdown) => {
+        if (countdown) {
+            return true;
+        }
+        return false;
+    }
+    ''',
+    Output('get-message-code', 'disabled', allow_duplicate=True),
+    Input('message-code-count-down', 'countdown'),
+    prevent_initial_call=True
+)
+
+
+app.clientside_callback(
+    '''
+    (countdown) => {
+         if (countdown) {
+            return `获取中${countdown}s`
+         }
+         return '获取验证码'
+    }
+    ''',
     Output('get-message-code', 'children'),
     Input('message-code-count-down', 'countdown'),
     prevent_initial_call=True
 )
-def update_button_content(countdown):
-    if countdown:
-        return f"获取中{countdown}s"
-
-    return "获取验证码"

@@ -7,7 +7,7 @@ import feffery_utils_components as fuc
 
 from server import app
 from api.dept import get_dept_tree_api
-from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, export_user_list_api
+from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, batch_import_user_api, download_user_import_template_api, export_user_list_api
 from api.role import get_role_select_option_api
 from api.post import get_post_select_option_api
 
@@ -93,9 +93,9 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
             )
             for item in table_data:
                 if item['status'] == '0':
-                    item['status'] = dict(checked=True)
+                    item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
                 else:
-                    item['status'] = dict(checked=False)
+                    item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
                 item['key'] = str(item['user_id'])
                 if item['user_id'] == 1:
                     item['operation'] = []
@@ -112,7 +112,11 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
                         {
                             'title': '重置密码',
                             'icon': 'antd-key'
-                        } if 'system:user:resetPwd' in button_perms else None
+                        } if 'system:user:resetPwd' in button_perms else None,
+                        {
+                            'title': '分配角色',
+                            'icon': 'antd-check-circle'
+                        } if 'system:user:edit' in button_perms else None
                     ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
@@ -122,7 +126,15 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
     return [dash.no_update] * 5
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (reset_click) => {
+        if (reset_click) {
+            return [null, null, null, null, null, {'type': 'reset'}]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('dept-tree', 'selectedKeys'),
      Output('user-user_name-input', 'value'),
      Output('user-phone_number-input', 'value'),
@@ -132,25 +144,26 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
     Input('user-reset', 'nClicks'),
     prevent_initial_call=True
 )
-def reset_user_query_params(reset_click):
-    if reset_click:
-        return [None, None, None, None, None, {'type': 'reset'}]
-
-    return [dash.no_update] * 6
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (hidden_click, hidden_status) => {
+        if (hidden_click) {
+            return [
+                !hidden_status,
+                hidden_status ? '隐藏搜索' : '显示搜索'
+            ]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('user-search-form-container', 'hidden'),
      Output('user-hidden-tooltip', 'title')],
     Input('user-hidden', 'nClicks'),
     State('user-search-form-container', 'hidden'),
     prevent_initial_call=True
 )
-def hidden_user_search_form(hidden_click, hidden_status):
-    if hidden_click:
-
-        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
-    return [dash.no_update] * 2
 
 
 @app.callback(
@@ -589,32 +602,154 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
 
 
 @app.callback(
+    [Output('user_to_allocated_role-modal', 'visible'),
+     Output({'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks'),
+     Output('allocate_role-user_id-container', 'data')],
+    Input('user-list-table', 'nClicksDropdownItem'),
+    [State('user-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('user-list-table', 'recentlyDropdownItemClickedRow'),
+     State({'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks')],
+    prevent_initial_call=True
+)
+def role_to_allocated_user_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, allocated_role_search_nclick):
+    if dropdown_click and recently_clicked_dropdown_item_title == '分配角色':
+
+        return [
+            True,
+            allocated_role_search_nclick + 1 if allocated_role_search_nclick else 1,
+            recently_dropdown_item_clicked_row['key']
+        ]
+
+    return [dash.no_update] * 3
+
+
+app.clientside_callback(
+    '''
+    (nClicks) => {
+        if (nClicks) {
+            return [
+                true, 
+                [], 
+                [],
+                false
+            ];
+        }
+        return [
+            false,
+            window.dash_clientside.no_update,
+            window.dash_clientside.no_update,
+            window.dash_clientside.no_update
+        ];
+    }
+    ''',
+    [Output('user-import-confirm-modal', 'visible'),
+     Output('user-upload-choose', 'listUploadTaskRecord'),
+     Output('user-upload-choose', 'defaultFileList'),
+     Output('user-import-update-check', 'checked')],
+    Input('user-import', 'nClicks'),
+    prevent_initial_call=True
+)
+
+
+@app.callback(
+    [Output('user-import-confirm-modal', 'confirmLoading'),
+     Output('batch-result-modal', 'visible'),
+     Output('batch-result-content', 'children'),
+     Output('user-operations-store', 'data', allow_duplicate=True),
+     Output('api-check-token', 'data', allow_duplicate=True),
+     Output('global-message-container', 'children', allow_duplicate=True)],
+    Input('user-import-confirm-modal', 'okCounts'),
+    [State('user-upload-choose', 'listUploadTaskRecord'),
+     State('user-import-update-check', 'checked')],
+    prevent_initial_call=True
+)
+def user_import_confirm(import_confirm, list_upload_task_record, is_update):
+    if import_confirm:
+        if list_upload_task_record:
+            url = list_upload_task_record[-1].get('url')
+            batch_param = dict(url=url, is_update=is_update)
+            batch_import_result = batch_import_user_api(batch_param)
+            if batch_import_result.get('code') == 200:
+                return [
+                    False,
+                    True if batch_import_result.get('message') else False,
+                    batch_import_result.get('message'),
+                    {'type': 'batch-import'},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('导入成功', type='success')
+                ]
+
+            return [
+                False,
+                True,
+                batch_import_result.get('message'),
+                dash.no_update,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('导入失败', type='error')
+            ]
+        else:
+            return [
+                False,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+                fuc.FefferyFancyMessage('请上传需要导入的文件', type='error')
+            ]
+
+    return [dash.no_update] * 6
+
+
+@app.callback(
     [Output('user-export-container', 'data', allow_duplicate=True),
      Output('user-export-complete-judge-container', 'data'),
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('user-export', 'nClicks'),
+    [Input('user-export', 'nClicks'),
+     Input('download-user-import-template', 'nClicks')],
     prevent_initial_call=True
 )
-def export_user_list(export_click):
-    if export_click:
-        export_user_res = export_user_list_api({})
-        if export_user_res.status_code == 200:
-            export_user = export_user_res.content
+def export_user_list(export_click, download_click):
+    trigger_id = dash.ctx.triggered_id
+    if export_click or download_click:
+
+        if trigger_id == 'user-export':
+            export_user_res = export_user_list_api({})
+            if export_user_res.status_code == 200:
+                export_user = export_user_res.content
+
+                return [
+                    dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                    {'timestamp': time.time()},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('导出成功', type='success')
+                ]
 
             return [
-                dcc.send_bytes(export_user, f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                dash.no_update,
+                dash.no_update,
                 {'timestamp': time.time()},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('导出成功', type='success')
+                fuc.FefferyFancyMessage('导出失败', type='error')
             ]
 
-        return [
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('导出失败', type='error')
-        ]
+        if trigger_id == 'download-user-import-template':
+            download_template_res = download_user_import_template_api()
+            if download_template_res.status_code == 200:
+                download_template = download_template_res.content
+
+                return [
+                    dcc.send_bytes(download_template, f'用户导入模板_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx'),
+                    {'timestamp': time.time()},
+                    {'timestamp': time.time()},
+                    fuc.FefferyFancyMessage('下载成功', type='success')
+                ]
+
+            return [
+                dash.no_update,
+                dash.no_update,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('下载失败', type='error')
+            ]
 
     return [dash.no_update] * 4
 

@@ -114,7 +114,7 @@ def render():
                                 apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
                                 downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
                                 headers={'Authorization': 'Bearer ' + session.get('Authorization')},
-                                fileMaxSize=1,
+                                fileMaxSize=10,
                                 showUploadList=False,
                                 fileTypes=['jpeg', 'jpg', 'png'],
                                 buttonContent='选择'

@@ -1,4 +1,5 @@
 import feffery_antd_components as fac
+import dash
 
 import callbacks.layout_c.aside_c
 
@@ -14,7 +15,7 @@ def render_aside_content(menu_info):
                             fac.AntdImage(
                                 width=32,
                                 height=32,
-                                src='assets/imgs/logo.png',
+                                src=dash.get_asset_url('imgs/logo.png'),
                                 preview=False,
                             ),
                             flex='1',

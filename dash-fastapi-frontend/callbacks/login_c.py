@@ -52,7 +52,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         None,
                         None,
                         dash.no_update,
-                        True,
+                        False,
                         token,
                         dcc.Location(
                             pathname='/',

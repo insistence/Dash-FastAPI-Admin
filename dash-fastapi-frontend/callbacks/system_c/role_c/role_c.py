@@ -3,6 +3,7 @@ import time
 import uuid
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
@@ -75,18 +76,90 @@ def get_role_table_data(search_click, refresh_click, pagination, operations, rol
                 if item['role_id'] == 1:
                     item['operation'] = []
                 else:
-                    item['operation'] = [
-                        {
-                            'content': '修改',
-                            'type': 'link',
-                            'icon': 'antd-edit'
-                        } if 'system:role:edit' in button_perms else {},
-                        {
-                            'content': '删除',
-                            'type': 'link',
-                            'icon': 'antd-delete'
-                        } if 'system:role:remove' in button_perms else {},
-                    ]
+                    item['operation'] = fac.AntdSpace(
+                        [
+                            fac.AntdButton(
+                                '修改',
+                                id={
+                                    'type': 'role-operation-table',
+                                    'operation': 'edit',
+                                    'index': str(item['role_id'])
+                                },
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-edit'
+                                ),
+                                style={
+                                    'padding': 0
+                                }
+                            ) if 'system:role:edit' in button_perms else [],
+                            fac.AntdButton(
+                                '删除',
+                                id={
+                                    'type': 'role-operation-table',
+                                    'operation': 'delete',
+                                    'index': str(item['role_id'])
+                                },
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-delete'
+                                ),
+                                style={
+                                    'padding': 0
+                                }
+                            ) if 'system:role:remove' in button_perms else [],
+                            fac.AntdPopover(
+                                fac.AntdButton(
+                                    '更多',
+                                    type='link',
+                                    icon=fac.AntdIcon(
+                                        icon='antd-more'
+                                    ),
+                                    style={
+                                        'padding': 0
+                                    }
+                                ),
+                                content=fac.AntdSpace(
+                                    [
+                                        fac.AntdButton(
+                                            '数据权限',
+                                            id={
+                                                'type': 'role-operation-table',
+                                                'operation': 'datascope',
+                                                'index': str(item['role_id'])
+                                            },
+                                            type='text',
+                                            block=True,
+                                            icon=fac.AntdIcon(
+                                                icon='antd-check-circle'
+                                            ),
+                                            style={
+                                                'padding': 0
+                                            }
+                                        ),
+                                        fac.AntdButton(
+                                            '分配用户',
+                                            id={
+                                                'type': 'role-operation-table',
+                                                'operation': 'allocation',
+                                                'index': str(item['role_id'])
+                                            },
+                                            type='text',
+                                            block=True,
+                                            icon=fac.AntdIcon(
+                                                icon='antd-user'
+                                            ),
+                                            style={
+                                                'padding': 0
+                                            }
+                                        ),
+                                    ],
+                                    direction='vertical'
+                                ),
+                                placement='bottomRight'
+                            )
+                        ]
+                    )
 
             return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
 
@@ -95,7 +168,15 @@ def get_role_table_data(search_click, refresh_click, pagination, operations, rol
     return [dash.no_update] * 5
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (reset_click) => {
+        if (reset_click) {
+            return [null, null, null, null, {'type': 'reset'}]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('role-role_name-input', 'value'),
      Output('role-role_key-input', 'value'),
      Output('role-status-select', 'value'),
@@ -104,29 +185,30 @@ def get_role_table_data(search_click, refresh_click, pagination, operations, rol
     Input('role-reset', 'nClicks'),
     prevent_initial_call=True
 )
-def reset_role_query_params(reset_click):
-    if reset_click:
-        return [None, None, None, None, {'type': 'reset'}]
-
-    return [dash.no_update] * 5
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (hidden_click, hidden_status) => {
+        if (hidden_click) {
+            return [
+                !hidden_status,
+                hidden_status ? '隐藏搜索' : '显示搜索'
+            ]
+        }
+        return window.dash_clientside.no_update;
+    }
+    ''',
     [Output('role-search-form-container', 'hidden'),
      Output('role-hidden-tooltip', 'title')],
     Input('role-hidden', 'nClicks'),
     State('role-search-form-container', 'hidden'),
     prevent_initial_call=True
 )
-def hidden_role_search_form(hidden_click, hidden_status):
-    if hidden_click:
-
-        return [not hidden_status, '隐藏搜索' if hidden_status else '显示搜索']
-    return [dash.no_update] * 2
 
 
 @app.callback(
-    Output({'type': 'role-operation-button', 'index': 'edit'}, 'disabled'),
+    Output({'type': 'role-operation-button', 'operation': 'edit'}, 'disabled'),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
@@ -145,7 +227,7 @@ def change_role_edit_button_status(table_rows_selected):
 
 
 @app.callback(
-    Output({'type': 'role-operation-button', 'index': 'delete'}, 'disabled'),
+    Output({'type': 'role-operation-button', 'operation': 'delete'}, 'disabled'),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
@@ -250,23 +332,19 @@ def change_role_menu_mode(parent_children, current_role_menu):
      Output('api-check-token', 'data', allow_duplicate=True),
      Output('role-edit-id-store', 'data'),
      Output('role-operations-store-bk', 'data')],
-    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
-     Input('role-list-table', 'nClicksButton')],
-    [State('role-list-table', 'selectedRowKeys'),
-     State('role-list-table', 'clickedContent'),
-     State('role-list-table', 'recentlyButtonClickedRow')],
+    [Input({'type': 'role-operation-button', 'operation': ALL}, 'nClicks'),
+     Input({'type': 'role-operation-table', 'operation': ALL, 'index': ALL}, 'nClicks')],
+    State('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def add_edit_role_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+def add_edit_role_modal(operation_click, button_click, selected_row_keys):
     trigger_id = dash.ctx.triggered_id
-    if trigger_id == {'index': 'add', 'type': 'role-operation-button'} \
-            or trigger_id == {'index': 'edit', 'type': 'role-operation-button'} \
-            or (trigger_id == 'role-list-table' and clicked_content == '修改'):
+    if trigger_id.operation in ['add', 'edit']:
         menu_params = dict(menu_name='', type='role')
         tree_info = get_menu_tree_api(menu_params)
         if tree_info.get('code') == 200:
             tree_data = tree_info['data']
-            if trigger_id == {'index': 'add', 'type': 'role-operation-button'}:
+            if trigger_id.type == 'role-operation-button' and trigger_id.operation == 'add':
                 return [
                     True,
                     '新增角色',
@@ -285,11 +363,11 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys, clicke
                     None,
                     {'type': 'add'}
                 ]
-            elif trigger_id == {'index': 'edit', 'type': 'role-operation-button'} or (trigger_id == 'role-list-table' and clicked_content == '修改'):
-                if trigger_id == {'index': 'edit', 'type': 'role-operation-button'}:
+            elif trigger_id.operation == 'edit':
+                if trigger_id.type == 'role-operation-button':
                     role_id = int(','.join(selected_row_keys))
                 else:
-                    role_id = int(recently_button_clicked_row['key'])
+                    role_id = int(trigger_id.index)
                 role_info_res = get_role_detail_api(role_id=role_id)
                 if role_info_res['code'] == 200:
                     role_info = role_info_res['data']
@@ -464,24 +542,20 @@ def table_switch_role_status(recently_switch_data_index, recently_switch_status,
     [Output('role-delete-text', 'children'),
      Output('role-delete-confirm-modal', 'visible'),
      Output('role-delete-ids-store', 'data')],
-    [Input({'type': 'role-operation-button', 'index': ALL}, 'nClicks'),
-     Input('role-list-table', 'nClicksButton')],
-    [State('role-list-table', 'selectedRowKeys'),
-     State('role-list-table', 'clickedContent'),
-     State('role-list-table', 'recentlyButtonClickedRow')],
+    [Input({'type': 'role-operation-button', 'operation': ALL}, 'nClicks'),
+     Input({'type': 'role-operation-table', 'operation': ALL, 'index': ALL}, 'nClicks')],
+    State('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True
 )
-def role_delete_modal(operation_click, button_click,
-                      selected_row_keys, clicked_content, recently_button_clicked_row):
+def role_delete_modal(operation_click, button_click, selected_row_keys):
     trigger_id = dash.ctx.triggered_id
-    if trigger_id == {'index': 'delete', 'type': 'role-operation-button'} or (
-            trigger_id == 'role-list-table' and clicked_content == '删除'):
+    if trigger_id.operation == 'delete':
 
-        if trigger_id == {'index': 'delete', 'type': 'role-operation-button'}:
+        if trigger_id.type == 'role-operation-button':
             role_ids = ','.join(selected_row_keys)
         else:
-            if clicked_content == '删除':
-                role_ids = recently_button_clicked_row['key']
+            if trigger_id.type == 'role-operation-table':
+                role_ids = trigger_id.index
             else:
                 return dash.no_update
 
@@ -518,6 +592,26 @@ def role_delete_confirm(delete_confirm, role_ids_data):
             dash.no_update,
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('删除失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('role_to_allocated_user-modal', 'visible'),
+     Output({'type': 'allocate_user-search', 'index': 'allocated'}, 'nClicks'),
+     Output('allocate_user-role_id-container', 'data')],
+    Input({'type': 'role-operation-table', 'operation': ALL, 'index': ALL}, 'nClicks'),
+    State({'type': 'allocate_user-search', 'index': 'allocated'}, 'nClicks'),
+    prevent_initial_call=True
+)
+def role_to_allocated_user_modal(allocated_click, allocated_user_search_nclick):
+    trigger_id = dash.ctx.triggered_id
+    if trigger_id.operation == 'allocation':
+        return [
+            True,
+            allocated_user_search_nclick + 1 if allocated_user_search_nclick else 1,
+            trigger_id.index
         ]
 
     return [dash.no_update] * 3
@@ -566,3 +660,16 @@ def reset_role_export_status(data):
         return None
 
     return dash.no_update
+
+
+# 由于采用了自定义单元格元素，路由变化时需要重置selectedRows，不然会报错
+app.clientside_callback(
+    '''
+    (url) => {
+        return null;
+    }
+    ''',
+    Output('role-list-table', 'selectedRows'),
+    Input('url-container', 'pathname'),
+    prevent_initial_call=True
+)

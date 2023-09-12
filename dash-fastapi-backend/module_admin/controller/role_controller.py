@@ -3,6 +3,7 @@ from fastapi import Depends
 from config.get_db import get_db
 from module_admin.service.login_service import get_current_user, CurrentUserInfoServiceResponse
 from module_admin.service.role_service import *
+from module_admin.service.user_service import UserService, UserRoleQueryModel, UserRolePageObject, UserRolePageObjectResponse, CrudUserRoleModel
 from module_admin.entity.vo.role_vo import *
 from utils.response_util import *
 from utils.log_util import *
@@ -114,6 +115,66 @@ async def export_system_role_list(request: Request, role_query: RoleQueryModel, 
         role_export_result = RoleService.export_role_list_services(role_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(role_export_result))
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@roleController.post("/role/authUser/allocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+async def get_system_allocated_user_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
+    try:
+        user_role_query = UserRoleQueryModel(**user_role.dict())
+        user_role_allocated_query_result = UserService.get_user_role_allocated_list_services(query_db, user_role_query)
+        # 分页操作
+        user_role_allocated_page_query_result = get_page_obj(user_role_allocated_query_result, user_role.page_num, user_role.page_size)
+        logger.info('获取成功')
+        return response_200(data=user_role_allocated_page_query_result, message="获取成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@roleController.post("/role/authUser/unallocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+async def get_system_unallocated_user_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
+    try:
+        user_role_query = UserRoleQueryModel(**user_role.dict())
+        user_role_unallocated_query_result = UserService.get_user_role_unallocated_list_services(query_db, user_role_query)
+        # 分页操作
+        user_role_unallocated_page_query_result = get_page_obj(user_role_unallocated_query_result, user_role.page_num, user_role.page_size)
+        logger.info('获取成功')
+        return response_200(data=user_role_unallocated_page_query_result, message="获取成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@roleController.post("/role/authUser/selectAll", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
+@log_decorator(title='角色管理', business_type=4)
+async def add_system_role_user(request: Request, add_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
+    try:
+        add_user_role_result = UserService.add_user_role_services(query_db, add_user_role)
+        if add_user_role_result.is_success:
+            logger.info(add_user_role_result.message)
+            return response_200(data=add_user_role_result, message=add_user_role_result.message)
+        else:
+            logger.warning(add_user_role_result.message)
+            return response_400(data="", message=add_user_role_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@roleController.post("/role/authUser/cancel", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
+@log_decorator(title='角色管理', business_type=4)
+async def cancel_system_role_user(request: Request, cancel_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
+    try:
+        cancel_user_role_result = UserService.delete_user_role_services(query_db, cancel_user_role)
+        if cancel_user_role_result.is_success:
+            logger.info(cancel_user_role_result.message)
+            return response_200(data=cancel_user_role_result, message=cancel_user_role_result.message)
+        else:
+            logger.warning(cancel_user_role_result.message)
+            return response_400(data="", message=cancel_user_role_result.message)
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))

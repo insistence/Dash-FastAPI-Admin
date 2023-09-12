@@ -64,14 +64,17 @@ def get_primary_color(_, custom_color):
     return dash.no_update
 
 
-@app.callback(
+app.clientside_callback(
+    '''
+    (system_color, custom_color) => {
+        if (custom_color) {
+            return custom_color;
+        }
+        return system_color;
+    }
+    ''',
     Output('app-config-provider', 'primaryColor'),
     [Input('system-app-primary-color-container', 'data'),
      Input('custom-app-primary-color-container', 'data')],
     prevent_initial_call=True
 )
-def render_app_primary_color(system_color, custom_color):
-    if custom_color:
-        return custom_color
-
-    return system_color

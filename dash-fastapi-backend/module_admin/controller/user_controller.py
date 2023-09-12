@@ -153,7 +153,7 @@ async def change_system_user_profile_info(request: Request, edit_user: AddUserMo
 
 @userController.patch("/user/profile/resetPwd", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
-async def reset_system_user_password(request: Request, reset_user: ResetUserModel,  query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+async def reset_system_user_password(request: Request, reset_user: ResetUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         if not reset_user.user_id and reset_user.old_password:
             reset_user.user_id = current_user.user.user_id
@@ -172,6 +172,33 @@ async def reset_system_user_password(request: Request, reset_user: ResetUserMode
         return response_500(data="", message=str(e))
 
 
+@userController.post("/user/importData", dependencies=[Depends(CheckUserInterfaceAuth('system:user:import'))])
+@log_decorator(title='用户管理', business_type=6)
+async def batch_import_system_user(request: Request, user_import: ImportUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+    try:
+        batch_import_result = UserService.batch_import_user_services(query_db, user_import, current_user)
+        if batch_import_result.is_success:
+            logger.info(batch_import_result.message)
+            return response_200(data=batch_import_result, message=batch_import_result.message)
+        else:
+            logger.warning(batch_import_result.message)
+            return response_400(data="", message=batch_import_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/importTemplate", dependencies=[Depends(CheckUserInterfaceAuth('system:user:import'))])
+async def export_system_user_template(request: Request, query_db: Session = Depends(get_db)):
+    try:
+        user_import_template_result = UserService.get_user_import_template_services()
+        logger.info('获取成功')
+        return streaming_response_200(data=bytes2file_response(user_import_template_result))
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
 @userController.post("/user/export", dependencies=[Depends(CheckUserInterfaceAuth('system:user:export'))])
 @log_decorator(title='用户管理', business_type=5)
 async def export_system_user_list(request: Request, user_query: UserQueryModel, query_db: Session = Depends(get_db)):
@@ -181,6 +208,66 @@ async def export_system_user_list(request: Request, user_query: UserQueryModel, 
         user_export_result = UserService.export_user_list_services(user_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(user_export_result))
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/authRole/allocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+async def get_system_allocated_role_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
+    try:
+        user_role_query = UserRoleQueryModel(**user_role.dict())
+        user_role_allocated_query_result = UserService.get_user_role_allocated_list_services(query_db, user_role_query)
+        # 分页操作
+        user_role_allocated_page_query_result = get_page_obj(user_role_allocated_query_result, user_role.page_num, user_role.page_size)
+        logger.info('获取成功')
+        return response_200(data=user_role_allocated_page_query_result, message="获取成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/authRole/unallocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+async def get_system_unallocated_role_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
+    try:
+        user_role_query = UserRoleQueryModel(**user_role.dict())
+        user_role_unallocated_query_result = UserService.get_user_role_unallocated_list_services(query_db, user_role_query)
+        # 分页操作
+        user_role_unallocated_page_query_result = get_page_obj(user_role_unallocated_query_result, user_role.page_num, user_role.page_size)
+        logger.info('获取成功')
+        return response_200(data=user_role_unallocated_page_query_result, message="获取成功")
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/authRole/selectAll", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@log_decorator(title='用户管理', business_type=4)
+async def add_system_role_user(request: Request, add_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
+    try:
+        add_user_role_result = UserService.add_user_role_services(query_db, add_user_role)
+        if add_user_role_result.is_success:
+            logger.info(add_user_role_result.message)
+            return response_200(data=add_user_role_result, message=add_user_role_result.message)
+        else:
+            logger.warning(add_user_role_result.message)
+            return response_400(data="", message=add_user_role_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
+
+
+@userController.post("/user/authRole/cancel", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@log_decorator(title='用户管理', business_type=4)
+async def cancel_system_role_user(request: Request, cancel_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
+    try:
+        cancel_user_role_result = UserService.delete_user_role_services(query_db, cancel_user_role)
+        if cancel_user_role_result.is_success:
+            logger.info(cancel_user_role_result.message)
+            return response_200(data=cancel_user_role_result, message=cancel_user_role_result.message)
+        else:
+            logger.warning(cancel_user_role_result.message)
+            return response_400(data="", message=cancel_user_role_result.message)
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))

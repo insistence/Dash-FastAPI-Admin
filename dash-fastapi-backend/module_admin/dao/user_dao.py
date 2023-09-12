@@ -5,7 +5,7 @@ from module_admin.entity.do.role_do import SysRole, SysRoleMenu
 from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.do.menu_do import SysMenu
-from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserQueryModel
+from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserQueryModel, UserRoleQueryModel
 from utils.time_format_util import list_format_datetime, format_datetime_dict_list
 from datetime import datetime, time
 from typing import Union, List
@@ -232,6 +232,90 @@ class UserDao:
             .update({SysUser.del_flag: '2', SysUser.update_by: user.update_by, SysUser.update_time: user.update_time})
 
     @classmethod
+    def get_user_role_allocated_list_by_user_id(cls, db: Session, query_object: UserRoleQueryModel):
+        """
+        根据用户id获取用户已分配的角色列表信息数据库操作
+        :param db: orm对象
+        :param query_object: 用户角色查询对象
+        :return: 用户已分配的角色列表信息
+        """
+        allocated_role_list = db.query(SysRole) \
+            .filter(
+            SysRole.del_flag == 0,
+            SysRole.role_id != 1,
+            SysRole.role_name == query_object.role_name if query_object.role_name else True,
+            SysRole.role_key == query_object.role_key if query_object.role_key else True,
+            SysRole.role_id.in_(
+                db.query(SysUserRole.role_id).filter(SysUserRole.user_id == query_object.user_id)
+            )
+        ).distinct().all()
+
+        return list_format_datetime(allocated_role_list)
+
+    @classmethod
+    def get_user_role_unallocated_list_by_user_id(cls, db: Session, query_object: UserRoleQueryModel):
+        """
+        根据用户id获取用户未分配的角色列表信息数据库操作
+        :param db: orm对象
+        :param query_object: 用户角色查询对象
+        :return: 用户未分配的角色列表信息
+        """
+        unallocated_role_list = db.query(SysRole) \
+            .filter(
+            SysRole.del_flag == 0,
+            SysRole.role_id != 1,
+            SysRole.role_name == query_object.role_name if query_object.role_name else True,
+            SysRole.role_key == query_object.role_key if query_object.role_key else True,
+            ~SysRole.role_id.in_(
+                db.query(SysUserRole.role_id).filter(SysUserRole.user_id == query_object.user_id)
+            )
+        ).distinct().all()
+
+        return list_format_datetime(unallocated_role_list)
+
+    @classmethod
+    def get_user_role_allocated_list_by_role_id(cls, db: Session, query_object: UserRoleQueryModel):
+        """
+        根据角色id获取已分配的用户列表信息
+        :param db: orm对象
+        :param query_object: 用户角色查询对象
+        :return: 角色已分配的用户列表信息
+        """
+        allocated_user_list = db.query(SysUser) \
+            .filter(
+            SysUser.del_flag == 0,
+            SysUser.user_id != 1,
+            SysUser.user_name == query_object.user_name if query_object.user_name else True,
+            SysUser.phonenumber == query_object.phonenumber if query_object.phonenumber else True,
+            SysUser.user_id.in_(
+                db.query(SysUserRole.user_id).filter(SysUserRole.role_id == query_object.role_id)
+            )
+        ).distinct().all()
+
+        return list_format_datetime(allocated_user_list)
+
+    @classmethod
+    def get_user_role_unallocated_list_by_role_id(cls, db: Session, query_object: UserRoleQueryModel):
+        """
+        根据角色id获取未分配的用户列表信息
+        :param db: orm对象
+        :param query_object: 用户角色查询对象
+        :return: 角色未分配的用户列表信息
+        """
+        unallocated_user_list = db.query(SysUser) \
+            .filter(
+            SysUser.del_flag == 0,
+            SysUser.user_id != 1,
+            SysUser.user_name == query_object.user_name if query_object.user_name else True,
+            SysUser.phonenumber == query_object.phonenumber if query_object.phonenumber else True,
+            ~SysUser.user_id.in_(
+                db.query(SysUserRole.user_id).filter(SysUserRole.role_id == query_object.role_id)
+            )
+        ).distinct().all()
+
+        return list_format_datetime(unallocated_user_list)
+
+    @classmethod
     def add_user_role_dao(cls, db: Session, user_role: UserRoleModel):
         """
         新增用户角色关联信息数据库操作
@@ -253,6 +337,32 @@ class UserDao:
         db.query(SysUserRole) \
             .filter(SysUserRole.user_id == user_role.user_id) \
             .delete()
+
+    @classmethod
+    def delete_user_role_by_user_and_role_dao(cls, db: Session, user_role: UserRoleModel):
+        """
+        根据用户id及角色id删除用户角色关联信息数据库操作
+        :param db: orm对象
+        :param user_role: 用户角色关联对象
+        :return:
+        """
+        db.query(SysUserRole) \
+            .filter(SysUserRole.user_id == user_role.user_id, SysUserRole.role_id == user_role.role_id) \
+            .delete()
+
+    @classmethod
+    def get_user_role_detail(cls, db: Session, user_role: UserRoleModel):
+        """
+        根据用户角色关联获取用户角色关联详细信息
+        :param db: orm对象
+        :param user_role: 用户角色关联对象
+        :return: 用户角色关联信息
+        """
+        user_role_info = db.query(SysUserRole) \
+            .filter(SysUserRole.user_id == user_role.user_id, SysUserRole.role_id == user_role.role_id) \
+            .distinct().first()
+
+        return user_role_info
 
     @classmethod
     def add_user_post_dao(cls, db: Session, user_post: UserPostModel):
