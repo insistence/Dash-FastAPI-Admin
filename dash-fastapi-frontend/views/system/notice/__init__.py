@@ -58,6 +58,13 @@ def render(button_perms):
 
     return [
         dcc.Store(id='notice-button-perms-container', data=button_perms),
+        # 通知公告管理模块操作类型存储容器
+        dcc.Store(id='notice-operations-store'),
+        dcc.Store(id='notice-operations-store-bk'),
+        # 通知公告管理模块修改操作行key存储容器
+        dcc.Store(id='notice-edit-id-store'),
+        # 通知公告管理模块删除操作行key存储容器
+        dcc.Store(id='notice-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

@@ -63,6 +63,19 @@ def render(button_perms):
 
     return [
         dcc.Store(id='menu-button-perms-container', data=button_perms),
+        # 菜单管理模块操作类型存储容器
+        dcc.Store(id='menu-operations-store'),
+        dcc.Store(id='menu-operations-store-bk'),
+        # modal菜单类型存储容器
+        dcc.Store(id='menu-modal-menu-type-store'),
+        # 不同菜单类型的触发器
+        dcc.Store(id='menu-modal-M-trigger'),
+        dcc.Store(id='menu-modal-C-trigger'),
+        dcc.Store(id='menu-modal-F-trigger'),
+        # 菜单管理模块修改操作行key存储容器
+        dcc.Store(id='menu-edit-id-store'),
+        # 菜单管理模块删除操作行key存储容器
+        dcc.Store(id='menu-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(

@@ -30,6 +30,11 @@ def render(button_perms):
 
     return [
         dcc.Store(id='online-button-perms-container', data=button_perms),
+        # 在线用户模块操作类型存储容器
+        dcc.Store(id='online-operations-store'),
+        dcc.Store(id='online-operations-store-bk'),
+        # 在线用户模块删除操作行key存储容器
+        dcc.Store(id='online-delete-ids-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(
