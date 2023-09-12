@@ -306,3 +306,129 @@ class UserService:
         binary_data = export_list2excel(new_data)
 
         return binary_data
+
+    @classmethod
+    def get_user_role_allocated_list_services(cls, result_db: Session, page_object: UserRoleQueryModel):
+        """
+        根据用户id获取已分配角色列表或根据角色id获取已分配用户列表
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 已分配角色列表或已分配用户列表
+        """
+        allocated_list = []
+        if page_object.user_id:
+            allocated_list = UserDao.get_user_role_allocated_list_by_user_id(result_db, page_object)
+        if page_object.role_id:
+            allocated_list = UserDao.get_user_role_allocated_list_by_role_id(result_db, page_object)
+
+        return allocated_list
+
+    @classmethod
+    def get_user_role_unallocated_list_services(cls, result_db: Session, page_object: UserRoleQueryModel):
+        """
+        根据用户id获取未分配角色列表或根据角色id获取未分配用户列表
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 未分配角色列表或未分配用户列表
+        """
+        unallocated_list = []
+        if page_object.user_id:
+            unallocated_list = UserDao.get_user_role_unallocated_list_by_user_id(result_db, page_object)
+        if page_object.role_id:
+            unallocated_list = UserDao.get_user_role_unallocated_list_by_role_id(result_db, page_object)
+
+        return unallocated_list
+
+    @classmethod
+    def add_user_role_services(cls, result_db: Session, page_object: CrudUserRoleModel):
+        """
+        新增用户关联角色信息service
+        :param result_db: orm对象
+        :param page_object: 新增用户关联角色对象
+        :return: 新增用户关联角色校验结果
+        """
+        if page_object.user_ids and page_object.role_ids:
+            user_id_list = page_object.user_ids.split(',')
+            role_id_list = page_object.role_ids.split(',')
+            if len(user_id_list) == 1 and len(role_id_list) >= 1:
+                try:
+                    for role_id in role_id_list:
+                        user_role_dict = dict(user_id=page_object.user_ids, role_id=role_id)
+                        user_role = cls.detail_user_role_services(result_db, UserRoleModel(**user_role_dict))
+                        if user_role:
+                            continue
+                        else:
+                            UserDao.add_user_role_dao(result_db, UserRoleModel(**user_role_dict))
+                    result_db.commit()
+                    result = dict(is_success=True, message='新增成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            elif len(user_id_list) >= 1 and len(role_id_list) == 1:
+                try:
+                    for user_id in user_id_list:
+                        user_role_dict = dict(user_id=user_id, role_id=page_object.role_ids)
+                        user_role = cls.detail_user_role_services(result_db, UserRoleModel(**user_role_dict))
+                        if user_role:
+                            continue
+                        else:
+                            UserDao.add_user_role_dao(result_db, UserRoleModel(**user_role_dict))
+                    result_db.commit()
+                    result = dict(is_success=True, message='新增成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            else:
+                result = dict(is_success=False, message='不满足新增条件')
+        else:
+            result = dict(is_success=False, message='传入用户角色关联信息为空')
+
+        return CrudUserResponse(**result)
+
+    @classmethod
+    def delete_user_role_services(cls, result_db: Session, page_object: CrudUserRoleModel):
+        """
+        删除用户关联角色信息service
+        :param result_db: orm对象
+        :param page_object: 删除用户关联角色对象
+        :return: 删除用户关联角色校验结果
+        """
+        if page_object.user_ids and page_object.role_ids:
+            user_id_list = page_object.user_ids.split(',')
+            role_id_list = page_object.role_ids.split(',')
+            if len(user_id_list) == 1 and len(role_id_list) >= 1:
+                try:
+                    for role_id in role_id_list:
+                        UserDao.delete_user_role_by_user_and_role_dao(result_db, UserRoleModel(**dict(user_id=page_object.user_ids, role_id=role_id)))
+                    result_db.commit()
+                    result = dict(is_success=True, message='删除成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            elif len(user_id_list) >= 1 and len(role_id_list) == 1:
+                try:
+                    for user_id in user_id_list:
+                        UserDao.delete_user_role_by_user_and_role_dao(result_db, UserRoleModel(**dict(user_id=user_id, role_id=page_object.role_ids)))
+                    result_db.commit()
+                    result = dict(is_success=True, message='删除成功')
+                except Exception as e:
+                    result_db.rollback()
+                    result = dict(is_success=False, message=str(e))
+            else:
+                result = dict(is_success=False, message='不满足删除条件')
+        else:
+            result = dict(is_success=False, message='传入用户角色关联信息为空')
+
+        return CrudUserResponse(**result)
+
+    @classmethod
+    def detail_user_role_services(cls, result_db: Session, page_object: UserRoleModel):
+        """
+        获取用户关联角色详细信息service
+        :param result_db: orm对象
+        :param page_object: 用户关联角色对象
+        :return: 用户关联角色详细信息
+        """
+        user_role = UserDao.get_user_role_detail(result_db, page_object)
+
+        return user_role

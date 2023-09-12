@@ -2,7 +2,7 @@ from dash import dcc, html
 import feffery_antd_components as fac
 from flask import session
 
-from . import profile
+from . import profile, allocate_role
 from api.user import get_user_list_api
 from api.dept import get_dept_tree_api
 from config.global_config import ApiBaseUrlConfig
@@ -29,9 +29,9 @@ def render(button_perms):
         total = table_info['data']['total']
         for item in table_data:
             if item['status'] == '0':
-                item['status'] = dict(checked=True)
+                item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
             else:
-                item['status'] = dict(checked=False)
+                item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
             item['key'] = str(item['user_id'])
             if item['user_id'] == 1:
                 item['operation'] = []
@@ -48,7 +48,11 @@ def render(button_perms):
                     {
                         'title': '重置密码',
                         'icon': 'antd-key'
-                    } if 'system:user:resetPwd' in button_perms else None
+                    } if 'system:user:resetPwd' in button_perms else None,
+                    {
+                        'title': '分配角色',
+                        'icon': 'antd-check-circle'
+                    } if 'system:user:edit' in button_perms else None
                 ]
 
     return [
@@ -970,4 +974,16 @@ def render(button_perms):
             renderFooter=True,
             centered=True
         ),
+
+        # 分配角色modal
+        fac.AntdModal(
+            allocate_role.render(button_perms),
+            id='user_to_allocated_role-modal',
+            title='分配角色',
+            mask=False,
+            maskClosable=False,
+            width=1000,
+            renderFooter=False,
+            okClickClose=False
+        )
     ]

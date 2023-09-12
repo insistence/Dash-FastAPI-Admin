@@ -93,9 +93,9 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
             )
             for item in table_data:
                 if item['status'] == '0':
-                    item['status'] = dict(checked=True)
+                    item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
                 else:
-                    item['status'] = dict(checked=False)
+                    item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
                 item['key'] = str(item['user_id'])
                 if item['user_id'] == 1:
                     item['operation'] = []
@@ -112,7 +112,11 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
                         {
                             'title': '重置密码',
                             'icon': 'antd-key'
-                        } if 'system:user:resetPwd' in button_perms else None
+                        } if 'system:user:resetPwd' in button_perms else None,
+                        {
+                            'title': '分配角色',
+                            'icon': 'antd-check-circle'
+                        } if 'system:user:edit' in button_perms else None
                     ]
 
             return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
@@ -592,6 +596,28 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
             dash.no_update,
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('重置失败', type='error')
+        ]
+
+    return [dash.no_update] * 3
+
+
+@app.callback(
+    [Output('user_to_allocated_role-modal', 'visible'),
+     Output({'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks'),
+     Output('allocate_role-user_id-container', 'data')],
+    Input('user-list-table', 'nClicksDropdownItem'),
+    [State('user-list-table', 'recentlyClickedDropdownItemTitle'),
+     State('user-list-table', 'recentlyDropdownItemClickedRow'),
+     State({'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks')],
+    prevent_initial_call=True
+)
+def role_to_allocated_user_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, allocated_role_search_nclick):
+    if dropdown_click and recently_clicked_dropdown_item_title == '分配角色':
+
+        return [
+            True,
+            allocated_role_search_nclick + 1 if allocated_role_search_nclick else 1,
+            recently_dropdown_item_clicked_row['key']
         ]
 
     return [dash.no_update] * 3

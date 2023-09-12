@@ -60,3 +60,24 @@ def export_user_list_api(page_obj: dict):
 
     return api_request(method='post', url='/system/user/export', is_headers=True, json=page_obj, stream=True)
 
+
+def get_allocated_role_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/user/authRole/allocatedList', is_headers=True, json=page_obj)
+
+
+def get_unallocated_role_list_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/user/authRole/unallocatedList', is_headers=True, json=page_obj)
+
+
+def auth_role_select_all_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/user/authRole/selectAll', is_headers=True, json=page_obj)
+
+
+def auth_role_cancel_api(page_obj: dict):
+
+    return api_request(method='post', url='/system/user/authRole/cancel', is_headers=True, json=page_obj)
+
+

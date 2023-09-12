@@ -1,7 +1,8 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 
-import callbacks.system_c.role_c
+import callbacks.system_c.role_c.role_c
+from . import allocate_user
 from api.role import get_role_list_api
 
 
@@ -27,18 +28,90 @@ def render(button_perms):
             if item['role_id'] == 1:
                 item['operation'] = []
             else:
-                item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    } if 'system:role:edit' in button_perms else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    } if 'system:role:remove' in button_perms else {},
-                ]
+                item['operation'] = fac.AntdSpace(
+                    [
+                        fac.AntdButton(
+                            '修改',
+                            id={
+                                'type': 'role-operation-table',
+                                'operation': 'edit',
+                                'index': str(item['role_id'])
+                            },
+                            type='link',
+                            icon=fac.AntdIcon(
+                                icon='antd-edit'
+                            ),
+                            style={
+                                'padding': 0
+                            }
+                        ) if 'system:role:edit' in button_perms else [],
+                        fac.AntdButton(
+                            '删除',
+                            id={
+                                'type': 'role-operation-table',
+                                'operation': 'delete',
+                                'index': str(item['role_id'])
+                            },
+                            type='link',
+                            icon=fac.AntdIcon(
+                                icon='antd-delete'
+                            ),
+                            style={
+                                'padding': 0
+                            }
+                        ) if 'system:role:remove' in button_perms else [],
+                        fac.AntdPopover(
+                            fac.AntdButton(
+                                '更多',
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-more'
+                                ),
+                                style={
+                                    'padding': 0
+                                }
+                            ),
+                            content=fac.AntdSpace(
+                                [
+                                    fac.AntdButton(
+                                        '数据权限',
+                                        id={
+                                            'type': 'role-operation-table',
+                                            'operation': 'datascope',
+                                            'index': str(item['role_id'])
+                                        },
+                                        type='text',
+                                        block=True,
+                                        icon=fac.AntdIcon(
+                                            icon='antd-check-circle'
+                                        ),
+                                        style={
+                                            'padding': 0
+                                        }
+                                    ),
+                                    fac.AntdButton(
+                                        '分配用户',
+                                        id={
+                                            'type': 'role-operation-table',
+                                            'operation': 'allocation',
+                                            'index': str(item['role_id'])
+                                        },
+                                        type='text',
+                                        block=True,
+                                        icon=fac.AntdIcon(
+                                            icon='antd-user'
+                                        ),
+                                        style={
+                                            'padding': 0
+                                        }
+                                    ),
+                                ],
+                                direction='vertical'
+                            ),
+                            placement='bottomRight'
+                        )
+                    ]
+                )
 
     return [
         dcc.Store(id='role-button-perms-container', data=button_perms),
@@ -159,7 +232,7 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'index': 'add'
+                                                    'operation': 'add'
                                                 },
                                                 style={
                                                     'color': '#1890ff',
@@ -177,7 +250,7 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'index': 'edit'
+                                                    'operation': 'edit'
                                                 },
                                                 disabled=True,
                                                 style={
@@ -196,7 +269,7 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'index': 'delete'
+                                                    'operation': 'delete'
                                                 },
                                                 disabled=True,
                                                 style={
@@ -327,9 +400,6 @@ def render(button_perms):
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
-                                                    'renderOptions': {
-                                                        'renderType': 'button'
-                                                    },
                                                 }
                                             ],
                                             rowSelectionType='checkbox',
@@ -563,4 +633,16 @@ def render(button_perms):
             renderFooter=True,
             centered=True
         ),
+
+        # 分配用户modal
+        fac.AntdModal(
+            allocate_user.render(button_perms),
+            id='role_to_allocated_user-modal',
+            title='分配用户',
+            mask=False,
+            maskClosable=False,
+            width=1000,
+            renderFooter=False,
+            okClickClose=False
+        )
     ]
