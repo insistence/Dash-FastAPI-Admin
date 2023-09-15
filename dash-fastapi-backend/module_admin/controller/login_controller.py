@@ -47,8 +47,8 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
         await request.app.state.redis.set(f'access_token:{session_id}', access_token,
                                           ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
         # 此方法可实现同一账号同一时间只能登录一次
-        # await request.app.state.redis.set(f'{result.user_id}_access_token', access_token, ex=timedelta(minutes=30))
-        # await request.app.state.redis.set(f'{result.user_id}_session_id', session_id, ex=timedelta(minutes=30))
+        # await request.app.state.redis.set(f'access_token:{result[0].user_id}', access_token,
+        #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
         logger.info('登录成功')
         # 判断请求是否来自于api文档，如果是返回指定格式的结果，用于修复api文档认证成功后token显示undefined的bug
         request_from_swagger = request.headers.get('referer').endswith('docs') if request.headers.get('referer') else False
