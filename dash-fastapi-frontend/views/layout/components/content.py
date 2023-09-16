@@ -1,6 +1,8 @@
 from dash import html
 import feffery_antd_components as fac
 
+from views.dashboard import render_dashboard
+
 
 def render_main_content():
     return [
@@ -14,11 +16,7 @@ def render_main_content():
                                 'label': '首页',
                                 'key': '首页',
                                 'closable': False,
-                                'children': fac.AntdAlert(
-                                    type='info',
-                                    showIcon=True,
-                                    message='这里是主标签页，通常建议设置为不可关闭并展示一些总览类型的信息'
-                                )
+                                'children': render_dashboard()
                             }
                         ],
                         id='tabs-container',
