@@ -1,5 +1,6 @@
 from . import (
     layout,
+    dashboard,
     system,
     monitor,
     tool,

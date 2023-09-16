@@ -5,6 +5,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
+from typing import List
 from config.env import CachePathConfig
 
 
@@ -59,7 +60,7 @@ def bytes2file_response(bytes_info):
     yield bytes_info
 
 
-def export_list2excel(list_data: list):
+def export_list2excel(list_data: List):
     """
     工具方法：将需要导出的list数据转化为对应excel的二进制数据
     :param list_data: 数据列表
@@ -73,7 +74,7 @@ def export_list2excel(list_data: list):
     return binary_data
 
 
-def get_excel_template(header_list: list, selector_header_list: list, option_list: list[dict]):
+def get_excel_template(header_list: List, selector_header_list: List, option_list: List[dict]):
     """
     工具方法：将需要导出的list数据转化为对应excel的二进制数据
     :param header_list: 表头数据列表

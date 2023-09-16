@@ -633,7 +633,7 @@ def render(button_perms):
                                             'width': 200
                                         }
                                     ),
-                                    label='岗位',
+                                    label='角色',
                                     id='user-add-role-form-item',
                                     labelCol={
                                         'offset': 8

@@ -171,7 +171,7 @@ def login_log_delete_modal(operation_click, selected_row_keys):
             info_ids = ','.join(selected_row_keys)
 
             return [
-                f'是否确认删除访问编号为{info_ids}的操作日志？',
+                f'是否确认删除访问编号为{info_ids}的登录日志？',
                 True,
                 {'oper_type': 'delete', 'info_ids': info_ids}
             ]
