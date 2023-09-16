@@ -19,20 +19,6 @@ def render_content(menu_info):
 
                 html.Div(id='idle-placeholder-container'),
 
-                # 注入相关modal
-                # html.Div(
-                #     [
-                #         # 个人资料面板
-                #         fac.AntdModal(
-                #             render_user_profile(),
-                #             id='index-personal-info-modal',
-                #             title='个人资料',
-                #             width=1000,
-                #             mask=False
-                #         )
-                #     ]
-                # ),
-
                 # 布局设置抽屉
                 fac.AntdDrawer(
                     [
