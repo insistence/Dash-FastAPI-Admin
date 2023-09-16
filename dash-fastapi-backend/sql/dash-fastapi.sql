@@ -260,9 +260,9 @@ CREATE TABLE `sys_job`  (
 -- ----------------------------
 -- Records of sys_job
 -- ----------------------------
-INSERT INTO `sys_job` VALUES (1, '系统默认（无参）', 'default', 'default', 'module_task.scheduler_test.job', 'test', NULL, '0/10 * * * * *', '2', '0', '1', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '');
-INSERT INTO `sys_job` VALUES (2, '系统默认（有参）', 'sqlalchemy', 'default', 'module_task.scheduler_test.job', 'new', '{\"test\": 111}', '0/15 * * * * *', '1', '1', '1', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '');
-INSERT INTO `sys_job` VALUES (3, '系统默认（多参）', 'redis', 'default', 'module_task.scheduler_test.job', NULL, NULL, '0/20 * * * * *', '3', '1', '1', 'admin', '2023-05-23 16:13:34', '', NULL, '');
+INSERT INTO `sys_job` VALUES (1, '系统默认（无参）', 'default', 'default', 'module_task.scheduler_test.job', 'test', NULL, '0/10 * * * * * *', '2', '0', '1', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '');
+INSERT INTO `sys_job` VALUES (2, '系统默认（有参）', 'sqlalchemy', 'default', 'module_task.scheduler_test.job', 'new', '{\"test\": 111}', '0/15 * * * * * *', '1', '1', '1', 'admin', '2023-05-23 16:13:34', 'admin', '2023-05-23 16:13:34', '');
+INSERT INTO `sys_job` VALUES (3, '系统默认（多参）', 'redis', 'default', 'module_task.scheduler_test.job', NULL, NULL, '0/20 * * * * * *', '3', '1', '1', 'admin', '2023-05-23 16:13:34', '', NULL, '');
 
 -- ----------------------------
 -- Table structure for sys_job_log
