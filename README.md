@@ -1,12 +1,14 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.2</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.4</h1>
 <h4 align="center">基于Dash+FastAPI前后端分离的纯Python快速开发框架</h4>
 <p align="center">
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/stargazers"><img src="https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark"></a>
-	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.2-brightgreen.svg"></a>
+	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.4-brightgreen.svg"></a>
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
+    <img src="https://img.shields.io/badge/python-≥3.8-blue">
+    <img src="https://img.shields.io/badge/MySQL-≥5.7-blue">
 </p>
 
 ## 平台简介
@@ -85,7 +87,7 @@ Dash-FastAPI-Admin是一套全部开源的快速开发平台，毫无保留给�
 git clone https://gitee.com/insistence2022/dash-fastapi-admin.git
 
 # 进入项目根目录
-cd Dash-FastAPI-Admin
+cd dash-fastapi-admin
 
 # 安装项目依赖环境
 pip3 install -r requirements.txt
