@@ -3,6 +3,7 @@ from dash.dependencies import Input, Output, State, ClientsideFunction
 from server import app
 
 
+# 初始化echarts图表数据
 app.clientside_callback(
     '''
     (n_intervals, data) => {
@@ -17,6 +18,7 @@ app.clientside_callback(
 )
 
 
+# 渲染命令统计图表
 app.clientside_callback(
     ClientsideFunction(
         namespace='clientside_command_stats',
@@ -27,6 +29,7 @@ app.clientside_callback(
 )
 
 
+# 渲染内存信息统计图表
 app.clientside_callback(
     ClientsideFunction(
         namespace='clientside_memory',

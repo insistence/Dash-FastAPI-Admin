@@ -2,6 +2,7 @@ import dash
 import time
 import uuid
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -11,23 +12,32 @@ from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_de
 
 
 @app.callback(
-    [Output('dept-list-table', 'data', allow_duplicate=True),
-     Output('dept-list-table', 'key'),
-     Output('dept-list-table', 'defaultExpandedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dept-fold', 'nClicks')],
-    [Input('dept-search', 'nClicks'),
-     Input('dept-refresh', 'nClicks'),
-     Input('dept-operations-store', 'data'),
-     Input('dept-fold', 'nClicks')],
-    [State('dept-dept_name-input', 'value'),
-     State('dept-status-select', 'value'),
-     State('dept-list-table', 'defaultExpandedRowKeys'),
-     State('dept-button-perms-container', 'data')],
+    output=dict(
+        dept_table_data=Output('dept-list-table', 'data', allow_duplicate=True),
+        dept_table_key=Output('dept-list-table', 'key'),
+        dept_table_defaultexpandedrowkeys=Output('dept-list-table', 'defaultExpandedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        fold_click=Output('dept-fold', 'nClicks')
+    ),
+    inputs=dict(
+        search_click=Input('dept-search', 'nClicks'),
+        refresh_click=Input('dept-refresh', 'nClicks'),
+        operations=Input('dept-operations-store', 'data'),
+        fold_click=Input('dept-fold', 'nClicks')
+    ),
+    state=dict(
+        dept_name=State('dept-dept_name-input', 'value'),
+        status_select=State('dept-status-select', 'value'),
+        in_default_expanded_row_keys=State('dept-list-table', 'defaultExpandedRowKeys'),
+        button_perms=State('dept-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
-def get_dept_table_data(search_click, refresh_click, operations, fold_click, dept_name, status_select, in_default_expanded_row_keys, button_perms):
-
+def get_dept_table_data(search_click, refresh_click, operations, fold_click, dept_name, status_select,
+                        in_default_expanded_row_keys, button_perms):
+    """
+    获取部门表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
     query_params = dict(
         dept_name=dept_name,
         status=status_select
@@ -92,15 +102,40 @@ def get_dept_table_data(search_click, refresh_click, operations, fold_click, dep
 
             if fold_click:
                 if in_default_expanded_row_keys:
-                    return [table_data_new, str(uuid.uuid4()), [], {'timestamp': time.time()}, None]
+                    return dict(
+                        dept_table_data=table_data_new,
+                        dept_table_key=str(uuid.uuid4()),
+                        dept_table_defaultexpandedrowkeys=[],
+                        api_check_token_trigger={'timestamp': time.time()},
+                        fold_click=None
+                    )
 
-            return [table_data_new, str(uuid.uuid4()), default_expanded_row_keys, {'timestamp': time.time()}, None]
+            return dict(
+                dept_table_data=table_data_new,
+                dept_table_key=str(uuid.uuid4()),
+                dept_table_defaultexpandedrowkeys=default_expanded_row_keys,
+                api_check_token_trigger={'timestamp': time.time()},
+                fold_click=None
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}, None]
+        return dict(
+            dept_table_data=dash.no_update,
+            dept_table_key=dash.no_update,
+            dept_table_defaultexpandedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            fold_click=None
+        )
 
-    return [dash.no_update] * 4 + [None]
+    return dict(
+        dept_table_data=dash.no_update,
+        dept_table_key=dash.no_update,
+        dept_table_defaultexpandedrowkeys=dash.no_update,
+        api_check_token_trigger=dash.no_update,
+        fold_click=None
+    )
 
 
+# 重置部门搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -117,7 +152,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 
-
+# 隐藏/显示部门搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -139,29 +174,39 @@ app.clientside_callback(
 
 
 @app.callback(
-    [Output('dept-modal', 'visible', allow_duplicate=True),
-     Output('dept-modal', 'title'),
-     Output('dept-parent_id-div', 'hidden'),
-     Output('dept-parent_id', 'treeData'),
-     Output('dept-parent_id', 'value'),
-     Output('dept-dept_name', 'value'),
-     Output('dept-order_num', 'value'),
-     Output('dept-leader', 'value'),
-     Output('dept-phone', 'value'),
-     Output('dept-email', 'value'),
-     Output('dept-status', 'value'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('dept-edit-id-store', 'data'),
-     Output('dept-operations-store-bk', 'data')],
-    [Input({'type': 'dept-operation-button', 'index': ALL}, 'nClicks'),
-     Input('dept-list-table', 'nClicksButton')],
-    [State('dept-list-table', 'clickedContent'),
-     State('dept-list-table', 'recentlyButtonClickedRow')],
+    output=dict(
+        modal_visible=Output('dept-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('dept-modal', 'title'),
+        parent_id_div_ishidden=Output('dept-parent_id-div', 'hidden'),
+        parent_id_tree=Output({'type': 'dept-form-value', 'index': 'parent_id'}, 'treeData'),
+        form_value=Output({'type': 'dept-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'dept-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'dept-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        edit_row_info=Output('dept-edit-id-store', 'data'),
+        modal_type=Output('dept-operations-store-bk', 'data')
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'dept-operation-button', 'index': ALL}, 'nClicks'),
+        button_click=Input('dept-list-table', 'nClicksButton')
+    ),
+    state=dict(
+        clicked_content=State('dept-list-table', 'clickedContent'),
+        recently_button_clicked_row=State('dept-list-table', 'recentlyButtonClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_dept_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    """
+    显示新增或编辑部门弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
-    if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} or (trigger_id == 'dept-list-table' and clicked_content != '删除'):
+    if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} or (
+            trigger_id == 'dept-list-table' and clicked_content != '删除'):
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[4]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[5]]
         dept_params = dict(dept_name='')
         if trigger_id == 'dept-list-table' and clicked_content == '修改':
             dept_params['dept_id'] = int(recently_button_clicked_row['key'])
@@ -171,176 +216,143 @@ def add_edit_dept_modal(operation_click, button_click, clicked_content, recently
         if tree_info['code'] == 200:
             tree_data = tree_info['data']
 
-            if trigger_id == {'index': 'add', 'type': 'dept-operation-button'}:
-                return [
-                    True,
-                    '新增部门',
-                    False,
-                    tree_data,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    '0',
-                    {'timestamp': time.time()},
-                    None,
-                    {'type': 'add'}
-                ]
-            elif trigger_id == 'dept-list-table' and clicked_content == '新增':
-                return [
-                    True,
-                    '新增部门',
-                    False,
-                    tree_data,
-                    str(recently_button_clicked_row['key']),
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    '0',
-                    {'timestamp': time.time()},
-                    None,
-                    {'type': 'add'}
-                ]
+            if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} or (trigger_id == 'dept-list-table' and clicked_content == '新增'):
+                dept_info = dict(
+                    parent_id=None if trigger_id == {'index': 'add', 'type': 'dept-operation-button'} else str(recently_button_clicked_row['key']),
+                    dept_name=None,
+                    order_num=None,
+                    leader=None,
+                    phone=None,
+                    email=None,
+                    status='0',
+                )
+                return dict(
+                    modal_visible=True,
+                    modal_title='新增部门',
+                    parent_id_div_ishidden=False,
+                    parent_id_tree=tree_data,
+                    form_value=[dept_info.get(k) for k in form_value_list],
+                    form_label_validate_status=[None] * len(form_label_list),
+                    form_label_validate_info=[None] * len(form_label_list),
+                    api_check_token_trigger={'timestamp': time.time()},
+                    edit_row_info=None,
+                    modal_type={'type': 'add'}
+                )
             elif trigger_id == 'dept-list-table' and clicked_content == '修改':
                 dept_id = int(recently_button_clicked_row['key'])
                 dept_info_res = get_dept_detail_api(dept_id=dept_id)
                 if dept_info_res['code'] == 200:
                     dept_info = dept_info_res['data']
-                    if dept_info.get('parent_id') == 0:
-                        return [
-                            True,
-                            '编辑部门',
-                            True,
-                            tree_data,
-                            str(dept_info.get('parent_id')),
-                            dept_info.get('dept_name'),
-                            dept_info.get('order_num'),
-                            dept_info.get('leader'),
-                            dept_info.get('phone'),
-                            dept_info.get('email'),
-                            dept_info.get('status'),
-                            {'timestamp': time.time()},
-                            dept_info,
-                            {'type': 'edit'}
-                        ]
-                    else:
-                        return [
-                            True,
-                            '编辑部门',
-                            False,
-                            tree_data,
-                            str(dept_info.get('parent_id')),
-                            dept_info.get('dept_name'),
-                            dept_info.get('order_num'),
-                            dept_info.get('leader'),
-                            dept_info.get('phone'),
-                            dept_info.get('email'),
-                            dept_info.get('status'),
-                            {'timestamp': time.time()},
-                            dept_info,
-                            {'type': 'edit'}
-                        ]
+                    return dict(
+                        modal_visible=True,
+                        modal_title='编辑部门',
+                        parent_id_div_ishidden=dept_info.get('parent_id') == 0,
+                        parent_id_tree=tree_data,
+                        form_value=[dept_info.get(k) for k in form_value_list],
+                        form_label_validate_status=[None] * len(form_label_list),
+                        form_label_validate_info=[None] * len(form_label_list),
+                        api_check_token_trigger={'timestamp': time.time()},
+                        edit_row_info=dept_info,
+                        modal_type={'type': 'edit'}
+                    )
 
-        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            parent_id_div_ishidden=dash.no_update,
+            parent_id_tree=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            edit_row_info=None,
+            modal_type=None
+        )
 
-    return [dash.no_update] * 12 + [None, None]
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('dept-parent_id-form-item', 'validateStatus'),
-     Output('dept-dept_name-form-item', 'validateStatus'),
-     Output('dept-order_num-form-item', 'validateStatus'),
-     Output('dept-parent_id-form-item', 'help'),
-     Output('dept-dept_name-form-item', 'help'),
-     Output('dept-order_num-form-item', 'help'),
-     Output('dept-modal', 'visible'),
-     Output('dept-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('dept-modal', 'okCounts'),
-    [State('dept-operations-store-bk', 'data'),
-     State('dept-edit-id-store', 'data'),
-     State('dept-parent_id', 'value'),
-     State('dept-dept_name', 'value'),
-     State('dept-order_num', 'value'),
-     State('dept-leader', 'value'),
-     State('dept-phone', 'value'),
-     State('dept-email', 'value'),
-     State('dept-status', 'value')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'dept-form-label', 'index': ALL, 'required': True}, 'validateStatus',
+                                          allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'dept-form-label', 'index': ALL, 'required': True}, 'help',
+                                        allow_duplicate=True),
+        modal_visible=Output('dept-modal', 'visible'),
+        operations=Output('dept-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        confirm_trigger=Input('dept-modal', 'okCounts')
+    ),
+    state=dict(
+        modal_type=State('dept-operations-store-bk', 'data'),
+        edit_row_info=State('dept-edit-id-store', 'data'),
+        form_value=State({'type': 'dept-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'dept-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def dept_confirm(confirm_trigger, operation_type, cur_dept_info, parent_id, dept_name, order_num, leader, phone, email, status):
+def dept_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_label):
+    """
+    新增或编辑部门弹窗确认回调，实现新增或编辑操作
+    """
     if confirm_trigger:
-        if all([parent_id, dept_name, order_num]):
-            params_add = dict(parent_id=parent_id, dept_name=dept_name, order_num=order_num, leader=leader, phone=phone, 
-                              email=email, status=status)
-            params_edit = dict(dept_id=cur_dept_info.get('dept_id') if cur_dept_info else None, parent_id=parent_id, dept_name=dept_name,
-                          order_num=order_num, leader=leader, phone=phone, email=email, status=status)
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params_add = form_value_state
+            params_edit = params_add.copy()
+            params_edit['dept_id'] = edit_row_info.get('dept_id') if edit_row_info else None
             api_res = {}
-            operation_type = operation_type.get('type')
-            if operation_type == 'add':
+            modal_type = modal_type.get('type')
+            if modal_type == 'add':
                 api_res = add_dept_api(params_add)
-            if operation_type == 'edit':
+            if modal_type == 'edit':
                 api_res = edit_dept_api(params_edit)
             if api_res.get('code') == 200:
-                if operation_type == 'add':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'add'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('新增成功', type='success')
-                    ]
-                if operation_type == 'edit':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'edit'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('编辑成功', type='success')
-                    ]
-            
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('处理失败', type='error')
-            ]
-        
-        return [
-            None if parent_id else 'error',
-            None if dept_name else 'error',
-            None if order_num else 'error',
-            None if parent_id else '请选择上级部门！',
-            None if dept_name else '请输入部门名称！',
-            None if order_num else '请输入显示排序！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('处理失败', type='error')
-        ]         
+                if modal_type == 'add':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'add'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('新增成功', type='success')
+                    )
+                if modal_type == 'edit':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'edit'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('编辑成功', type='success')
+                    )
 
-    return [dash.no_update] * 10
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+            )
+
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+        )
+
+    raise PreventUpdate
 
 
 @app.callback(
@@ -353,6 +365,9 @@ def dept_confirm(confirm_trigger, operation_type, cur_dept_info, parent_id, dept
     prevent_initial_call=True
 )
 def dept_delete_modal(button_click, clicked_content, recently_button_clicked_row):
+    """
+    显示删除部门二次确认弹窗回调
+    """
     if button_click:
 
         if clicked_content == '删除':
@@ -366,7 +381,7 @@ def dept_delete_modal(button_click, clicked_content, recently_button_clicked_row
             {'dept_ids': dept_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -378,6 +393,9 @@ def dept_delete_modal(button_click, clicked_content, recently_button_clicked_row
     prevent_initial_call=True
 )
 def dept_delete_confirm(delete_confirm, dept_ids_data):
+    """
+    删除部门弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = dept_ids_data
@@ -395,4 +413,4 @@ def dept_delete_confirm(delete_confirm, dept_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate

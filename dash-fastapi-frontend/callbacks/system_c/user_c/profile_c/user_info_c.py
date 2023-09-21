@@ -2,6 +2,7 @@ import dash
 import feffery_utils_components as fuc
 import time
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 from server import app
 
 from api.user import change_user_info_api
@@ -24,6 +25,9 @@ from api.user import change_user_info_api
     prevent_initial_call=True
 )
 def reset_submit_user_info(reset_click, nick_name, phonenumber, email, sex):
+    """
+    修改当前用户信息回调
+    """
     if reset_click:
         if all([nick_name, phonenumber, email]):
 
@@ -64,7 +68,7 @@ def reset_submit_user_info(reset_click, nick_name, phonenumber, email, sex):
             fuc.FefferyFancyMessage('修改失败', type='error'),
         ]
 
-    return [dash.no_update] * 8
+    raise PreventUpdate
 
 
 @app.callback(
@@ -73,7 +77,10 @@ def reset_submit_user_info(reset_click, nick_name, phonenumber, email, sex):
     prevent_initial_call=True
 )
 def close_personal_info_modal(close_click):
+    """
+    关闭当前个人资料标签页回调
+    """
     if close_click:
 
         return '个人资料'
-    return dash.no_update
+    raise PreventUpdate

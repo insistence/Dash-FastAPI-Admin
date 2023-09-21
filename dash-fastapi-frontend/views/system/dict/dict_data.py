@@ -333,7 +333,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dict_data-dict_type',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'dict_type'
+                                            },
                                             placeholder='请输入字典类型',
                                             disabled=True,
                                             style={
@@ -341,7 +344,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='字典类型',
-                                        id='dict_data-dict_type-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'dict_type',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -352,7 +359,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dict_data-dict_label',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'dict_label'
+                                            },
                                             placeholder='请输入数据标签',
                                             allowClear=True,
                                             style={
@@ -361,7 +371,11 @@ def render(button_perms):
                                         ),
                                         label='数据标签',
                                         required=True,
-                                        id='dict_data-dict_label-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'dict_label',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -372,7 +386,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dict_data-dict_value',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'dict_value'
+                                            },
                                             placeholder='请输入数据键值',
                                             allowClear=True,
                                             style={
@@ -381,7 +398,11 @@ def render(button_perms):
                                         ),
                                         label='数据键值',
                                         required=True,
-                                        id='dict_data-dict_value-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'dict_value',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -392,7 +413,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dict_data-css_class',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'css_class'
+                                            },
                                             placeholder='请输入样式属性',
                                             allowClear=True,
                                             style={
@@ -400,7 +424,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='样式属性',
-                                        id='dict_data-css_class-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'css_class',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -411,7 +439,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInputNumber(
-                                            id='dict_data-dict_sort',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'dict_sort'
+                                            },
                                             defaultValue=0,
                                             min=0,
                                             style={
@@ -420,7 +451,11 @@ def render(button_perms):
                                         ),
                                         label='显示排序',
                                         required=True,
-                                        id='dict_data-dict_sort-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'dict_sort',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -431,7 +466,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdSelect(
-                                            id='dict_data-list_class',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'list_class'
+                                            },
                                             placeholder='回显样式',
                                             options=[
                                                 {
@@ -464,7 +502,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='回显样式',
-                                        id='dict_data-list_class-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'list_class',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -475,7 +517,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id='dict_data-status',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'status'
+                                            },
                                             options=[
                                                 {
                                                     'label': '正常',
@@ -492,7 +537,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='状态',
-                                        id='dict_data-status-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'status',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -503,7 +552,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dict_data-remark',
+                                            id={
+                                                'type': 'dict_data-form-value',
+                                                'index': 'remark'
+                                            },
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
@@ -512,7 +564,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='备注',
-                                        id='dict_data-remark-form-item'
+                                        id={
+                                            'type': 'dict_data-form-label',
+                                            'index': 'remark',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),

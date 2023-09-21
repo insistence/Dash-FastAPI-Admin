@@ -167,7 +167,7 @@ class JobService:
 
         data = [JobModel(**vars(row)).dict() for row in job_list]
         job_group_list = await DictDataService.query_dict_data_list_from_cache_services(request.app.state.redis, dict_type='sys_job_group')
-        job_group_option = [dict(label=item.dict_label, value=item.dict_value) for item in job_group_list]
+        job_group_option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in job_group_list]
         job_group_option_dict = {item.get('value'): item for item in job_group_option}
 
         for item in data:

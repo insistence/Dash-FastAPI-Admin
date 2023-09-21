@@ -393,7 +393,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='config-config_name',
+                                            id={
+                                                'type': 'config-form-value',
+                                                'index': 'config_name'
+                                            },
                                             placeholder='请输入参数名称',
                                             allowClear=True,
                                             style={
@@ -402,7 +405,11 @@ def render(button_perms):
                                         ),
                                         label='参数名称',
                                         required=True,
-                                        id='config-config_name-form-item'
+                                        id={
+                                            'type': 'config-form-label',
+                                            'index': 'config_name',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -413,7 +420,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='config-config_key',
+                                            id={
+                                                'type': 'config-form-value',
+                                                'index': 'config_key'
+                                            },
                                             placeholder='请输入参数键名',
                                             allowClear=True,
                                             style={
@@ -422,7 +432,11 @@ def render(button_perms):
                                         ),
                                         label='参数键名',
                                         required=True,
-                                        id='config-config_key-form-item'
+                                        id={
+                                            'type': 'config-form-label',
+                                            'index': 'config_key',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -433,7 +447,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='config-config_value',
+                                            id={
+                                                'type': 'config-form-value',
+                                                'index': 'config_value'
+                                            },
                                             placeholder='请输入参数键值',
                                             allowClear=True,
                                             style={
@@ -442,7 +459,11 @@ def render(button_perms):
                                         ),
                                         label='参数键值',
                                         required=True,
-                                        id='config-config_value-form-item'
+                                        id={
+                                            'type': 'config-form-label',
+                                            'index': 'config_value',
+                                            'required': True
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -453,7 +474,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id='config-config_type',
+                                            id={
+                                                'type': 'config-form-value',
+                                                'index': 'config_type'
+                                            },
                                             options=[
                                                 {
                                                     'label': '是',
@@ -470,7 +494,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='系统内置',
-                                        id='config-config_type-form-item'
+                                        id={
+                                            'type': 'config-form-label',
+                                            'index': 'config_type',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),
@@ -481,7 +509,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='config-remark',
+                                            id={
+                                                'type': 'config-form-value',
+                                                'index': 'remark'
+                                            },
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
@@ -490,7 +521,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='备注',
-                                        id='config-remark-form-item'
+                                        id={
+                                            'type': 'config-form-label',
+                                            'index': 'remark',
+                                            'required': False
+                                        }
                                     ),
                                     span=24
                                 ),

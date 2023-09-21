@@ -23,7 +23,7 @@ email-validator==2.0.0.post2
 et-xmlfile==1.1.0
 fastapi==0.95.1
 feffery-antd-charts==0.0.1rc17
-feffery-antd-components==0.2.9
+feffery-antd-components==0.2.10rc17
 feffery-markdown-components==0.2.10
 feffery-utils-components==0.1.28
 Flask==2.2.5
@@ -50,7 +50,6 @@ Pillow==10.0.0
 plotly==5.14.1
 ply==3.11
 psutil==5.9.5
-psycopg2==2.9.6
 pyasn1==0.5.0
 pycparser==2.21
 pydantic==1.10.7

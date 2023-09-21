@@ -3,6 +3,7 @@ import feffery_utils_components as fuc
 import time
 import uuid
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 from server import app
 
 from api.user import change_user_avatar_api
@@ -16,10 +17,13 @@ from api.user import change_user_avatar_api
     prevent_initial_call=True
 )
 def avatar_cropper_modal_visible(n_clicks, user_avatar_image_info):
+    """
+    显示编辑头像弹窗回调
+    """
     if n_clicks:
         return [True, user_avatar_image_info]
 
-    return dash.no_update, dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -28,11 +32,14 @@ def avatar_cropper_modal_visible(n_clicks, user_avatar_image_info):
     prevent_initial_call=True
 )
 def upload_user_avatar(list_upload_task_record):
+    """
+    上传用户头像获取后端url回调
+    """
     if list_upload_task_record:
 
         return list_upload_task_record[-1].get('url')
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -41,6 +48,9 @@ def upload_user_avatar(list_upload_task_record):
     prevent_initial_call=True
 )
 def edit_user_avatar(src_data):
+    """
+    使用cropper.js编辑头像回调
+    """
 
     return """
             // 创建新图像元素
@@ -127,6 +137,9 @@ def edit_user_avatar(src_data):
     prevent_initial_call=True
 )
 def change_user_avatar_callback(submit_click, avatar_data):
+    """
+    提交编辑完成头像数据回调，实现更新头像操作
+    """
 
     if submit_click:
         params = dict(type='avatar', avatar=avatar_data['avatarBase64'])
@@ -149,4 +162,4 @@ def change_user_avatar_callback(submit_click, avatar_data):
             dash.no_update
         ]
 
-    return [dash.no_update] * 5
+    raise PreventUpdate

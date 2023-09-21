@@ -3,6 +3,7 @@ import time
 import uuid
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -10,22 +11,31 @@ from api.post import get_post_list_api, get_post_detail_api, add_post_api, edit_
 
 
 @app.callback(
-    [Output('post-list-table', 'data', allow_duplicate=True),
-     Output('post-list-table', 'pagination', allow_duplicate=True),
-     Output('post-list-table', 'key'),
-     Output('post-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('post-search', 'nClicks'),
-     Input('post-refresh', 'nClicks'),
-     Input('post-list-table', 'pagination'),
-     Input('post-operations-store', 'data')],
-    [State('post-post_code-input', 'value'),
-     State('post-post_name-input', 'value'),
-     State('post-status-select', 'value'),
-     State('post-button-perms-container', 'data')],
+    output=dict(
+        post_table_data=Output('post-list-table', 'data', allow_duplicate=True),
+        post_table_pagination=Output('post-list-table', 'pagination', allow_duplicate=True),
+        post_table_key=Output('post-list-table', 'key'),
+        post_table_selectedrowkeys=Output('post-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        search_click=Input('post-search', 'nClicks'),
+        refresh_click=Input('post-refresh', 'nClicks'),
+        pagination=Input('post-list-table', 'pagination'),
+        operations=Input('post-operations-store', 'data')
+    ),
+    state=dict(
+        post_code=State('post-post_code-input', 'value'),
+        post_name=State('post-post_name-input', 'value'),
+        status_select=State('post-status-select', 'value'),
+        button_perms=State('post-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_post_table_data(search_click, refresh_click, pagination, operations, post_code, post_name, status_select, button_perms):
+    """
+    获取岗位表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
 
     query_params = dict(
         post_code=post_code,
@@ -73,14 +83,26 @@ def get_post_table_data(search_click, refresh_click, pagination, operations, pos
                         'icon': 'antd-delete'
                     } if 'system:post:remove' in button_perms else {},
                 ]
+            return dict(
+                post_table_data=table_data,
+                post_table_pagination=table_pagination,
+                post_table_key=str(uuid.uuid4()),
+                post_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+        return dict(
+            post_table_data=dash.no_update,
+            post_table_pagination=dash.no_update,
+            post_table_key=dash.no_update,
+            post_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
-
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置岗位搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -99,6 +121,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示岗位搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -125,6 +148,9 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_post_edit_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制编辑按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -135,7 +161,7 @@ def change_post_edit_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -144,55 +170,66 @@ def change_post_edit_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def change_post_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('post-modal', 'visible', allow_duplicate=True),
-     Output('post-modal', 'title'),
-     Output('post-post_name', 'value'),
-     Output('post-post_code', 'value'),
-     Output('post-post_sort', 'value'),
-     Output('post-status', 'value'),
-     Output('post-remark', 'value'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('post-edit-id-store', 'data'),
-     Output('post-operations-store-bk', 'data')],
-    [Input({'type': 'post-operation-button', 'index': ALL}, 'nClicks'),
-     Input('post-list-table', 'nClicksButton')],
-    [State('post-list-table', 'selectedRowKeys'),
-     State('post-list-table', 'clickedContent'),
-     State('post-list-table', 'recentlyButtonClickedRow')],
+    output=dict(
+        modal_visible=Output('post-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('post-modal', 'title'),
+        form_value=Output({'type': 'post-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'post-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'post-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        edit_row_info=Output('post-edit-id-store', 'data'),
+        modal_type=Output('post-operations-store-bk', 'data')
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'post-operation-button', 'index': ALL}, 'nClicks'),
+        button_click=Input('post-list-table', 'nClicksButton')
+    ),
+    state=dict(
+        selected_row_keys=State('post-list-table', 'selectedRowKeys'),
+        clicked_content=State('post-list-table', 'clickedContent'),
+        recently_button_clicked_row=State('post-list-table', 'recentlyButtonClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_post_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    """
+    显示新增或编辑岗位弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'add', 'type': 'post-operation-button'} \
             or trigger_id == {'index': 'edit', 'type': 'post-operation-button'} \
             or (trigger_id == 'post-list-table' and clicked_content == '修改'):
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'post-operation-button'}:
-            return [
-                True,
-                '新增岗位',
-                None,
-                None,
-                0,
-                '0',
-                None,
-                dash.no_update,
-                None,
-                {'type': 'add'}
-            ]
+            post_info = dict(post_name=None, post_code=None, post_sort=0, status='0', remark=None)
+            return dict(
+                modal_visible=True,
+                modal_title='新增岗位',
+                form_value=[post_info.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                api_check_token_trigger=dash.no_update,
+                edit_row_info=None,
+                modal_type={'type': 'add'}
+            )
         elif trigger_id == {'index': 'edit', 'type': 'post-operation-button'} or (trigger_id == 'post-list-table' and clicked_content == '修改'):
             if trigger_id == {'index': 'edit', 'type': 'post-operation-button'}:
                 post_id = int(','.join(selected_row_keys))
@@ -201,112 +238,112 @@ def add_edit_post_modal(operation_click, button_click, selected_row_keys, clicke
             post_info_res = get_post_detail_api(post_id=post_id)
             if post_info_res['code'] == 200:
                 post_info = post_info_res['data']
-                return [
-                    True,
-                    '编辑岗位',
-                    post_info.get('post_name'),
-                    post_info.get('post_code'),
-                    post_info.get('post_sort'),
-                    post_info.get('status'),
-                    post_info.get('remark'),
-                    {'timestamp': time.time()},
-                    post_info if post_info else None,
-                    {'type': 'edit'}
-                ]
-                    
-        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None]
+                return dict(
+                    modal_visible=True,
+                    modal_title='编辑岗位',
+                    form_value=[post_info.get(k) for k in form_value_list],
+                    form_label_validate_status=[None] * len(form_label_list),
+                    form_label_validate_info=[None] * len(form_label_list),
+                    api_check_token_trigger={'timestamp': time.time()},
+                    edit_row_info=post_info if post_info else None,
+                    modal_type={'type': 'edit'}
+                )
 
-    return [dash.no_update] * 8 + [None, None]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            edit_row_info=None,
+            modal_type=None
+        )
+
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('post-post_name-form-item', 'validateStatus'),
-     Output('post-post_code-form-item', 'validateStatus'),
-     Output('post-post_sort-form-item', 'validateStatus'),
-     Output('post-post_name-form-item', 'help'),
-     Output('post-post_code-form-item', 'help'),
-     Output('post-post_sort-form-item', 'help'),
-     Output('post-modal', 'visible'),
-     Output('post-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('post-modal', 'okCounts'),
-    [State('post-operations-store-bk', 'data'),
-     State('post-edit-id-store', 'data'),
-     State('post-post_name', 'value'),
-     State('post-post_code', 'value'),
-     State('post-post_sort', 'value'),
-     State('post-status', 'value'),
-     State('post-remark', 'value')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'post-form-label', 'index': ALL, 'required': True}, 'validateStatus',
+                                          allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'post-form-label', 'index': ALL, 'required': True}, 'help',
+                                        allow_duplicate=True),
+        modal_visible=Output('post-modal', 'visible'),
+        operations=Output('post-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        confirm_trigger=Input('post-modal', 'okCounts')
+    ),
+    state=dict(
+        modal_type=State('post-operations-store-bk', 'data'),
+        edit_row_info=State('post-edit-id-store', 'data'),
+        form_value=State({'type': 'post-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'post-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def post_confirm(confirm_trigger, operation_type, cur_post_info, post_name, post_code, post_sort, status, remark):
+def post_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_label):
+    """
+    新增或编辑岗位弹窗确认回调，实现新增或编辑操作
+    """
     if confirm_trigger:
-        if all([post_name, post_code, post_sort]):
-            params_add = dict(post_name=post_name, post_code=post_code, post_sort=post_sort, status=status, remark=remark)
-            params_edit = dict(post_id=cur_post_info.get('post_id') if cur_post_info else None, post_name=post_name, 
-                               post_code=post_code, post_sort=post_sort, status=status, remark=remark)
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params_add = form_value_state
+            params_edit = params_add.copy()
+            params_edit['post_id'] = edit_row_info.get('post_id') if edit_row_info else None
             api_res = {}
-            operation_type = operation_type.get('type')
-            if operation_type == 'add':
+            modal_type = modal_type.get('type')
+            if modal_type == 'add':
                 api_res = add_post_api(params_add)
-            if operation_type == 'edit':
+            if modal_type == 'edit':
                 api_res = edit_post_api(params_edit)
             if api_res.get('code') == 200:
-                if operation_type == 'add':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'add'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('新增成功', type='success')
-                    ]
-                if operation_type == 'edit':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'edit'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('编辑成功', type='success')
-                    ]
-            
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('处理失败', type='error')
-            ]
-        
-        return [
-            None if post_name else 'error',
-            None if post_code else 'error',
-            None if post_sort else 'error',
-            None if post_name else '请输入岗位名称！',
-            None if post_code else '请输入岗位编码！',
-            None if post_sort else '请输入岗位顺序！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('处理失败', type='error')
-        ]         
+                if modal_type == 'add':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'add'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('新增成功', type='success')
+                    )
+                if modal_type == 'edit':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'edit'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('编辑成功', type='success')
+                    )
 
-    return [dash.no_update] * 10
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+            )
+
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+        )
+
+    raise PreventUpdate
 
 
 @app.callback(
@@ -322,6 +359,9 @@ def post_confirm(confirm_trigger, operation_type, cur_post_info, post_name, post
 )
 def post_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
+    """
+    显示删除岗位二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'delete', 'type': 'post-operation-button'} or (trigger_id == 'post-list-table' and clicked_content == '删除'):
 
@@ -331,7 +371,7 @@ def post_delete_modal(operation_click, button_click,
             if clicked_content == '删除':
                 post_ids = recently_button_clicked_row['key']
             else:
-                return dash.no_update
+                raise PreventUpdate
 
         return [
             f'是否确认删除岗位编号为{post_ids}的岗位？',
@@ -339,7 +379,7 @@ def post_delete_modal(operation_click, button_click,
             {'post_ids': post_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -351,6 +391,9 @@ def post_delete_modal(operation_click, button_click,
     prevent_initial_call=True
 )
 def post_delete_confirm(delete_confirm, post_ids_data):
+    """
+    删除岗位弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = post_ids_data
@@ -368,7 +411,7 @@ def post_delete_confirm(delete_confirm, post_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -380,6 +423,9 @@ def post_delete_confirm(delete_confirm, post_ids_data):
     prevent_initial_call=True
 )
 def export_post_list(export_click):
+    """
+    导出岗位信息回调
+    """
     if export_click:
         export_post_res = export_post_list_api({})
         if export_post_res.status_code == 200:
@@ -399,7 +445,7 @@ def export_post_list(export_click):
             fuc.FefferyFancyMessage('导出失败', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -408,9 +454,12 @@ def export_post_list(export_click):
     prevent_initial_call=True
 )
 def reset_post_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
 
         return None
 
-    return dash.no_update
+    raise PreventUpdate

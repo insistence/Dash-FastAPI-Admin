@@ -329,7 +329,10 @@ def render(button_perms):
                                         [
                                             fac.AntdFormItem(
                                                 fac.AntdTreeSelect(
-                                                    id='dept-parent_id',
+                                                    id={
+                                                        'type': 'dept-form-value',
+                                                        'index': 'parent_id'
+                                                    },
                                                     placeholder='请选择上级部门',
                                                     treeData=[],
                                                     treeNodeFilterProp='title',
@@ -339,7 +342,11 @@ def render(button_perms):
                                                 ),
                                                 label='上级部门',
                                                 required=True,
-                                                id='dept-parent_id-form-item',
+                                                id={
+                                                    'type': 'dept-form-label',
+                                                    'index': 'parent_id',
+                                                    'required': True
+                                                },
                                                 labelCol={
                                                     'span': 4
                                                 },
@@ -360,7 +367,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dept-dept_name',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'dept_name'
+                                            },
                                             placeholder='请输入部门名称',
                                             allowClear=True,
                                             style={
@@ -369,14 +379,21 @@ def render(button_perms):
                                         ),
                                         label='部门名称',
                                         required=True,
-                                        id='dept-dept_name-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'dept_name',
+                                            'required': True
+                                        }
                                     ),
                                     span=12
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInputNumber(
-                                            id='dept-order_num',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'order_num'
+                                            },
                                             min=0,
                                             style={
                                                 'width': '100%'
@@ -384,7 +401,11 @@ def render(button_perms):
                                         ),
                                         label='显示顺序',
                                         required=True,
-                                        id='dept-order_num-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'order_num',
+                                            'required': True
+                                        }
                                     ),
                                     span=12
                                 )
@@ -396,7 +417,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dept-leader',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'leader'
+                                            },
                                             placeholder='请输入负责人',
                                             allowClear=True,
                                             style={
@@ -404,14 +428,21 @@ def render(button_perms):
                                             }
                                         ),
                                         label='负责人',
-                                        id='dept-leader-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'leader',
+                                            'required': False
+                                        }
                                     ),
                                     span=12
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dept-phone',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'phone'
+                                            },
                                             placeholder='请输入联系电话',
                                             allowClear=True,
                                             style={
@@ -419,7 +450,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='联系电话',
-                                        id='dept-phone-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'phone',
+                                            'required': False
+                                        }
                                     ),
                                     span=12
                                 ),
@@ -431,7 +466,10 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id='dept-email',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'email'
+                                            },
                                             placeholder='请输入邮箱',
                                             allowClear=True,
                                             style={
@@ -439,14 +477,21 @@ def render(button_perms):
                                             }
                                         ),
                                         label='邮箱',
-                                        id='dept-email-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'email',
+                                            'required': False
+                                        }
                                     ),
                                     span=12
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id='dept-status',
+                                            id={
+                                                'type': 'dept-form-value',
+                                                'index': 'status'
+                                            },
                                             options=[
                                                 {
                                                     'label': '正常',
@@ -463,7 +508,11 @@ def render(button_perms):
                                             }
                                         ),
                                         label='部门状态',
-                                        id='dept-status-form-item'
+                                        id={
+                                            'type': 'dept-form-label',
+                                            'index': 'status',
+                                            'required': False
+                                        }
                                     ),
                                     span=12
                                 ),

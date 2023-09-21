@@ -4,6 +4,7 @@ import uuid
 import json
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -12,24 +13,33 @@ from api.dict import query_dict_data_list_api
 
 
 @app.callback(
-    [Output('operation_log-list-table', 'data', allow_duplicate=True),
-     Output('operation_log-list-table', 'pagination', allow_duplicate=True),
-     Output('operation_log-list-table', 'key'),
-     Output('operation_log-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('operation_log-search', 'nClicks'),
-     Input('operation_log-refresh', 'nClicks'),
-     Input('operation_log-list-table', 'pagination'),
-     Input('operation_log-operations-store', 'data')],
-    [State('operation_log-title-input', 'value'),
-     State('operation_log-oper_name-input', 'value'),
-     State('operation_log-business_type-select', 'value'),
-     State('operation_log-status-select', 'value'),
-     State('operation_log-oper_time-range', 'value'),
-     State('operation_log-button-perms-container', 'data')],
+    output=dict(
+        operation_log_table_data=Output('operation_log-list-table', 'data', allow_duplicate=True),
+        operation_log_table_pagination=Output('operation_log-list-table', 'pagination', allow_duplicate=True),
+        operation_log_table_key=Output('operation_log-list-table', 'key'),
+        operation_log_table_selectedrowkeys=Output('operation_log-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        search_click=Input('operation_log-search', 'nClicks'),
+        refresh_click=Input('operation_log-refresh', 'nClicks'),
+        pagination=Input('operation_log-list-table', 'pagination'),
+        operations=Input('operation_log-operations-store', 'data')
+    ),
+    state=dict(
+        title=State('operation_log-title-input', 'value'),
+        oper_name=State('operation_log-oper_name-input', 'value'),
+        business_type=State('operation_log-business_type-select', 'value'),
+        status_select=State('operation_log-status-select', 'value'),
+        oper_time_range=State('operation_log-oper_time-range', 'value'),
+        button_perms=State('operation_log-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_operation_log_table_data(search_click, refresh_click, pagination, operations, title, oper_name, business_type, status_select, oper_time_range, button_perms):
+    """
+    获取操作日志表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
 
     oper_time_start = None
     oper_time_end = None
@@ -97,13 +107,26 @@ def get_operation_log_table_data(search_click, refresh_click, pagination, operat
                     } if 'monitor:operlog:query' in button_perms else {},
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+            return dict(
+                operation_log_table_data=table_data,
+                operation_log_table_pagination=table_pagination,
+                operation_log_table_key=str(uuid.uuid4()),
+                operation_log_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return dict(
+            operation_log_table_data=dash.no_update,
+            operation_log_table_pagination=dash.no_update,
+            operation_log_table_key=dash.no_update,
+            operation_log_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置操作日志搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -124,6 +147,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示操作日志搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -145,26 +169,28 @@ app.clientside_callback(
 
 
 @app.callback(
-    [Output('operation_log-modal', 'visible', allow_duplicate=True),
-     Output('operation_log-modal', 'title'),
-     Output('operation_log-title-text', 'children'),
-     Output('operation_log-oper_url-text', 'children'),
-     Output('operation_log-login_info-text', 'children'),
-     Output('operation_log-request_method-text', 'children'),
-     Output('operation_log-method-text', 'children'),
-     Output('operation_log-oper_param-text', 'children'),
-     Output('operation_log-json_result-text', 'children'),
-     Output('operation_log-status-text', 'children'),
-     Output('operation_log-cost_time-text', 'children'),
-     Output('operation_log-oper_time-text', 'children'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    Input('operation_log-list-table', 'nClicksButton'),
-    [State('operation_log-list-table', 'clickedContent'),
-     State('operation_log-list-table', 'recentlyButtonClickedRow')],
+    output=dict(
+        modal_visible=Output('operation_log-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('operation_log-modal', 'title'),
+        form_value=Output({'type': 'operation_log-form-value', 'index': ALL}, 'children'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        button_click=Input('operation_log-list-table', 'nClicksButton')
+    ),
+    state=dict(
+        clicked_content=State('operation_log-list-table', 'clickedContent'),
+        recently_button_clicked_row=State('operation_log-list-table', 'recentlyButtonClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_operation_log_modal(button_click, clicked_content, recently_button_clicked_row):
+    """
+    显示操作日志详情弹窗回调
+    """
     if button_click:
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[-2]]
         oper_id = int(recently_button_clicked_row['key'])
         operation_log_info_res = get_operation_log_detail_api(oper_id=oper_id)
         if operation_log_info_res['code'] == 200:
@@ -172,26 +198,24 @@ def add_edit_operation_log_modal(button_click, clicked_content, recently_button_
             oper_name = operation_log_info.get('oper_name') if operation_log_info.get('oper_name') else ''
             oper_ip = operation_log_info.get('oper_ip') if operation_log_info.get('oper_ip') else ''
             oper_location = operation_log_info.get('oper_location') if operation_log_info.get('oper_location') else ''
-            login_info = f'{oper_name} / {oper_ip} / {oper_location}'
-            return [
-                True,
-                '操作日志详情',
-                operation_log_info.get('title'),
-                operation_log_info.get('oper_url'),
-                login_info,
-                operation_log_info.get('request_method'),
-                operation_log_info.get('method'),
-                operation_log_info.get('oper_param'),
-                operation_log_info.get('json_result'),
-                '正常' if operation_log_info.get('status') == 0 else '失败',
-                f"{operation_log_info.get('cost_time')}毫秒",
-                operation_log_info.get('oper_time'),
-                {'timestamp': time.time()},
-            ]
+            operation_log_info['login_info'] = f'{oper_name} / {oper_ip} / {oper_location}'
+            operation_log_info['status'] = '正常' if operation_log_info.get('status') == 0 else '失败'
+            operation_log_info['cost_time'] = f"{operation_log_info.get('cost_time')}毫秒"
+            return dict(
+                modal_visible=True,
+                modal_title='操作日志详情',
+                form_value=[operation_log_info.get(k) for k in form_value_list],
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update] * 12 + [{'timestamp': time.time()}]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 13
+    raise PreventUpdate
 
 
 @app.callback(
@@ -200,17 +224,18 @@ def add_edit_operation_log_modal(button_click, clicked_content, recently_button_
     prevent_initial_call=True
 )
 def change_operation_log_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -222,6 +247,9 @@ def change_operation_log_delete_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def operation_log_delete_modal(operation_click, selected_row_keys):
+    """
+    显示删除或清空操作日志二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id.index in ['delete', 'clear']:
         if trigger_id.index == 'delete':
@@ -240,7 +268,7 @@ def operation_log_delete_modal(operation_click, selected_row_keys):
                 {'oper_type': 'clear', 'oper_ids': ''}
             ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -252,6 +280,9 @@ def operation_log_delete_modal(operation_click, selected_row_keys):
     prevent_initial_call=True
 )
 def operation_log_delete_confirm(delete_confirm, oper_ids_data):
+    """
+    删除或清空操作日志弹窗确认回调，实现删除或清空操作
+    """
     if delete_confirm:
 
         oper_type = oper_ids_data.get('oper_type')
@@ -286,7 +317,7 @@ def operation_log_delete_confirm(delete_confirm, oper_ids_data):
                 fuc.FefferyFancyMessage('删除失败', type='error')
             ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -298,6 +329,9 @@ def operation_log_delete_confirm(delete_confirm, oper_ids_data):
     prevent_initial_call=True
 )
 def export_operation_log_list(export_click):
+    """
+    导出操作日志信息回调
+    """
     if export_click:
         export_operation_log_res = export_operation_log_list_api({})
         if export_operation_log_res.status_code == 200:
@@ -317,7 +351,7 @@ def export_operation_log_list(export_click):
             fuc.FefferyFancyMessage('导出失败', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -326,9 +360,12 @@ def export_operation_log_list(export_click):
     prevent_initial_call=True
 )
 def reset_operation_log_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
 
         return None
 
-    return dash.no_update
+    raise PreventUpdate

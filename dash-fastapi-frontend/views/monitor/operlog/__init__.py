@@ -396,10 +396,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-title-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'title'
+                                            }
+                                        ),
                                         label='操作模块',
                                         required=True,
-                                        id='operation_log-title-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'title'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -411,10 +419,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-oper_url-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'oper_url'
+                                            }
+                                        ),
                                         label='请求地址',
                                         required=True,
-                                        id='operation_log-oper_url-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'oper_url'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -431,10 +447,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-login_info-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'login_info'
+                                            }
+                                        ),
                                         label='登录信息',
                                         required=True,
-                                        id='operation_log-login_info-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'login_info'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -446,10 +470,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-request_method-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'request_method'
+                                            }
+                                        ),
                                         label='请求方式',
                                         required=True,
-                                        id='operation_log-request_method-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'request_method'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -466,10 +498,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-method-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'method'
+                                            }
+                                        ),
                                         label='操作方法',
                                         required=True,
-                                        id='operation_log-method-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'method'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },
@@ -485,10 +525,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-oper_param-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'oper_param'
+                                            }
+                                        ),
                                         label='请求参数',
                                         required=True,
-                                        id='operation_log-oper_param-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'oper_param'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },
@@ -504,10 +552,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-json_result-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'json_result'
+                                            }
+                                        ),
                                         label='返回参数',
                                         required=True,
-                                        id='operation_log-json_result-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'json_result'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },
@@ -523,10 +579,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-status-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'status'
+                                            }
+                                        ),
                                         label='操作状态',
                                         required=True,
-                                        id='operation_log-status-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'status'
+                                        },
                                         labelCol={
                                             'span': 12
                                         },
@@ -538,10 +602,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-cost_time-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'cost_time'
+                                            }
+                                        ),
                                         label='消耗时间',
                                         required=True,
-                                        id='operation_log-cost_time-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'cost_time'
+                                        },
                                         labelCol={
                                             'span': 12
                                         },
@@ -553,10 +625,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='operation_log-oper_time-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'operation_log-form-value',
+                                                'index': 'oper_time'
+                                            }
+                                        ),
                                         label='操作时间',
                                         required=True,
-                                        id='operation_log-oper_time-form-item',
+                                        id={
+                                            'type': 'operation_log-form-label',
+                                            'index': 'oper_time'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },

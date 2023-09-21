@@ -3,6 +3,7 @@ import time
 import uuid
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -30,25 +31,34 @@ def get_search_dept_tree(dept_input):
 
 
 @app.callback(
-    [Output('user-list-table', 'data', allow_duplicate=True),
-     Output('user-list-table', 'pagination', allow_duplicate=True),
-     Output('user-list-table', 'key'),
-     Output('user-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('dept-tree', 'selectedKeys'),
-     Input('user-search', 'nClicks'),
-     Input('user-refresh', 'nClicks'),
-     Input('user-list-table', 'pagination'),
-     Input('user-operations-store', 'data')],
-    [State('user-user_name-input', 'value'),
-     State('user-phone_number-input', 'value'),
-     State('user-status-select', 'value'),
-     State('user-create_time-range', 'value'),
-     State('user-button-perms-container', 'data')],
+    output=dict(
+        user_table_data=Output('user-list-table', 'data', allow_duplicate=True),
+        user_table_pagination=Output('user-list-table', 'pagination', allow_duplicate=True),
+        user_table_key=Output('user-list-table', 'key'),
+        user_table_selectedrowkeys=Output('user-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        selected_dept_tree=Input('dept-tree', 'selectedKeys'),
+        search_click=Input('user-search', 'nClicks'),
+        refresh_click=Input('user-refresh', 'nClicks'),
+        pagination=Input('user-list-table', 'pagination'),
+        operations=Input('user-operations-store', 'data')
+    ),
+    state=dict(
+        user_name=State('user-user_name-input', 'value'),
+        phone_number=State('user-phone_number-input', 'value'),
+        status_select=State('user-status-select', 'value'),
+        create_time_range=State('user-create_time-range', 'value'),
+        button_perms=State('user-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_click, pagination, operations,
                                      user_name, phone_number, status_select, create_time_range, button_perms):
+    """
+    获取用户表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
     dept_id = None
     create_time_start = None
     create_time_end = None
@@ -119,13 +129,26 @@ def get_user_table_data_by_dept_tree(selected_dept_tree, search_click, refresh_c
                         } if 'system:user:edit' in button_perms else None
                     ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+            return dict(
+                user_table_data=table_data,
+                user_table_pagination=table_pagination,
+                user_table_key=str(uuid.uuid4()),
+                user_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return dict(
+            user_table_data=dash.no_update,
+            user_table_pagination=dash.no_update,
+            user_table_key=dash.no_update,
+            user_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置用户搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -146,6 +169,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示用户搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -172,6 +196,9 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_user_edit_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制编辑按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -182,7 +209,7 @@ def change_user_edit_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -191,32 +218,49 @@ def change_user_edit_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def change_user_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             if '1' in table_rows_selected:
                 return True
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('user-add-modal', 'visible', allow_duplicate=True),
-     Output('user-add-dept_id', 'treeData'),
-     Output('user-add-post', 'options'),
-     Output('user-add-role', 'options'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    Input('user-add', 'nClicks'),
+    output=dict(
+        modal_visible=Output('user-add-modal', 'visible', allow_duplicate=True),
+        dept_tree=Output({'type': 'user_add-form-value', 'index': 'dept_id'}, 'treeData'),
+        form_value=Output({'type': 'user_add-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'user_add-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'user_add-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        user_post=Output('user-add-post', 'value'),
+        user_role=Output('user-add-role', 'value'),
+        post_option=Output('user-add-post', 'options'),
+        role_option=Output('user-add-role', 'options'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        add_click=Input('user-add', 'nClicks')
+    ),
     prevent_initial_call=True
 )
 def add_user_modal(add_click):
+    """
+    显示新增用户弹窗回调
+    """
     if add_click:
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
         dept_params = dict(dept_name='')
         tree_info = get_dept_tree_api(dept_params)
         post_option_info = get_post_select_option_api()
@@ -225,126 +269,138 @@ def add_user_modal(add_click):
             tree_data = tree_info['data']
             post_option = post_option_info['data']
             role_option = role_option_info['data']
+            user_info = dict(nick_name=None, dept_id=None, phonenumber=None, email=None, user_name=None, password=None, sex=None, status='0', remark=None)
 
-            return [
-                True,
-                tree_data,
-                [dict(label=item['post_name'], value=item['post_id']) for item in post_option],
-                [dict(label=item['role_name'], value=item['role_id']) for item in role_option],
-                {'timestamp': time.time()}
-            ]
+            return dict(
+                modal_visible=True,
+                dept_tree=tree_data,
+                form_value=[user_info.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                user_post=None,
+                user_role=None,
+                post_option=[dict(label=item['post_name'], value=item['post_id']) for item in post_option],
+                role_option=[dict(label=item['role_name'], value=item['role_id']) for item in role_option],
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update] * 4 + [{'timestamp': time.time()}]
+        return dict(
+            modal_visible=dash.no_update,
+            dept_tree=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            user_post=dash.no_update,
+            user_role=dash.no_update,
+            post_option=dash.no_update,
+            role_option=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('user-add-nick_name-form-item', 'validateStatus'),
-     Output('user-add-user_name-form-item', 'validateStatus'),
-     Output('user-add-password-form-item', 'validateStatus'),
-     Output('user-add-nick_name-form-item', 'help'),
-     Output('user-add-user_name-form-item', 'help'),
-     Output('user-add-password-form-item', 'help'),
-     Output('user-add-modal', 'visible', allow_duplicate=True),
-     Output('user-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('user-add-modal', 'okCounts'),
-    [State('user-add-nick_name', 'value'),
-     State('user-add-dept_id', 'value'),
-     State('user-add-phone_number', 'value'),
-     State('user-add-email', 'value'),
-     State('user-add-user_name', 'value'),
-     State('user-add-password', 'value'),
-     State('user-add-sex', 'value'),
-     State('user-add-status', 'value'),
-     State('user-add-post', 'value'),
-     State('user-add-role', 'value'),
-     State('user-add-remark', 'value')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'user_add-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'user_add-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        modal_visible=Output('user-add-modal', 'visible', allow_duplicate=True),
+        operations=Output('user-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        add_confirm=Input('user-add-modal', 'okCounts')
+    ),
+    state=dict(
+        post=State('user-add-post', 'value'),
+        role=State('user-add-role', 'value'),
+        form_value=State({'type': 'user_add-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'user_add-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def usr_add_confirm(add_confirm, nick_name, dept_id, phone_number, email, user_name, password, sex, status, post, role,
-                    remark):
+def usr_add_confirm(add_confirm, post, role, form_value, form_label):
     if add_confirm:
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
 
-        if all([nick_name, user_name, password]):
-            params = dict(nick_name=nick_name, dept_id=dept_id, phonenumber=phone_number,
-                          email=email, user_name=user_name, password=password, sex=sex,
-                          status=status, post_id=','.join(map(str, post)) if post else '',
-                          role_id=','.join(map(str, role)) if role else '', remark=remark)
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params = form_value_state
+            params['post_id'] = ','.join(map(str, post)) if post else ''
+            params['role_id'] = ','.join(map(str, role)) if role else ''
             add_button_result = add_user_api(params)
 
             if add_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    False,
-                    {'type': 'add'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('新增成功', type='success')
-                ]
+                return dict(
+                    form_label_validate_status=[None] * len(form_label_output_list),
+                    form_label_validate_info=[None] * len(form_label_output_list),
+                    modal_visible=False,
+                    operations={'type': 'add'},
+                    api_check_token_trigger={'timestamp': time.time()},
+                    global_message_container=fuc.FefferyFancyMessage('新增成功', type='success')
+                )
 
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('新增失败', type='error')
-            ]
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('新增失败', type='error')
+            )
 
-        return [
-            None if nick_name else 'error',
-            None if user_name else 'error',
-            None if password else 'error',
-            None if nick_name else '请输入用户昵称！',
-            None if user_name else '请输入用户名称！',
-            None if password else '请输入用户密码！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('新增失败', type='error')
-        ]
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('新增失败', type='error')
+        )
 
-    return [dash.no_update] * 10
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('user-edit-modal', 'visible', allow_duplicate=True),
-     Output('user-edit-dept_id', 'treeData'),
-     Output('user-edit-post', 'options'),
-     Output('user-edit-role', 'options'),
-     Output('user-edit-nick_name', 'value'),
-     Output('user-edit-dept_id', 'value'),
-     Output('user-edit-phone_number', 'value'),
-     Output('user-edit-email', 'value'),
-     Output('user-edit-sex', 'value'),
-     Output('user-edit-status', 'value'),
-     Output('user-edit-post', 'value'),
-     Output('user-edit-role', 'value'),
-     Output('user-edit-remark', 'value'),
-     Output('user-edit-id-store', 'data'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
-     Input('user-list-table', 'nClicksDropdownItem')],
-    [State('user-list-table', 'selectedRowKeys'),
-     State('user-list-table', 'recentlyClickedDropdownItemTitle'),
-     State('user-list-table', 'recentlyDropdownItemClickedRow')],
+    output=dict(
+        modal_visible=Output('user-edit-modal', 'visible', allow_duplicate=True),
+        dept_tree=Output({'type': 'user_edit-form-value', 'index': 'dept_id'}, 'treeData'),
+        form_value=Output({'type': 'user_edit-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'user_edit-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'user_edit-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        user_post=Output('user-edit-post', 'value'),
+        user_role=Output('user-edit-role', 'value'),
+        post_option=Output('user-edit-post', 'options'),
+        role_option=Output('user-edit-role', 'options'),
+        edit_row_info=Output('user-edit-id-store', 'data'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'user-operation-button', 'index': ALL}, 'nClicks'),
+        dropdown_click=Input('user-list-table', 'nClicksDropdownItem')
+    ),
+    state=dict(
+        selected_row_keys=State('user-list-table', 'selectedRowKeys'),
+        recently_clicked_dropdown_item_title=State('user-list-table', 'recentlyClickedDropdownItemTitle'),
+        recently_dropdown_item_clicked_row=State('user-list-table', 'recentlyDropdownItemClickedRow')
+    ),
     prevent_initial_call=True
 )
 def user_edit_modal(operation_click, dropdown_click,
                     selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    """
+    显示编辑用户弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'edit', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '修改'):
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
 
         dept_params = dict(dept_name='')
         tree_data = get_dept_tree_api(dept_params)['data']
@@ -357,97 +413,111 @@ def user_edit_modal(operation_click, dropdown_click,
             if recently_clicked_dropdown_item_title == '修改':
                 user_id = int(recently_dropdown_item_clicked_row['key'])
             else:
-                return [dash.no_update] * 15
+                raise PreventUpdate
 
         edit_button_info = get_user_detail_api(user_id)
         if edit_button_info['code'] == 200:
             edit_button_result = edit_button_info['data']
             user = edit_button_result['user']
-            dept = edit_button_result['dept']
             role = edit_button_result['role']
             post = edit_button_result['post']
 
-            return [
-                True,
-                tree_data,
-                [dict(label=item['post_name'], value=item['post_id']) for item in post_option if item] or [],
-                [dict(label=item['role_name'], value=item['role_id']) for item in role_option if item] or [],
-                user['nick_name'],
-                dept['dept_id'] if dept else None,
-                user['phonenumber'],
-                user['email'],
-                user['sex'],
-                user['status'],
-                [item['post_id'] for item in post if item] or [],
-                [item['role_id'] for item in role if item] or [],
-                user['remark'],
-                {'user_id': user_id},
-                {'timestamp': time.time()}
-            ]
+            return dict(
+                modal_visible=True,
+                dept_tree=tree_data,
+                form_value=[user.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                user_post=[item['post_id'] for item in post if item] or [],
+                user_role=[item['role_id'] for item in role if item] or [],
+                post_option=[dict(label=item['post_name'], value=item['post_id']) for item in post_option if item] or [],
+                role_option=[dict(label=item['role_name'], value=item['role_id']) for item in role_option if item] or [],
+                edit_row_info={'user_id': user_id},
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update] * 14 + [{'timestamp': time.time()}]
+        return dict(
+            modal_visible=dash.no_update,
+            dept_tree=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            user_post=dash.no_update,
+            user_role=dash.no_update,
+            post_option=dash.no_update,
+            role_option=dash.no_update,
+            edit_row_info=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 15
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('user-edit-nick_name-form-item', 'validateStatus'),
-     Output('user-edit-nick_name-form-item', 'help'),
-     Output('user-edit-modal', 'visible', allow_duplicate=True),
-     Output('user-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('user-edit-modal', 'okCounts'),
-    [State('user-edit-nick_name', 'value'),
-     State('user-edit-dept_id', 'value'),
-     State('user-edit-phone_number', 'value'),
-     State('user-edit-email', 'value'),
-     State('user-edit-sex', 'value'),
-     State('user-edit-status', 'value'),
-     State('user-edit-post', 'value'),
-     State('user-edit-role', 'value'),
-     State('user-edit-remark', 'value'),
-     State('user-edit-id-store', 'data')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'user_edit-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'user_edit-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        modal_visible=Output('user-edit-modal', 'visible', allow_duplicate=True),
+        operations=Output('user-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        edit_confirm=Input('user-edit-modal', 'okCounts')
+    ),
+    state=dict(
+        post=State('user-edit-post', 'value'),
+        role=State('user-edit-role', 'value'),
+        edit_row_info=State('user-edit-id-store', 'data'),
+        form_value=State({'type': 'user_edit-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'user_edit-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex, status, post, role, remark, user_id):
+def usr_edit_confirm(edit_confirm, edit_row_info, post, role, form_value, form_label):
     if edit_confirm:
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
 
-        if all([nick_name]):
-            params = dict(user_id=user_id['user_id'], nick_name=nick_name, dept_id=dept_id if dept_id else -1,
-                          phonenumber=phone_number, email=email, sex=sex, status=status,
-                          post_id=','.join(map(str, post)), role_id=','.join(map(str, role)), remark=remark)
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params = form_value_state
+            params['user_id'] = edit_row_info.get('user_id') if edit_row_info else None
+            params['post_id'] = ','.join(map(str, post)) if post else ''
+            params['role_id'] = ','.join(map(str, role)) if role else ''
             edit_button_result = edit_user_api(params)
 
             if edit_button_result['code'] == 200:
-                return [
-                    None,
-                    None,
-                    False,
-                    {'type': 'edit'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('编辑成功', type='success')
-                ]
+                return dict(
+                    form_label_validate_status=[None] * len(form_label_output_list),
+                    form_label_validate_info=[None] * len(form_label_output_list),
+                    modal_visible=False,
+                    operations={'type': 'edit'},
+                    api_check_token_trigger={'timestamp': time.time()},
+                    global_message_container=fuc.FefferyFancyMessage('编辑成功', type='success')
+                )
 
-            return [
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('编辑失败', type='error')
-            ]
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('编辑失败', type='error')
+            )
 
-        return [
-            None if nick_name else 'error',
-            None if nick_name else '请输入用户昵称！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('编辑失败', type='error')
-        ]
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('编辑失败', type='error')
+        )
 
-    return [dash.no_update] * 6
+    raise PreventUpdate
 
 
 @app.callback(
@@ -460,6 +530,9 @@ def usr_edit_confirm(edit_confirm, nick_name, dept_id, phone_number, email, sex,
     prevent_initial_call=True
 )
 def table_switch_user_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
+    """
+    表格内切换用户状态回调
+    """
     if recently_switch_data_index:
         if recently_switch_status:
             params = dict(user_id=int(recently_switch_row['key']), status='0', type='status')
@@ -475,12 +548,12 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
             ]
 
         return [
-            dash.no_update,
+            {'type': 'switch-status'},
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('修改失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -496,6 +569,9 @@ def table_switch_user_status(recently_switch_data_index, recently_switch_status,
 )
 def user_delete_modal(operation_click, dropdown_click,
                       selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    """
+    显示删除用户二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'delete', 'type': 'user-operation-button'} or (trigger_id == 'user-list-table' and recently_clicked_dropdown_item_title == '删除'):
 
@@ -505,7 +581,7 @@ def user_delete_modal(operation_click, dropdown_click,
             if recently_clicked_dropdown_item_title == '删除':
                 user_ids = recently_dropdown_item_clicked_row['key']
             else:
-                return [dash.no_update] * 3
+                raise PreventUpdate
 
         return [
             f'是否确认删除用户编号为{user_ids}的用户？',
@@ -513,7 +589,7 @@ def user_delete_modal(operation_click, dropdown_click,
             {'user_ids': user_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -525,6 +601,9 @@ def user_delete_modal(operation_click, dropdown_click,
     prevent_initial_call=True
 )
 def user_delete_confirm(delete_confirm, user_ids_data):
+    """
+    删除用户弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = user_ids_data
@@ -542,7 +621,7 @@ def user_delete_confirm(delete_confirm, user_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -555,11 +634,14 @@ def user_delete_confirm(delete_confirm, user_ids_data):
     prevent_initial_call=True
 )
 def user_reset_password_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    """
+    显示重置用户密码弹窗回调
+    """
     if dropdown_click:
         if recently_clicked_dropdown_item_title == '重置密码':
             user_id = recently_dropdown_item_clicked_row['key']
         else:
-            return [dash.no_update] * 3
+            raise PreventUpdate
 
         return [
             True,
@@ -567,7 +649,7 @@ def user_reset_password_modal(dropdown_click, recently_clicked_dropdown_item_tit
             None
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -580,6 +662,9 @@ def user_reset_password_modal(dropdown_click, recently_clicked_dropdown_item_tit
     prevent_initial_call=True
 )
 def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
+    """
+    重置用户密码弹窗确认回调，实现重置密码操作
+    """
     if reset_confirm:
 
         user_id_data['password'] = reset_password
@@ -598,7 +683,7 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
             fuc.FefferyFancyMessage('重置失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -612,6 +697,9 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
     prevent_initial_call=True
 )
 def role_to_allocated_user_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, allocated_role_search_nclick):
+    """
+    显示用户分配角色弹窗回调
+    """
     if dropdown_click and recently_clicked_dropdown_item_title == '分配角色':
 
         return [
@@ -620,9 +708,10 @@ def role_to_allocated_user_modal(dropdown_click, recently_clicked_dropdown_item_
             recently_dropdown_item_clicked_row['key']
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
+# 显示用户导入弹窗及重置上传弹窗组件状态回调
 app.clientside_callback(
     '''
     (nClicks) => {
@@ -652,52 +741,61 @@ app.clientside_callback(
 
 
 @app.callback(
-    [Output('user-import-confirm-modal', 'confirmLoading'),
-     Output('batch-result-modal', 'visible'),
-     Output('batch-result-content', 'children'),
-     Output('user-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('user-import-confirm-modal', 'okCounts'),
-    [State('user-upload-choose', 'listUploadTaskRecord'),
-     State('user-import-update-check', 'checked')],
+    output=dict(
+        confirm_loading=Output('user-import-confirm-modal', 'confirmLoading'),
+        modal_visible=Output('batch-result-modal', 'visible'),
+        batch_result=Output('batch-result-content', 'children'),
+        operations=Output('user-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        import_confirm=Input('user-import-confirm-modal', 'okCounts')
+    ),
+    state=dict(
+        list_upload_task_record=State('user-upload-choose', 'listUploadTaskRecord'),
+        is_update=State('user-import-update-check', 'checked')
+    ),
     prevent_initial_call=True
 )
 def user_import_confirm(import_confirm, list_upload_task_record, is_update):
+    """
+    用户导入弹窗确认回调，实现批量导入用户操作
+    """
     if import_confirm:
         if list_upload_task_record:
             url = list_upload_task_record[-1].get('url')
             batch_param = dict(url=url, is_update=is_update)
             batch_import_result = batch_import_user_api(batch_param)
             if batch_import_result.get('code') == 200:
-                return [
-                    False,
-                    True if batch_import_result.get('message') else False,
-                    batch_import_result.get('message'),
-                    {'type': 'batch-import'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('导入成功', type='success')
-                ]
+                return dict(
+                    confirm_loading=False,
+                    modal_visible=True if batch_import_result.get('message') else False,
+                    batch_result=batch_import_result.get('message'),
+                    operations={'type': 'batch-import'},
+                    api_check_token_trigger={'timestamp': time.time()},
+                    global_message_container=fuc.FefferyFancyMessage('导入成功', type='success')
+                )
 
-            return [
-                False,
-                True,
-                batch_import_result.get('message'),
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('导入失败', type='error')
-            ]
+            return dict(
+                confirm_loading=False,
+                modal_visible=True,
+                batch_result=batch_import_result.get('message'),
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('导入失败', type='error')
+            )
         else:
-            return [
-                False,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                fuc.FefferyFancyMessage('请上传需要导入的文件', type='error')
-            ]
+            return dict(
+                confirm_loading=False,
+                modal_visible=dash.no_update,
+                batch_result=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger=dash.no_update,
+                global_message_container=fuc.FefferyFancyMessage('请上传需要导入的文件', type='error')
+            )
 
-    return [dash.no_update] * 6
+    raise PreventUpdate
 
 
 @app.callback(
@@ -710,6 +808,9 @@ def user_import_confirm(import_confirm, list_upload_task_record, is_update):
     prevent_initial_call=True
 )
 def export_user_list(export_click, download_click):
+    """
+    导出用户信息回调
+    """
     trigger_id = dash.ctx.triggered_id
     if export_click or download_click:
 
@@ -751,7 +852,7 @@ def export_user_list(export_click, download_click):
                 fuc.FefferyFancyMessage('下载失败', type='error')
             ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -760,9 +861,12 @@ def export_user_list(export_click, download_click):
     prevent_initial_call=True
 )
 def reset_user_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
 
         return None
 
-    return dash.no_update
+    raise PreventUpdate
