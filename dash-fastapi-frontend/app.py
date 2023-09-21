@@ -76,20 +76,27 @@ app.layout = html.Div(
 
 
 @app.callback(
-    [Output('app-mount', 'children'),
-     Output('redirect-container', 'children', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('current-key-container', 'data'),
-     Output('menu-info-store-container', 'data'),
-     Output('menu-list-store-container', 'data'),
-     Output('search-panel', 'data')],
-    Input('url-container', 'pathname'),
-    [State('url-container', 'trigger'),
-     State('token-container', 'data')],
+    output=dict(
+        app_mount=Output('app-mount', 'children'),
+        redirect_container=Output('redirect-container', 'children', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        menu_current_key=Output('current-key-container', 'data'),
+        menu_info=Output('menu-info-store-container', 'data'),
+        menu_list=Output('menu-list-store-container', 'data'),
+        search_panel_data=Output('search-panel', 'data')
+    ),
+    inputs=dict(pathname=Input('url-container', 'pathname')),
+    state=dict(
+        url_trigger=State('url-container', 'trigger'),
+        session_token=State('token-container', 'data')
+    ),
     prevent_initial_call=True
 )
-def router(pathname, trigger, session_token):
+def router(pathname, url_trigger, session_token):
+    """
+    全局路由回调
+    """
     # 检查当前会话是否已经登录
     token_result = session.get('Authorization')
     # 若已登录
@@ -115,142 +122,136 @@ def router(pathname, trigger, session_token):
                         current_key = '首页'
                     if pathname == '/user/profile':
                         current_key = '个人资料'
-                    if trigger == 'load':
+                    if url_trigger == 'load':
 
                         # 根据pathname控制渲染行为
                         if pathname == '/login' or pathname == '/forget':
                             # 重定向到主页面
-                            return [
-                                dash.no_update,
-                                dcc.Location(
-                                    pathname='/',
-                                    id='router-redirect'
-                                ),
-                                None,
-                                {'timestamp': time.time()},
-                                {'current_key': current_key},
-                                {'menu_info': menu_info},
-                                {'menu_list': menu_list},
-                                search_panel_data
-                            ]
+                            return dict(
+                                app_mount=dash.no_update,
+                                redirect_container=dcc.Location(pathname='/', id='router-redirect'),
+                                global_message_container=None,
+                                api_check_token_trigger={'timestamp': time.time()},
+                                menu_current_key={'current_key': current_key},
+                                menu_info={'menu_info': menu_info},
+                                menu_list={'menu_list': menu_list},
+                                search_panel_data=search_panel_data
+                            )
 
                         # 否则正常渲染主页面
-                        return [
-                            views.layout.render_content(user_menu_info),
-                            None,
-                            fuc.FefferyFancyNotification('进入主页面', type='success', autoClose=2000),
-                            {'timestamp': time.time()},
-                            {'current_key': current_key},
-                            {'menu_info': menu_info},
-                            {'menu_list': menu_list},
-                            search_panel_data
-                        ]
+                        return dict(
+                            app_mount=views.layout.render_content(user_menu_info),
+                            redirect_container=None,
+                            global_message_container=None,
+                            api_check_token_trigger={'timestamp': time.time()},
+                            menu_current_key={'current_key': current_key},
+                            menu_info={'menu_info': menu_info},
+                            menu_list={'menu_list': menu_list},
+                            search_panel_data=search_panel_data
+                        )
 
                     else:
-                        return [
-                            dash.no_update,
-                            None,
-                            None,
-                            {'timestamp': time.time()},
-                            {'current_key': current_key},
-                            {'menu_info': menu_info},
-                            {'menu_list': menu_list},
-                            search_panel_data
-                        ]
+                        return dict(
+                            app_mount=dash.no_update,
+                            redirect_container=None,
+                            global_message_container=None,
+                            api_check_token_trigger={'timestamp': time.time()},
+                            menu_current_key={'current_key': current_key},
+                            menu_info={'menu_info': menu_info},
+                            menu_list={'menu_list': menu_list},
+                            search_panel_data=search_panel_data
+                        )
 
                 else:
                     # 渲染404状态页
-                    return [
-                        views.page_404.render_content(),
-                        None,
-                        None,
-                        {'timestamp': time.time()},
-                        dash.no_update,
-                        dash.no_update,
-                        dash.no_update,
-                        dash.no_update
-                    ]
+                    return dict(
+                        app_mount=views.page_404.render_content(),
+                        redirect_container=None,
+                        global_message_container=None,
+                        api_check_token_trigger={'timestamp': time.time()},
+                        menu_current_key=dash.no_update,
+                        menu_info=dash.no_update,
+                        menu_list=dash.no_update,
+                        search_panel_data=dash.no_update
+                    )
 
             else:
-                return [
-                    dash.no_update,
-                    dash.no_update,
-                    dash.no_update,
-                    {'timestamp': time.time()},
-                    dash.no_update,
-                    dash.no_update,
-                    dash.no_update,
-                    dash.no_update
-                ]
+                return dict(
+                    app_mount=dash.no_update,
+                    redirect_container=dash.no_update,
+                    global_message_container=dash.no_update,
+                    api_check_token_trigger={'timestamp': time.time()},
+                    menu_current_key=dash.no_update,
+                    menu_info=dash.no_update,
+                    menu_list=dash.no_update,
+                    search_panel_data=dash.no_update
+                )
 
         except Exception as e:
             print(e)
 
-            return [
-                dash.no_update,
-                None,
-                fuc.FefferyFancyNotification('接口异常', type='error', autoClose=2000),
-                {'timestamp': time.time()},
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update
-            ]
+            return dict(
+                app_mount=dash.no_update,
+                redirect_container=None,
+                global_message_container=fuc.FefferyFancyNotification('接口异常', type='error', autoClose=2000),
+                api_check_token_trigger={'timestamp': time.time()},
+                menu_current_key=dash.no_update,
+                menu_info=dash.no_update,
+                menu_list=dash.no_update,
+                search_panel_data=dash.no_update
+            )
     else:
         # 若未登录
         # 根据pathname控制渲染行为
         # 检验pathname合法性
         if pathname not in RouterConfig.BASIC_VALID_PATHNAME:
             # 渲染404状态页
-            return [
-                views.page_404.render_content(),
-                None,
-                None,
-                {'timestamp': time.time()},
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update
-            ]
+            return dict(
+                app_mount=views.page_404.render_content(),
+                redirect_container=None,
+                global_message_container=None,
+                api_check_token_trigger={'timestamp': time.time()},
+                menu_current_key=dash.no_update,
+                menu_info=dash.no_update,
+                menu_list=dash.no_update,
+                search_panel_data=dash.no_update
+            )
 
         if pathname == '/login':
-            return [
-                views.login.render_content(),
-                None,
-                None,
-                {'timestamp': time.time()},
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update
-            ]
+            return dict(
+                app_mount=views.login.render_content(),
+                redirect_container=None,
+                global_message_container=None,
+                api_check_token_trigger={'timestamp': time.time()},
+                menu_current_key=dash.no_update,
+                menu_info=dash.no_update,
+                menu_list=dash.no_update,
+                search_panel_data=dash.no_update
+            )
 
         if pathname == '/forget':
-            return [
-                views.forget.render_forget_content(),
-                None,
-                None,
-                {'timestamp': time.time()},
-                dash.no_update,
-                dash.no_update,
-                dash.no_update,
-                dash.no_update
-            ]
+            return dict(
+                app_mount=views.forget.render_forget_content(),
+                redirect_container=None,
+                global_message_container=None,
+                api_check_token_trigger={'timestamp': time.time()},
+                menu_current_key=dash.no_update,
+                menu_info=dash.no_update,
+                menu_list=dash.no_update,
+                search_panel_data=dash.no_update
+            )
 
         # 否则重定向到登录页
-        return [
-            dash.no_update,
-            dcc.Location(
-                pathname='/login',
-                id='router-redirect'
-            ),
-            None,
-            {'timestamp': time.time()},
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update
-        ]
+        return dict(
+            app_mount=dash.no_update,
+            redirect_container=dcc.Location(pathname='/login', id='router-redirect'),
+            global_message_container=None,
+            api_check_token_trigger={'timestamp': time.time()},
+            menu_current_key=dash.no_update,
+            menu_info=dash.no_update,
+            menu_list=dash.no_update,
+            search_panel_data=dash.no_update
+        )
 
 
 if __name__ == '__main__':

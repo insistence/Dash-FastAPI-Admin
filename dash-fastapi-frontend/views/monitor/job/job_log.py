@@ -5,7 +5,6 @@ import callbacks.monitor_c.job_c.job_log_c
 
 
 def render(button_perms):
-
     return [
         dcc.Store(id='job_log-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -311,7 +310,7 @@ def render(button_perms):
             gutter=5
         ),
 
-        # 任务调度日志明细modal
+        # 任务调度日志明细modal，表单项id使用字典类型，index与后端数据库字段一一对应
         fac.AntdModal(
             [
                 fac.AntdForm(
@@ -320,10 +319,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_name-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_name'
+                                            }
+                                        ),
                                         label='任务名称',
                                         required=True,
-                                        id='job_log-job_name-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_name'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -335,10 +342,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_group-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_group'
+                                            }
+                                        ),
                                         label='任务分组',
                                         required=True,
-                                        id='job_log-job_group-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_group'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -355,10 +370,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_executor-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_executor'
+                                            }
+                                        ),
                                         label='任务执行器',
                                         required=True,
-                                        id='job_log-job_executor-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_executor'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -370,10 +393,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-invoke_target-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'invoke_target'
+                                            }
+                                        ),
                                         label='调用目标字符串',
                                         required=True,
-                                        id='job_log-invoke_target-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'invoke_target'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -390,10 +421,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_args-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_args'
+                                            }
+                                        ),
                                         label='位置参数',
                                         required=True,
-                                        id='job_log-job_args-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_args'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -405,10 +444,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_kwargs-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_kwargs'
+                                            }
+                                        ),
                                         label='关键字参数',
                                         required=True,
-                                        id='job_log-job_kwargs-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_kwargs'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -425,10 +472,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_trigger-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_trigger'
+                                            }
+                                        ),
                                         label='任务触发器',
                                         required=True,
-                                        id='job_log-job_trigger-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_trigger'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },
@@ -444,10 +499,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-job_message-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'job_message'
+                                            }
+                                        ),
                                         label='日志信息',
                                         required=True,
-                                        id='job_log-job_message-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'job_message'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },
@@ -463,10 +526,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-status-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'status'
+                                            }
+                                        ),
                                         label='执行状态',
                                         required=True,
-                                        id='job_log-status-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'status'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -478,10 +549,18 @@ def render(button_perms):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-create_time-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'create_time'
+                                            }
+                                        ),
                                         label='执行时间',
                                         required=True,
-                                        id='job_log-create_time-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'create_time'
+                                        },
                                         labelCol={
                                             'span': 8
                                         },
@@ -498,10 +577,18 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdText(id='job_log-exception_info-text'),
+                                        fac.AntdText(
+                                            id={
+                                                'type': 'job_log-form-value',
+                                                'index': 'exception_info'
+                                            }
+                                        ),
                                         label='异常信息',
                                         required=True,
-                                        id='job_log-exception_info-form-item',
+                                        id={
+                                            'type': 'job_log-form-label',
+                                            'index': 'exception_info'
+                                        },
                                         labelCol={
                                             'span': 4
                                         },

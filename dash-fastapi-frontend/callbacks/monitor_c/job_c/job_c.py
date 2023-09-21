@@ -4,6 +4,7 @@ import uuid
 import json
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -12,23 +13,32 @@ from api.dict import query_dict_data_list_api
 
 
 @app.callback(
-    [Output('job-list-table', 'data', allow_duplicate=True),
-     Output('job-list-table', 'pagination', allow_duplicate=True),
-     Output('job-list-table', 'key'),
-     Output('job-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('job-search', 'nClicks'),
-     Input('job-refresh', 'nClicks'),
-     Input('job-list-table', 'pagination'),
-     Input('job-operations-store', 'data')],
-    [State('job-job_name-input', 'value'),
-     State('job-job_group-select', 'value'),
-     State('job-status-select', 'value'),
-     State('job-button-perms-container', 'data')],
+    output=dict(
+        job_table_data=Output('job-list-table', 'data', allow_duplicate=True),
+        job_table_pagination=Output('job-list-table', 'pagination', allow_duplicate=True),
+        job_table_key=Output('job-list-table', 'key'),
+        job_table_selectedrowkeys=Output('job-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        search_click=Input('job-search', 'nClicks'),
+        refresh_click=Input('job-refresh', 'nClicks'),
+        pagination=Input('job-list-table', 'pagination'),
+        operations=Input('job-operations-store', 'data')
+    ),
+    state=dict(
+        job_name=State('job-job_name-input', 'value'),
+        job_group=State('job-job_group-select', 'value'),
+        status_select=State('job-status-select', 'value'),
+        button_perms=State('job-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_job_table_data(search_click, refresh_click, pagination, operations, job_name, job_group, status_select,
                        button_perms):
+    """
+    获取定时任务表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
     query_params = dict(
         job_name=job_name,
         job_group=job_group,
@@ -101,13 +111,26 @@ def get_job_table_data(search_click, refresh_click, pagination, operations, job_
                     } if 'monitor:job:query' in button_perms else None
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+            return dict(
+                job_table_data=table_data,
+                job_table_pagination=table_pagination,
+                job_table_key=str(uuid.uuid4()),
+                job_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return dict(
+            job_table_data=dash.no_update,
+            job_table_pagination=dash.no_update,
+            job_table_key=dash.no_update,
+            job_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置定时任务搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -126,6 +149,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示定时任务搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -152,6 +176,9 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_job_edit_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制编辑按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -162,7 +189,7 @@ def change_job_edit_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -171,64 +198,77 @@ def change_job_edit_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def change_job_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('job-modal', 'visible', allow_duplicate=True),
-     Output('job-modal', 'title'),
-     Output('job-job_name', 'value'),
-     Output('job-job_group', 'value'),
-     Output('job-invoke_target', 'value'),
-     Output('job-cron_expression', 'value'),
-     Output('job-job_args', 'value'),
-     Output('job-job_kwargs', 'value'),
-     Output('job-misfire_policy', 'value'),
-     Output('job-concurrent', 'value'),
-     Output('job-status', 'value'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('job-edit-id-store', 'data'),
-     Output('job-operations-store-bk', 'data')],
-    [Input({'type': 'job-operation-button', 'index': ALL}, 'nClicks'),
-     Input('job-list-table', 'nClicksDropdownItem')],
-    [State('job-list-table', 'selectedRowKeys'),
-     State('job-list-table', 'recentlyClickedDropdownItemTitle'),
-     State('job-list-table', 'recentlyDropdownItemClickedRow')],
+    output=dict(
+        modal_visible=Output('job-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('job-modal', 'title'),
+        form_value=Output({'type': 'job-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'job-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'job-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        edit_row_info=Output('job-edit-id-store', 'data'),
+        modal_type=Output('job-operations-store-bk', 'data')
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'job-operation-button', 'index': ALL}, 'nClicks'),
+        dropdown_click=Input('job-list-table', 'nClicksDropdownItem')
+    ),
+    state=dict(
+        selected_row_keys=State('job-list-table', 'selectedRowKeys'),
+        recently_clicked_dropdown_item_title=State('job-list-table', 'recentlyClickedDropdownItemTitle'),
+        recently_dropdown_item_clicked_row=State('job-list-table', 'recentlyDropdownItemClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_job_modal(operation_click, dropdown_click, selected_row_keys, recently_clicked_dropdown_item_title,
                        recently_dropdown_item_clicked_row):
+    """
+    显示新增或编辑定时任务弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'add', 'type': 'job-operation-button'} \
             or trigger_id == {'index': 'edit', 'type': 'job-operation-button'} \
             or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '修改'):
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'job-operation-button'}:
-            return [
-                True,
-                '新增任务',
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                '1',
-                '1',
-                '0',
-                dash.no_update,
-                None,
-                {'type': 'add'}
-            ]
+            job_info = dict(
+                job_name=None,
+                job_group=None,
+                invoke_target=None,
+                cron_expression=None,
+                job_args=None,
+                job_kwargs=None,
+                misfire_policy='1',
+                concurrent='1',
+                status='0'
+            )
+            return dict(
+                modal_visible=True,
+                modal_title='新增任务',
+                form_value=[job_info.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                api_check_token_trigger=dash.no_update,
+                edit_row_info=None,
+                modal_type={'type': 'add'}
+            )
         elif trigger_id == {'index': 'edit', 'type': 'job-operation-button'} or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '修改'):
             if trigger_id == {'index': 'edit', 'type': 'job-operation-button'}:
                 job_id = int(','.join(selected_row_keys))
@@ -237,125 +277,112 @@ def add_edit_job_modal(operation_click, dropdown_click, selected_row_keys, recen
             job_info_res = get_job_detail_api(job_id=job_id)
             if job_info_res['code'] == 200:
                 job_info = job_info_res['data']
-                return [
-                    True,
-                    '编辑任务',
-                    job_info.get('job_name'),
-                    job_info.get('job_group'),
-                    job_info.get('invoke_target'),
-                    job_info.get('cron_expression'),
-                    job_info.get('job_args'),
-                    job_info.get('job_kwargs'),
-                    job_info.get('misfire_policy'),
-                    job_info.get('concurrent'),
-                    job_info.get('status'),
-                    {'timestamp': time.time()},
-                    job_info if job_info else None,
-                    {'type': 'edit'}
-                ]
+                return dict(
+                    modal_visible=True,
+                    modal_title='编辑任务',
+                    form_value=[job_info.get(k) for k in form_value_list],
+                    form_label_validate_status=[None] * len(form_label_list),
+                    form_label_validate_info=[None] * len(form_label_list),
+                    api_check_token_trigger={'timestamp': time.time()},
+                    edit_row_info=job_info if job_info else None,
+                    modal_type={'type': 'edit'}
+                )
 
-        return [dash.no_update] * 11 + [{'timestamp': time.time()}, None, None]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            edit_row_info=None,
+            modal_type=None
+        )
 
-    return [dash.no_update] * 12 + [None, None]
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('job-job_name-form-item', 'validateStatus'),
-     Output('job-invoke_target-form-item', 'validateStatus'),
-     Output('job-cron_expression-form-item', 'validateStatus'),
-     Output('job-job_name-form-item', 'help'),
-     Output('job-invoke_target-form-item', 'help'),
-     Output('job-cron_expression-form-item', 'help'),
-     Output('job-modal', 'visible'),
-     Output('job-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('job-modal', 'okCounts'),
-    [State('job-operations-store-bk', 'data'),
-     State('job-edit-id-store', 'data'),
-     State('job-job_name', 'value'),
-     State('job-job_group', 'value'),
-     State('job-invoke_target', 'value'),
-     State('job-cron_expression', 'value'),
-     State('job-job_args', 'value'),
-     State('job-job_kwargs', 'value'),
-     State('job-misfire_policy', 'value'),
-     State('job-concurrent', 'value'),
-     State('job-status', 'value')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'job-form-label', 'index': ALL, 'required': True}, 'validateStatus',
+                                          allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'job-form-label', 'index': ALL, 'required': True}, 'help',
+                                        allow_duplicate=True),
+        modal_visible=Output('job-modal', 'visible'),
+        operations=Output('job-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        confirm_trigger=Input('job-modal', 'okCounts')
+    ),
+    state=dict(
+        modal_type=State('job-operations-store-bk', 'data'),
+        edit_row_info=State('job-edit-id-store', 'data'),
+        form_value=State({'type': 'job-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'job-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def job_confirm(confirm_trigger, operation_type, cur_job_info, job_name, job_group, invoke_target, cron_expression,
-                job_args, job_kwargs, misfire_policy, concurrent, status):
+def job_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_label):
+    """
+    新增或编定时任务弹窗确认回调，实现新增或编辑操作
+    """
     if confirm_trigger:
-        if all([job_name, invoke_target, cron_expression]):
-            params_add = dict(job_name=job_name, job_group=job_group, invoke_target=invoke_target,
-                              cron_expression=cron_expression, job_args=job_args, job_kwargs=job_kwargs,
-                              misfire_policy=misfire_policy, concurrent=concurrent, status=status)
-            params_edit = dict(job_id=cur_job_info.get('job_id') if cur_job_info else None, job_name=job_name,
-                               job_group=job_group, invoke_target=invoke_target, cron_expression=cron_expression,
-                               job_args=job_args, job_kwargs=job_kwargs,
-                               misfire_policy=misfire_policy, concurrent=concurrent, status=status)
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params_add = form_value_state
+            params_edit = params_add.copy()
+            params_edit['job_id'] = edit_row_info.get('job_id') if edit_row_info else None
             api_res = {}
-            operation_type = operation_type.get('type')
-            if operation_type == 'add':
+            modal_type = modal_type.get('type')
+            if modal_type == 'add':
                 api_res = add_job_api(params_add)
-            if operation_type == 'edit':
+            if modal_type == 'edit':
                 api_res = edit_job_api(params_edit)
             if api_res.get('code') == 200:
-                if operation_type == 'add':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'add'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('新增成功', type='success')
-                    ]
-                if operation_type == 'edit':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'edit'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('编辑成功', type='success')
-                    ]
+                if modal_type == 'add':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'add'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('新增成功', type='success')
+                    )
+                if modal_type == 'edit':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'edit'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('编辑成功', type='success')
+                    )
 
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('处理失败', type='error')
-            ]
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+            )
 
-        return [
-            None if job_name else 'error',
-            None if invoke_target else 'error',
-            None if cron_expression else 'error',
-            None if job_name else '请输入任务名称！',
-            None if invoke_target else '请输入调用目标字符串！',
-            None if cron_expression else '请输入cron执行表达式！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('处理失败', type='error')
-        ]
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+        )
 
-    return [dash.no_update] * 10
+    raise PreventUpdate
 
 
 @app.callback(
@@ -368,6 +395,9 @@ def job_confirm(confirm_trigger, operation_type, cur_job_info, job_name, job_gro
     prevent_initial_call=True
 )
 def table_switch_job_status(recently_switch_data_index, recently_switch_status, recently_switch_row):
+    """
+    表格内切换定时任务状态回调
+    """
     if recently_switch_data_index:
         if recently_switch_status:
             params = dict(job_id=int(recently_switch_row['key']), status='0', type='status')
@@ -383,109 +413,89 @@ def table_switch_job_status(recently_switch_data_index, recently_switch_status, 
             ]
 
         return [
-            dash.no_update,
+            {'type': 'switch-status'},
             {'timestamp': time.time()},
             fuc.FefferyFancyMessage('修改失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('job_detail-modal', 'visible', allow_duplicate=True),
-     Output('job_detail-modal', 'title'),
-     Output('job_detail-job_name-text', 'children'),
-     Output('job_detail-job_group-text', 'children'),
-     Output('job_detail-job_executor-text', 'children'),
-     Output('job_detail-invoke_target-text', 'children'),
-     Output('job_detail-job_args-text', 'children'),
-     Output('job_detail-job_kwargs-text', 'children'),
-     Output('job_detail-cron_expression-text', 'children'),
-     Output('job_detail-misfire_policy-text', 'children'),
-     Output('job_detail-concurrent-text', 'children'),
-     Output('job_detail-status-text', 'children'),
-     Output('job_detail-create_time-text', 'children'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('job-list-table', 'nClicksDropdownItem'),
-    [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
-     State('job-list-table', 'recentlyDropdownItemClickedRow')],
+    output=dict(
+        modal_visible=Output('job_detail-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('job_detail-modal', 'title'),
+        form_value=Output({'type': 'job_detail-form-value', 'index': ALL}, 'children'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        dropdown_click=Input('job-list-table', 'nClicksDropdownItem')
+    ),
+    state=dict(
+        recently_clicked_dropdown_item_title=State('job-list-table', 'recentlyClickedDropdownItemTitle'),
+        recently_dropdown_item_clicked_row=State('job-list-table', 'recentlyDropdownItemClickedRow')
+    ),
     prevent_initial_call=True
 )
 def get_job_detail_modal(dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    """
+    显示定时任务详情弹窗回调及执行一次定时任务回调
+    """
+    # 获取所有输出表单项对应value的index
+    form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[-3]]
+    # 显示定时任务详情弹窗
     if dropdown_click and recently_clicked_dropdown_item_title == '任务详细':
         job_id = int(recently_dropdown_item_clicked_row['key'])
         job_info_res = get_job_detail_api(job_id=job_id)
         if job_info_res['code'] == 200:
             job_info = job_info_res['data']
             if job_info.get('misfire_policy') == '1':
-                misfire_policy = '立即执行'
+                job_info['misfire_policy'] = '立即执行'
             elif job_info.get('misfire_policy') == '2':
-                misfire_policy = '执行一次'
+                job_info['misfire_policy'] = '执行一次'
             else:
-                misfire_policy = '放弃执行'
-            return [
-                True,
-                '任务详情',
-                job_info.get('job_name'),
-                job_info.get('job_group'),
-                job_info.get('job_executor'),
-                job_info.get('invoke_target'),
-                job_info.get('job_args'),
-                job_info.get('job_kwargs'),
-                job_info.get('cron_expression'),
-                misfire_policy,
-                '是' if job_info.get('concurrent') == '0' else '否',
-                '正常' if job_info.get('status') == '0' else '停用',
-                job_info.get('create_time'),
-                {'timestamp': time.time()},
-                None
-            ]
+                job_info['misfire_policy'] = '放弃执行'
+            job_info['concurrent'] = '是' if job_info.get('concurrent') == '0' else '否'
+            job_info['status'] = '正常' if job_info.get('status') == '0' else '停用'
+            return dict(
+                modal_visible=True,
+                modal_title='任务详情',
+                form_value=[job_info.get(k) for k in form_value_list],
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=None
+            )
 
-        return [dash.no_update] * 13 + [{'timestamp': time.time()}, None]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=None
+        )
 
+    # 执行一次定时任务
     if dropdown_click and recently_clicked_dropdown_item_title == '执行一次':
         job_id = int(recently_dropdown_item_clicked_row['key'])
         job_info_res = execute_job_api(dict(job_id=job_id))
         if job_info_res['code'] == 200:
+            return dict(
+                modal_visible=False,
+                modal_title=None,
+                form_value=[None] * len(form_value_list),
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('执行成功', type='success')
+            )
 
-            return [
-                False,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('执行成功', type='success')
-            ]
+        return dict(
+            modal_visible=False,
+            modal_title=None,
+            form_value=[None] * len(form_value_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('执行失败', type='error')
+        )
 
-        return [
-            False,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('执行失败', type='success')
-        ]
-
-    return [dash.no_update] * 15
+    raise PreventUpdate
 
 
 @app.callback(
@@ -501,6 +511,9 @@ def get_job_detail_modal(dropdown_click, recently_clicked_dropdown_item_title, r
 )
 def job_delete_modal(operation_click, dropdown_click,
                      selected_row_keys, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row):
+    """
+    显示删除定时任务二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'delete', 'type': 'job-operation-button'} or (
             trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '删除'):
@@ -519,7 +532,7 @@ def job_delete_modal(operation_click, dropdown_click,
             {'job_ids': job_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -531,6 +544,9 @@ def job_delete_modal(operation_click, dropdown_click,
     prevent_initial_call=True
 )
 def job_delete_confirm(delete_confirm, job_ids_data):
+    """
+    删除定时任务弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = job_ids_data
@@ -548,24 +564,33 @@ def job_delete_confirm(delete_confirm, job_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('job_to_job_log-modal', 'visible'),
-     Output('job_to_job_log-modal', 'title'),
-     Output('job_log-job_name-input', 'value', allow_duplicate=True),
-     Output('job_log-job_group-select', 'options'),
-     Output('job_log-search', 'nClicks'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input({'type': 'job-operation-log', 'index': ALL}, 'nClicks'),
-     Input('job-list-table', 'nClicksDropdownItem')],
-    [State('job-list-table', 'recentlyClickedDropdownItemTitle'),
-     State('job-list-table', 'recentlyDropdownItemClickedRow'),
-     State('job_log-search', 'nClicks')],
+    output=dict(
+        job_log_modal_visible=Output('job_to_job_log-modal', 'visible'),
+        job_log_modal_title=Output('job_to_job_log-modal', 'title'),
+        job_log_job_name=Output('job_log-job_name-input', 'value', allow_duplicate=True),
+        job_log_job_group_options=Output('job_log-job_group-select', 'options'),
+        job_log_search_nclick=Output('job_log-search', 'nClicks'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'job-operation-log', 'index': ALL}, 'nClicks'),
+        dropdown_click=Input('job-list-table', 'nClicksDropdownItem')
+    ),
+    state=dict(
+        recently_clicked_dropdown_item_title=State('job-list-table', 'recentlyClickedDropdownItemTitle'),
+        recently_dropdown_item_clicked_row=State('job-list-table', 'recentlyDropdownItemClickedRow'),
+        job_log_search_nclick=State('job_log-search', 'nClicks')
+    ),
     prevent_initial_call=True
 )
 def job_to_job_log_modal(operation_click, dropdown_click, recently_clicked_dropdown_item_title, recently_dropdown_item_clicked_row, job_log_search_nclick):
+    """
+    显示定时任务对应调度日志表格弹窗回调
+    """
 
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'log', 'type': 'job-operation-log'} or (trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '调度日志'):
@@ -576,25 +601,25 @@ def job_to_job_log_modal(operation_click, dropdown_click, recently_clicked_dropd
             option_table = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
 
             if trigger_id == 'job-list-table' and recently_clicked_dropdown_item_title == '调度日志':
-                return [
-                    True,
-                    '任务调度日志',
-                    recently_dropdown_item_clicked_row.get('job_name'),
-                    option_table,
-                    job_log_search_nclick + 1 if job_log_search_nclick else 1,
-                    {'timestamp': time.time()},
-                ]
+                return dict(
+                    job_log_modal_visible=True,
+                    job_log_modal_title='任务调度日志',
+                    job_log_job_name=recently_dropdown_item_clicked_row.get('job_name'),
+                    job_log_job_group_options=option_table,
+                    job_log_search_nclick=job_log_search_nclick + 1 if job_log_search_nclick else 1,
+                    api_check_token_trigger={'timestamp': time.time()}
+                )
 
-        return [
-                True,
-                '任务调度日志',
-                None,
-                option_table,
-                job_log_search_nclick + 1 if job_log_search_nclick else 1,
-                {'timestamp': time.time()},
-            ]
+        return dict(
+            job_log_modal_visible=True,
+            job_log_modal_title='任务调度日志',
+            job_log_job_name=None,
+            job_log_job_group_options=option_table,
+            job_log_search_nclick=job_log_search_nclick + 1 if job_log_search_nclick else 1,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 6
+    raise PreventUpdate
 
 
 @app.callback(
@@ -606,6 +631,9 @@ def job_to_job_log_modal(operation_click, dropdown_click, recently_clicked_dropd
     prevent_initial_call=True
 )
 def export_job_list(export_click):
+    """
+    导出定时任务信息回调
+    """
     if export_click:
         export_job_res = export_job_list_api({})
         if export_job_res.status_code == 200:
@@ -625,7 +653,7 @@ def export_job_list(export_click):
             fuc.FefferyFancyMessage('导出失败', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -634,8 +662,11 @@ def export_job_list(export_click):
     prevent_initial_call=True
 )
 def reset_job_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
         return None
 
-    return dash.no_update
+    raise PreventUpdate

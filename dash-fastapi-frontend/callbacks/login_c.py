@@ -10,24 +10,30 @@ from api.login import login_api, get_captcha_image_api
 
 
 @app.callback(
-    [Output('login-username-form-item', 'validateStatus'),
-     Output('login-password-form-item', 'validateStatus'),
-     Output('login-captcha-form-item', 'validateStatus'),
-     Output('login-username-form-item', 'help'),
-     Output('login-password-form-item', 'help'),
-     Output('login-captcha-form-item', 'help'),
-     Output('login-captcha-image-container', 'n_clicks'),
-     Output('login-submit', 'loading'),
-     Output('token-container', 'data'),
-     Output('redirect-container', 'children', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('login-submit', 'nClicks'),
-    [State('login-username', 'value'),
-     State('login-password', 'value'),
-     State('login-captcha', 'value'),
-     State('captcha_image-session_id-container', 'data'),
-     State('login-captcha-image-container', 'n_clicks'),
-     State('captcha-row-container', 'hidden')],
+    output=dict(
+        username_form_status=Output('login-username-form-item', 'validateStatus'),
+        password_form_status=Output('login-password-form-item', 'validateStatus'),
+        captcha_form_status=Output('login-captcha-form-item', 'validateStatus'),
+        username_form_help=Output('login-username-form-item', 'help'),
+        password_form_help=Output('login-password-form-item', 'help'),
+        captcha_form_help=Output('login-captcha-form-item', 'help'),
+        image_click=Output('login-captcha-image-container', 'n_clicks'),
+        submit_loading=Output('login-submit', 'loading'),
+        token=Output('token-container', 'data'),
+        redirect_container=Output('redirect-container', 'children', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        nClicks=Input('login-submit', 'nClicks')
+    ),
+    state=dict(
+        username=State('login-username', 'value'),
+        password=State('login-password', 'value'),
+        input_captcha=State('login-captcha', 'value'),
+        session_id=State('captcha_image-session_id-container', 'data'),
+        image_click=State('login-captcha-image-container', 'n_clicks'),
+        captcha_hidden=State('captcha-row-container', 'hidden')
+    ),
     prevent_initial_call=True
 )
 def login_auth(nClicks, username, password, input_captcha, session_id, image_click, captcha_hidden):
@@ -43,70 +49,78 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                 if userinfo_result['code'] == 200:
                     token = userinfo_result['data']['access_token']
                     session['Authorization'] = token
-
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        dash.no_update,
-                        False,
-                        token,
-                        dcc.Location(
-                            pathname='/',
-                            id='login-redirect'
-                        ),
-                        fuc.FefferyFancyMessage('登录成功', type='success'),
-                    ]
+                    return dict(
+                        username_form_status=None,
+                        password_form_status=None,
+                        captcha_form_status=None,
+                        username_form_help=None,
+                        password_form_help=None,
+                        captcha_form_help=None,
+                        image_click=dash.no_update,
+                        submit_loading=False,
+                        token=token,
+                        redirect_container=dcc.Location(pathname='/', id='login-redirect'),
+                        global_message_container=fuc.FefferyFancyMessage('登录成功', type='success')
+                    )
 
                 else:
 
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        image_click + 1,
-                        False,
-                        None,
-                        None,
-                        fuc.FefferyFancyMessage(userinfo_result.get('message'), type='error'),
-                    ]
+                    return dict(
+                        username_form_status=None,
+                        password_form_status=None,
+                        captcha_form_status=None,
+                        username_form_help=None,
+                        password_form_help=None,
+                        captcha_form_help=None,
+                        image_click=image_click + 1,
+                        submit_loading=False,
+                        token=None,
+                        redirect_container=None,
+                        global_message_container=fuc.FefferyFancyMessage(userinfo_result.get('message'), type='error')
+                    )
             except Exception as e:
                 print(e)
-                return [
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    image_click + 1,
-                    False,
-                    None,
-                    None,
-                    fuc.FefferyFancyMessage('接口异常', type='error'),
-                ]
+                return dict(
+                    username_form_status=None,
+                    password_form_status=None,
+                    captcha_form_status=None,
+                    username_form_help=None,
+                    password_form_help=None,
+                    captcha_form_help=None,
+                    image_click=image_click + 1,
+                    submit_loading=False,
+                    token=None,
+                    redirect_container=None,
+                    global_message_container=fuc.FefferyFancyMessage('接口异常', type='error')
+                )
 
-        return [
-            None if username else 'error',
-            None if password else 'error',
-            None if input_captcha else 'error',
-            None if username else '请输入用户名！',
-            None if password else '请输入密码！',
-            None if input_captcha else '请输入验证码！',
-            dash.no_update,
-            False,
-            None,
-            None,
-            None
-        ]
+        return dict(
+            username_form_status=None if username else 'error',
+            password_form_status=None if password else 'error',
+            captcha_form_status=None if input_captcha else 'error',
+            username_form_help=None if username else '请输入用户名！',
+            password_form_help=None if password else '请输入密码！',
+            captcha_form_help=None if input_captcha else '请输入验证码！',
+            image_click=dash.no_update,
+            submit_loading=False,
+            token=None,
+            redirect_container=None,
+            global_message_container=None
+        )
 
-    return [dash.no_update] * 6 + [image_click + 1] + [dash.no_update] * 4
+    return dict(
+        username_form_status=dash.no_update,
+        password_form_status=dash.no_update,
+        captcha_form_status=dash.no_update,
+        username_form_help=dash.no_update,
+        password_form_help=dash.no_update,
+        captcha_form_help=dash.no_update,
+        image_click=image_click + 1,
+        submit_loading=dash.no_update,
+        token=dash.no_update,
+        redirect_container=dash.no_update,
+        global_message_container=dash.no_update
+    )
 
 
 @app.callback(

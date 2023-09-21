@@ -2,6 +2,7 @@ import dash
 import time
 import uuid
 from dash.dependencies import Input, Output, State, ALL, MATCH
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -24,6 +25,9 @@ from api.role import get_allocated_user_list_api, get_unallocated_user_list_api,
     prevent_initial_call=True
 )
 def get_allocate_user_table_data(search_click, refresh_click, pagination, operations, user_name, phonenumber, role_id, button_perms):
+    """
+    使用模式匹配回调MATCH模式，根据不同类型获取角色已分配用户列表及未分配用户列表（进行表格相关增删查改操作后均会触发此回调）
+    """
 
     query_params = dict(
         role_id=int(role_id),
@@ -76,9 +80,10 @@ def get_allocate_user_table_data(search_click, refresh_click, pagination, operat
 
         return [dash.no_update, dash.no_update, dash.no_update, dash.no_update]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
+# 重置分配用户搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -96,6 +101,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示分配用户搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -122,6 +128,9 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_allocated_user_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制取批量消授权按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -129,7 +138,7 @@ def change_allocated_user_delete_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -140,11 +149,14 @@ def change_allocated_user_delete_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def allocate_user_modal(add_click, unallocated_user):
+    """
+    分配用户弹框中添加用户按钮回调
+    """
     if add_click:
 
         return [True, unallocated_user + 1 if unallocated_user else 1]
 
-    return [dash.no_update] * 2
+    raise PreventUpdate
 
 
 @app.callback(
@@ -158,6 +170,9 @@ def allocate_user_modal(add_click, unallocated_user):
     prevent_initial_call=True
 )
 def allocate_user_add_confirm(add_confirm, selected_row_keys, role_id):
+    """
+    添加用户确认回调，实现给角色分配用户操作
+    """
     if add_confirm:
         if selected_row_keys:
 
@@ -185,7 +200,7 @@ def allocate_user_add_confirm(add_confirm, selected_row_keys, role_id):
             fuc.FefferyFancyMessage('请选择用户', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -201,6 +216,9 @@ def allocate_user_add_confirm(add_confirm, selected_row_keys, role_id):
 )
 def allocate_user_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
+    """
+    显示取消授权二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id.type == 'allocate_user-operation-button' or (
             trigger_id.type == 'allocate_user-list-table' and clicked_content == '取消授权'):
@@ -219,7 +237,7 @@ def allocate_user_delete_modal(operation_click, button_click,
             user_ids
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -232,6 +250,9 @@ def allocate_user_delete_modal(operation_click, button_click,
     prevent_initial_call=True
 )
 def allocate_user_delete_confirm(delete_confirm, user_ids_data, role_id):
+    """
+    取消授权弹窗确认回调，实现取消授权操作
+    """
     if delete_confirm:
 
         params = {'user_ids': user_ids_data, 'role_ids': role_id}
@@ -249,4 +270,4 @@ def allocate_user_delete_confirm(delete_confirm, user_ids_data, role_id):
             fuc.FefferyFancyMessage('取消授权失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate

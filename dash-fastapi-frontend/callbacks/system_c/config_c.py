@@ -3,6 +3,7 @@ import time
 import uuid
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -10,23 +11,32 @@ from api.config import get_config_list_api, get_config_detail_api, add_config_ap
 
 
 @app.callback(
-    [Output('config-list-table', 'data', allow_duplicate=True),
-     Output('config-list-table', 'pagination', allow_duplicate=True),
-     Output('config-list-table', 'key'),
-     Output('config-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('config-search', 'nClicks'),
-     Input('config-refresh', 'nClicks'),
-     Input('config-list-table', 'pagination'),
-     Input('config-operations-store', 'data')],
-    [State('config-config_name-input', 'value'),
-     State('config-config_key-input', 'value'),
-     State('config-config_type-select', 'value'),
-     State('config-create_time-range', 'value'),
-     State('config-button-perms-container', 'data')],
+    output=dict(
+        config_table_data=Output('config-list-table', 'data', allow_duplicate=True),
+        config_table_pagination=Output('config-list-table', 'pagination', allow_duplicate=True),
+        config_table_key=Output('config-list-table', 'key'),
+        config_table_selectedrowkeys=Output('config-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        search_click=Input('config-search', 'nClicks'),
+        refresh_click=Input('config-refresh', 'nClicks'),
+        pagination=Input('config-list-table', 'pagination'),
+        operations=Input('config-operations-store', 'data')
+    ),
+    state=dict(
+        config_name=State('config-config_name-input', 'value'),
+        config_key=State('config-config_key-input', 'value'),
+        config_type=State('config-config_type-select', 'value'),
+        create_time_range=State('config-create_time-range', 'value'),
+        button_perms=State('config-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_config_table_data(search_click, refresh_click, pagination, operations, config_name, config_key, config_type, create_time_range, button_perms):
+    """
+    获取参数设置表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
     create_time_start = None
     create_time_end = None
     if create_time_range:
@@ -84,13 +94,26 @@ def get_config_table_data(search_click, refresh_click, pagination, operations, c
                     } if 'system:config:remove' in button_perms else {},
                 ]
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+            return dict(
+                config_table_data=table_data,
+                config_table_pagination=table_pagination,
+                config_table_key=str(uuid.uuid4()),
+                config_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return dict(
+            config_table_data=dash.no_update,
+            config_table_pagination=dash.no_update,
+            config_table_key=dash.no_update,
+            config_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置参数设置搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -110,6 +133,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示参数设置搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -136,6 +160,9 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_config_edit_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制编辑按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -146,7 +173,7 @@ def change_config_edit_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -155,55 +182,66 @@ def change_config_edit_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def change_config_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('config-modal', 'visible', allow_duplicate=True),
-     Output('config-modal', 'title'),
-     Output('config-config_name', 'value'),
-     Output('config-config_key', 'value'),
-     Output('config-config_value', 'value'),
-     Output('config-config_type', 'value'),
-     Output('config-remark', 'value'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('config-edit-id-store', 'data'),
-     Output('config-operations-store-bk', 'data')],
-    [Input({'type': 'config-operation-button', 'index': ALL}, 'nClicks'),
-     Input('config-list-table', 'nClicksButton')],
-    [State('config-list-table', 'selectedRowKeys'),
-     State('config-list-table', 'clickedContent'),
-     State('config-list-table', 'recentlyButtonClickedRow')],
+    output=dict(
+        modal_visible=Output('config-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('config-modal', 'title'),
+        form_value=Output({'type': 'config-form-value', 'index': ALL}, 'value'),
+        form_label_validate_status=Output({'type': 'config-form-label', 'index': ALL, 'required': True}, 'validateStatus', allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'config-form-label', 'index': ALL, 'required': True}, 'help', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        edit_row_info=Output('config-edit-id-store', 'data'),
+        modal_type=Output('config-operations-store-bk', 'data')
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'config-operation-button', 'index': ALL}, 'nClicks'),
+        button_click=Input('config-list-table', 'nClicksButton')
+    ),
+    state=dict(
+        selected_row_keys=State('config-list-table', 'selectedRowKeys'),
+        clicked_content=State('config-list-table', 'clickedContent'),
+        recently_button_clicked_row=State('config-list-table', 'recentlyButtonClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_config_modal(operation_click, button_click, selected_row_keys, clicked_content, recently_button_clicked_row):
+    """
+    显示新增或编辑参数设置弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'add', 'type': 'config-operation-button'} \
             or trigger_id == {'index': 'edit', 'type': 'config-operation-button'} \
             or (trigger_id == 'config-list-table' and clicked_content == '修改'):
+        # 获取所有输出表单项对应value的index
+        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        # 获取所有输出表单项对应label的index
+        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'config-operation-button'}:
-            return [
-                True,
-                '新增参数',
-                None,
-                None,
-                None,
-                'Y',
-                None,
-                dash.no_update,
-                None,
-                {'type': 'add'}
-            ]
+            config_info = dict(config_name=None, config_key=None, config_value=None, config_type='Y', remark=None)
+            return dict(
+                modal_visible=True,
+                modal_title='新增参数',
+                form_value=[config_info.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                api_check_token_trigger=dash.no_update,
+                edit_row_info=None,
+                modal_type={'type': 'add'}
+            )
         elif trigger_id == {'index': 'edit', 'type': 'config-operation-button'} or (trigger_id == 'config-list-table' and clicked_content == '修改'):
             if trigger_id == {'index': 'edit', 'type': 'config-operation-button'}:
                 config_id = int(','.join(selected_row_keys))
@@ -212,114 +250,112 @@ def add_edit_config_modal(operation_click, button_click, selected_row_keys, clic
             config_info_res = get_config_detail_api(config_id=config_id)
             if config_info_res['code'] == 200:
                 config_info = config_info_res['data']
-                return [
-                    True,
-                    '编辑参数',
-                    config_info.get('config_name'),
-                    config_info.get('config_key'),
-                    config_info.get('config_value'),
-                    config_info.get('config_type'),
-                    config_info.get('remark'),
-                    {'timestamp': time.time()},
-                    config_info if config_info else None,
-                    {'type': 'edit'}
-                ]
+                return dict(
+                    modal_visible=True,
+                    modal_title='编辑参数',
+                    form_value=[config_info.get(k) for k in form_value_list],
+                    form_label_validate_status=[None] * len(form_label_list),
+                    form_label_validate_info=[None] * len(form_label_list),
+                    api_check_token_trigger={'timestamp': time.time()},
+                    edit_row_info=config_info if config_info else None,
+                    modal_type={'type': 'edit'}
+                )
 
-        return [dash.no_update] * 7 + [{'timestamp': time.time()}, None, None]
+        return dict(
+            modal_visible=dash.no_update,
+            modal_title=dash.no_update,
+            form_value=[dash.no_update] * len(form_value_list),
+            form_label_validate_status=[dash.no_update] * len(form_label_list),
+            form_label_validate_info=[dash.no_update] * len(form_label_list),
+            api_check_token_trigger={'timestamp': time.time()},
+            edit_row_info=None,
+            modal_type=None
+        )
 
-    return [dash.no_update] * 8 + [None, None]
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('config-config_name-form-item', 'validateStatus'),
-     Output('config-config_key-form-item', 'validateStatus'),
-     Output('config-config_value-form-item', 'validateStatus'),
-     Output('config-config_name-form-item', 'help'),
-     Output('config-config_key-form-item', 'help'),
-     Output('config-config_value-form-item', 'help'),
-     Output('config-modal', 'visible'),
-     Output('config-operations-store', 'data', allow_duplicate=True),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    Input('config-modal', 'okCounts'),
-    [State('config-operations-store-bk', 'data'),
-     State('config-edit-id-store', 'data'),
-     State('config-config_name', 'value'),
-     State('config-config_key', 'value'),
-     State('config-config_value', 'value'),
-     State('config-config_type', 'value'),
-     State('config-remark', 'value')],
+    output=dict(
+        form_label_validate_status=Output({'type': 'config-form-label', 'index': ALL, 'required': True}, 'validateStatus',
+                                          allow_duplicate=True),
+        form_label_validate_info=Output({'type': 'config-form-label', 'index': ALL, 'required': True}, 'help',
+                                        allow_duplicate=True),
+        modal_visible=Output('config-modal', 'visible'),
+        operations=Output('config-operations-store', 'data', allow_duplicate=True),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+    ),
+    inputs=dict(
+        confirm_trigger=Input('config-modal', 'okCounts')
+    ),
+    state=dict(
+        modal_type=State('config-operations-store-bk', 'data'),
+        edit_row_info=State('config-edit-id-store', 'data'),
+        form_value=State({'type': 'config-form-value', 'index': ALL}, 'value'),
+        form_label=State({'type': 'config-form-label', 'index': ALL, 'required': True}, 'label')
+    ),
     prevent_initial_call=True
 )
-def dict_type_confirm(confirm_trigger, operation_type, cur_config_info, config_name, config_key, config_value, config_type, remark):
+def dict_type_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_label):
+    """
+    新增或编辑参数设置弹窗确认回调，实现新增或编辑操作
+    """
     if confirm_trigger:
-        if all([config_name, config_key, config_value]):
-            params_add = dict(config_name=config_name, config_key=config_key, config_value=config_value,
-                              config_type=config_type, remark=remark)
-            params_edit = dict(config_id=cur_config_info.get('config_id') if cur_config_info else None,
-                               config_name=config_name, config_key=config_key, config_value=config_value,
-                               config_type=config_type, remark=remark)
+        # 获取所有输出表单项对应label的index
+        form_label_output_list = [x['id']['index'] for x in dash.ctx.outputs_list[0]]
+        # 获取所有输入表单项对应的value及label
+        form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
+        form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
+        if all([form_value_state.get(k) for k in form_label_output_list]):
+            params_add = form_value_state
+            params_edit = params_add.copy()
+            params_edit['config_id'] = edit_row_info.get('config_id') if edit_row_info else None
             api_res = {}
-            operation_type = operation_type.get('type')
-            if operation_type == 'add':
+            modal_type = modal_type.get('type')
+            if modal_type == 'add':
                 api_res = add_config_api(params_add)
-            if operation_type == 'edit':
+            if modal_type == 'edit':
                 api_res = edit_config_api(params_edit)
             if api_res.get('code') == 200:
-                if operation_type == 'add':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'add'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('新增成功', type='success')
-                    ]
-                if operation_type == 'edit':
-                    return [
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        None,
-                        False,
-                        {'type': 'edit'},
-                        {'timestamp': time.time()},
-                        fuc.FefferyFancyMessage('编辑成功', type='success')
-                    ]
+                if modal_type == 'add':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'add'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('新增成功', type='success')
+                    )
+                if modal_type == 'edit':
+                    return dict(
+                        form_label_validate_status=[None] * len(form_label_output_list),
+                        form_label_validate_info=[None] * len(form_label_output_list),
+                        modal_visible=False,
+                        operations={'type': 'edit'},
+                        api_check_token_trigger={'timestamp': time.time()},
+                        global_message_container=fuc.FefferyFancyMessage('编辑成功', type='success')
+                    )
 
-            return [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                dash.no_update,
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('处理失败', type='error')
-            ]
+            return dict(
+                form_label_validate_status=[None] * len(form_label_output_list),
+                form_label_validate_info=[None] * len(form_label_output_list),
+                modal_visible=dash.no_update,
+                operations=dash.no_update,
+                api_check_token_trigger={'timestamp': time.time()},
+                global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+            )
 
-        return [
-            None if config_name else 'error',
-            None if config_key else 'error',
-            None if config_value else 'error',
-            None if config_name else '请输入参数名称！',
-            None if config_key else '请输入参数键名！',
-            None if config_value else '请输入参数键值！',
-            dash.no_update,
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('处理失败', type='error')
-        ]
+        return dict(
+            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            modal_visible=dash.no_update,
+            operations=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
+        )
 
-    return [dash.no_update] * 10
+    raise PreventUpdate
 
 
 @app.callback(
@@ -335,6 +371,9 @@ def dict_type_confirm(confirm_trigger, operation_type, cur_config_info, config_n
 )
 def config_delete_modal(operation_click, button_click,
                       selected_row_keys, clicked_content, recently_button_clicked_row):
+    """
+    显示删除参数设置二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'delete', 'type': 'config-operation-button'} or (
             trigger_id == 'config-list-table' and clicked_content == '删除'):
@@ -353,7 +392,7 @@ def config_delete_modal(operation_click, button_click,
             {'config_ids': config_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -365,6 +404,9 @@ def config_delete_modal(operation_click, button_click,
     prevent_initial_call=True
 )
 def config_delete_confirm(delete_confirm, config_ids_data):
+    """
+    删除参数设置弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = config_ids_data
@@ -382,7 +424,7 @@ def config_delete_confirm(delete_confirm, config_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -394,6 +436,9 @@ def config_delete_confirm(delete_confirm, config_ids_data):
     prevent_initial_call=True
 )
 def export_config_list(export_click):
+    """
+    导出参数设置信息回调
+    """
     if export_click:
         export_config_res = export_config_list_api({})
         if export_config_res.status_code == 200:
@@ -413,7 +458,7 @@ def export_config_list(export_click):
             fuc.FefferyFancyMessage('导出失败', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -422,12 +467,15 @@ def export_config_list(export_click):
     prevent_initial_call=True
 )
 def reset_config_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
 
         return None
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -437,6 +485,9 @@ def reset_config_export_status(data):
     prevent_initial_call=True
 )
 def refresh_config_cache(refresh_click):
+    """
+    刷新缓存回调
+    """
     if refresh_click:
         refresh_info_res = refresh_config_api({})
         if refresh_info_res.get('code') == 200:
@@ -450,4 +501,4 @@ def refresh_config_cache(refresh_click):
             fuc.FefferyFancyMessage('刷新失败', type='error')
         ]
 
-    return [dash.no_update] * 2
+    raise PreventUpdate

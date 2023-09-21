@@ -449,7 +449,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-nick_name',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'nick_name'
+                                        },
                                         placeholder='请输入用户昵称',
                                         allowClear=True,
                                         style={
@@ -458,11 +461,18 @@ def render(button_perms):
                                     ),
                                     label='用户昵称',
                                     required=True,
-                                    id='user-add-nick_name-form-item'
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'nick_name',
+                                        'required': True
+                                    }
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdTreeSelect(
-                                        id='user-add-dept_id',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'dept_id'
+                                        },
                                         placeholder='请选择归属部门',
                                         treeData=[],
                                         treeNodeFilterProp='title',
@@ -471,7 +481,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='归属部门',
-                                    id='user-add-dept_id-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'dept_id',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
@@ -483,7 +497,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-phone_number',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'phonenumber'
+                                        },
                                         placeholder='请输入手机号码',
                                         allowClear=True,
                                         style={
@@ -491,14 +508,21 @@ def render(button_perms):
                                         }
                                     ),
                                     label='手机号码',
-                                    id='user-add-phone_number-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'phonenumber',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-email',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'email'
+                                        },
                                         placeholder='请输入邮箱',
                                         allowClear=True,
                                         style={
@@ -506,7 +530,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='邮箱',
-                                    id='user-add-email-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'email',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 5
                                     },
@@ -518,7 +546,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-user_name',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'user_name'
+                                        },
                                         placeholder='请输入用户名称',
                                         allowClear=True,
                                         style={
@@ -527,11 +558,18 @@ def render(button_perms):
                                     ),
                                     label='用户名称',
                                     required=True,
-                                    id='user-add-user_name-form-item'
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'user_name',
+                                        'required': True
+                                    }
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-password',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'password'
+                                        },
                                         placeholder='请输入密码',
                                         mode='password',
                                         passwordUseMd5=True,
@@ -541,7 +579,11 @@ def render(button_perms):
                                     ),
                                     label='用户密码',
                                     required=True,
-                                    id='user-add-password-form-item'
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'password',
+                                        'required': True
+                                    }
                                 ),
                             ],
                             size="middle"
@@ -550,7 +592,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdSelect(
-                                        id='user-add-sex',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'sex'
+                                        },
                                         placeholder='请选择性别',
                                         options=[
                                             {
@@ -571,14 +616,21 @@ def render(button_perms):
                                         }
                                     ),
                                     label='用户性别',
-                                    id='user-add-sex-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'sex',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdRadioGroup(
-                                        id='user-add-status',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'status'
+                                        },
                                         options=[
                                             {
                                                 'label': '正常',
@@ -595,7 +647,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='用户状态',
-                                    id='user-add-status-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'status',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 2
                                     },
@@ -646,7 +702,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-add-remark',
+                                        id={
+                                            'type': 'user_add-form-value',
+                                            'index': 'remark'
+                                        },
                                         placeholder='请输入内容',
                                         allowClear=True,
                                         mode='text-area',
@@ -655,7 +714,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='备注',
-                                    id='user-add-remark-form-item',
+                                    id={
+                                        'type': 'user_add-form-label',
+                                        'index': 'remark',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 2
                                     },
@@ -682,7 +745,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-edit-nick_name',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'nick_name'
+                                        },
                                         placeholder='请输入用户昵称',
                                         allowClear=True,
                                         style={
@@ -691,11 +757,18 @@ def render(button_perms):
                                     ),
                                     label='用户昵称',
                                     required=True,
-                                    id='user-edit-nick_name-form-item'
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'nick_name',
+                                        'required': True
+                                    }
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdTreeSelect(
-                                        id='user-edit-dept_id',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'dept_id'
+                                        },
                                         placeholder='请选择归属部门',
                                         treeData=[],
                                         treeNodeFilterProp='title',
@@ -704,7 +777,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='归属部门',
-                                    id='user-edit-dept_id-form-item'
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'dept_id',
+                                        'required': False
+                                    }
                                 ),
                             ],
                             size="middle"
@@ -713,7 +790,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-edit-phone_number',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'phonenumber'
+                                        },
                                         placeholder='请输入手机号码',
                                         allowClear=True,
                                         style={
@@ -721,14 +801,21 @@ def render(button_perms):
                                         }
                                     ),
                                     label='手机号码',
-                                    id='user-edit-phone_number-form-item',
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'phonenumber',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-edit-email',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'email'
+                                        },
                                         placeholder='请输入邮箱',
                                         allowClear=True,
                                         style={
@@ -736,7 +823,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='邮箱',
-                                    id='user-edit-email-form-item',
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'email',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 4
                                     },
@@ -748,7 +839,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdSelect(
-                                        id='user-edit-sex',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'sex'
+                                        },
                                         placeholder='请选择性别',
                                         options=[
                                             {
@@ -769,14 +863,21 @@ def render(button_perms):
                                         }
                                     ),
                                     label='用户性别',
-                                    id='user-edit-sex-form-item',
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'sex',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdRadioGroup(
-                                        id='user-edit-status',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'status'
+                                        },
                                         options=[
                                             {
                                                 'label': '正常',
@@ -792,7 +893,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='用户状态',
-                                    id='user-edit-status-form-item',
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'status',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 1
                                     },
@@ -843,7 +948,10 @@ def render(button_perms):
                             [
                                 fac.AntdFormItem(
                                     fac.AntdInput(
-                                        id='user-edit-remark',
+                                        id={
+                                            'type': 'user_edit-form-value',
+                                            'index': 'remark'
+                                        },
                                         placeholder='请输入内容',
                                         allowClear=True,
                                         mode='text-area',
@@ -852,7 +960,11 @@ def render(button_perms):
                                         }
                                     ),
                                     label='备注',
-                                    id='user-edit-remark-form-item',
+                                    id={
+                                        'type': 'user_edit-form-label',
+                                        'index': 'remark',
+                                        'required': False
+                                    },
                                     labelCol={
                                         'offset': 2
                                     },

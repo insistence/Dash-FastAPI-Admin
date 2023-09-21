@@ -360,7 +360,10 @@ def render(button_perms):
                     [
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-post_name',
+                                id={
+                                    'type': 'post-form-value',
+                                    'index': 'post_name'
+                                },
                                 placeholder='请输入岗位名称',
                                 allowClear=True,
                                 style={
@@ -369,11 +372,18 @@ def render(button_perms):
                             ),
                             label='岗位名称',
                             required=True,
-                            id='post-post_name-form-item'
+                            id={
+                                'type': 'post-form-label',
+                                'index': 'post_name',
+                                'required': True
+                            }
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-post_code',
+                                id={
+                                    'type': 'post-form-value',
+                                    'index': 'post_code'
+                                },
                                 placeholder='请输入岗位编码',
                                 allowClear=True,
                                 style={
@@ -382,11 +392,18 @@ def render(button_perms):
                             ),
                             label='岗位编码',
                             required=True,
-                            id='post-post_code-form-item'
+                            id={
+                                'type': 'post-form-label',
+                                'index': 'post_code',
+                                'required': True
+                            }
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
-                                id='post-post_sort',
+                                id={
+                                    'type': 'post-form-value',
+                                    'index': 'post_sort'
+                                },
                                 defaultValue=0,
                                 min=0,
                                 style={
@@ -395,11 +412,18 @@ def render(button_perms):
                             ),
                             label='岗位顺序',
                             required=True,
-                            id='post-post_sort-form-item'
+                            id={
+                                'type': 'post-form-label',
+                                'index': 'post_sort',
+                                'required': True
+                            }
                         ),
                         fac.AntdFormItem(
                             fac.AntdRadioGroup(
-                                id='post-status',
+                                id={
+                                    'type': 'post-form-value',
+                                    'index': 'status'
+                                },
                                 options=[
                                     {
                                         'label': '正常',
@@ -416,11 +440,18 @@ def render(button_perms):
                                 }
                             ),
                             label='岗位状态',
-                            id='post-status-form-item'
+                            id={
+                                'type': 'post-form-label',
+                                'index': 'status',
+                                'required': False
+                            }
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='post-remark',
+                                id={
+                                    'type': 'post-form-value',
+                                    'index': 'remark'
+                                },
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
@@ -429,7 +460,11 @@ def render(button_perms):
                                 }
                             ),
                             label='备注',
-                            id='post-remark-form-item'
+                            id={
+                                'type': 'post-form-label',
+                                'index': 'remark',
+                                'required': False
+                            }
                         ),
                     ],
                     labelCol={

@@ -21,9 +21,9 @@ def render(button_perms):
         total = table_info['data']['total']
         for item in table_data:
             if item['status'] == '0':
-                item['status'] = dict(checked=True)
+                item['status'] = dict(checked=True, disabled=item['role_id'] == 1)
             else:
-                item['status'] = dict(checked=False)
+                item['status'] = dict(checked=False, disabled=item['role_id'] == 1)
             item['key'] = str(item['role_id'])
             if item['role_id'] == 1:
                 item['operation'] = []
@@ -409,6 +409,7 @@ def render(button_perms):
                                                 },
                                                 {
                                                     'title': '操作',
+                                                    'width': 180,
                                                     'dataIndex': 'operation',
                                                 }
                                             ],
@@ -448,7 +449,11 @@ def render(button_perms):
                     [
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='role-role_name',
+                                id={
+                                    'type': 'role-form-value',
+                                    'index': 'role_name',
+                                    'required': True
+                                },
                                 placeholder='请输入角色名称',
                                 allowClear=True,
                                 style={
@@ -457,7 +462,11 @@ def render(button_perms):
                             ),
                             label='角色名称',
                             required=True,
-                            id='role-role_name-form-item',
+                            id={
+                                'type': 'role-form-label',
+                                'index': 'role_name',
+                                'required': True
+                            },
                             labelCol={
                                 'span': 6
                             },
@@ -467,7 +476,11 @@ def render(button_perms):
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='role-role_key',
+                                id={
+                                    'type': 'role-form-value',
+                                    'index': 'role_key',
+                                    'required': True
+                                },
                                 placeholder='请输入权限字符',
                                 allowClear=True,
                                 style={
@@ -486,7 +499,11 @@ def render(button_perms):
                                 ]
                             ),
                             required=True,
-                            id='role-role_Key-form-item',
+                            id={
+                                'type': 'role-form-label',
+                                'index': 'role_key',
+                                'required': True
+                            },
                             labelCol={
                                 'span': 6
                             },
@@ -496,7 +513,11 @@ def render(button_perms):
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
-                                id='role-role_sort',
+                                id={
+                                    'type': 'role-form-value',
+                                    'index': 'role_sort',
+                                    'required': True
+                                },
                                 placeholder='请输入角色顺序',
                                 defaultValue=0,
                                 min=0,
@@ -506,7 +527,11 @@ def render(button_perms):
                             ),
                             label='角色顺序',
                             required=True,
-                            id='role-role_sort-form-item',
+                            id={
+                                'type': 'role-form-label',
+                                'index': 'role_sort',
+                                'required': True
+                            },
                             labelCol={
                                 'span': 6
                             },
@@ -516,7 +541,11 @@ def render(button_perms):
                         ),
                         fac.AntdFormItem(
                             fac.AntdRadioGroup(
-                                id='role-status',
+                                id={
+                                    'type': 'role-form-value',
+                                    'index': 'status',
+                                    'required': False
+                                },
                                 options=[
                                     {
                                         'label': '正常',
@@ -532,7 +561,11 @@ def render(button_perms):
                                 }
                             ),
                             label='状态',
-                            id='role-status-form-item',
+                            id={
+                                'type': 'role-form-label',
+                                'index': 'status',
+                                'required': False
+                            },
                             labelCol={
                                 'span': 6
                             },
@@ -607,7 +640,11 @@ def render(button_perms):
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='role-remark',
+                                id={
+                                    'type': 'role-form-value',
+                                    'index': 'remark',
+                                    'required': False
+                                },
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
@@ -616,7 +653,11 @@ def render(button_perms):
                                 }
                             ),
                             label='备注',
-                            id='role-remark-form-item',
+                            id={
+                                'type': 'role-form-label',
+                                'index': 'remark',
+                                'required': False
+                            },
                             labelCol={
                                 'span': 6
                             },

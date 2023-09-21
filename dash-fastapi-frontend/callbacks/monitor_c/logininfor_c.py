@@ -3,6 +3,7 @@ import time
 import uuid
 from dash import dcc
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
@@ -10,23 +11,32 @@ from api.log import get_login_log_list_api, delete_login_log_api, clear_login_lo
 
 
 @app.callback(
-    [Output('login_log-list-table', 'data', allow_duplicate=True),
-     Output('login_log-list-table', 'pagination', allow_duplicate=True),
-     Output('login_log-list-table', 'key'),
-     Output('login_log-list-table', 'selectedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True)],
-    [Input('login_log-search', 'nClicks'),
-     Input('login_log-refresh', 'nClicks'),
-     Input('login_log-list-table', 'pagination'),
-     Input('login_log-operations-store', 'data')],
-    [State('login_log-ipaddr-input', 'value'),
-     State('login_log-user_name-input', 'value'),
-     State('login_log-status-select', 'value'),
-     State('login_log-login_time-range', 'value'),
-     State('login_log-button-perms-container', 'data')],
+    output=dict(
+        login_log_table_data=Output('login_log-list-table', 'data', allow_duplicate=True),
+        login_log_table_pagination=Output('login_log-list-table', 'pagination', allow_duplicate=True),
+        login_log_table_key=Output('login_log-list-table', 'key'),
+        login_log_table_selectedrowkeys=Output('login_log-list-table', 'selectedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True)
+    ),
+    inputs=dict(
+        search_click=Input('login_log-search', 'nClicks'),
+        refresh_click=Input('login_log-refresh', 'nClicks'),
+        pagination=Input('login_log-list-table', 'pagination'),
+        operations=Input('login_log-operations-store', 'data')
+    ),
+    state=dict(
+        ipaddr=State('login_log-ipaddr-input', 'value'),
+        user_name=State('login_log-user_name-input', 'value'),
+        status_select=State('login_log-status-select', 'value'),
+        login_time_range=State('login_log-login_time-range', 'value'),
+        button_perms=State('login_log-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_login_log_table_data(search_click, refresh_click, pagination, operations, ipaddr, user_name, status_select, login_time_range, button_perms):
+    """
+    获取登录日志表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
 
     login_time_start = None
     login_time_end = None
@@ -72,13 +82,26 @@ def get_login_log_table_data(search_click, refresh_click, pagination, operations
                     item['status'] = dict(tag='失败', color='volcano')
                 item['key'] = str(item['info_id'])
 
-            return [table_data, table_pagination, str(uuid.uuid4()), None, {'timestamp': time.time()}]
+            return dict(
+                login_log_table_data=table_data,
+                login_log_table_pagination=table_pagination,
+                login_log_table_key=str(uuid.uuid4()),
+                login_log_table_selectedrowkeys=None,
+                api_check_token_trigger={'timestamp': time.time()}
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}]
+        return dict(
+            login_log_table_data=dash.no_update,
+            login_log_table_pagination=dash.no_update,
+            login_log_table_key=dash.no_update,
+            login_log_table_selectedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()}
+        )
 
-    return [dash.no_update] * 5
+    raise PreventUpdate
 
 
+# 重置登录日志搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -98,6 +121,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示登录日志搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -124,17 +148,18 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def change_login_log_delete_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制删除按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return False
 
             return False
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -143,6 +168,9 @@ def change_login_log_delete_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def change_login_log_unlock_button_status(table_rows_selected):
+    """
+    根据选择的表格数据行数控制解锁按钮状态回调
+    """
     outputs_list = dash.ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
@@ -153,7 +181,7 @@ def change_login_log_unlock_button_status(table_rows_selected):
 
         return True
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -165,6 +193,9 @@ def change_login_log_unlock_button_status(table_rows_selected):
     prevent_initial_call=True
 )
 def login_log_delete_modal(operation_click, selected_row_keys):
+    """
+    显示删除或清空登录日志二次确认弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id.index in ['delete', 'clear']:
         if trigger_id.index == 'delete':
@@ -183,7 +214,7 @@ def login_log_delete_modal(operation_click, selected_row_keys):
                 {'oper_type': 'clear', 'info_ids': ''}
             ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -195,6 +226,9 @@ def login_log_delete_modal(operation_click, selected_row_keys):
     prevent_initial_call=True
 )
 def login_log_delete_confirm(delete_confirm, info_ids_data):
+    """
+    删除或清空登录日志弹窗确认回调，实现删除或清空操作
+    """
     if delete_confirm:
 
         oper_type = info_ids_data.get('oper_type')
@@ -229,7 +263,7 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
                 fuc.FefferyFancyMessage('删除失败', type='error')
             ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -241,6 +275,9 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
     prevent_initial_call=True
 )
 def export_login_log_list(export_click):
+    """
+    导出登录日志信息回调
+    """
     if export_click:
         export_login_log_res = export_login_log_list_api({})
         if export_login_log_res.status_code == 200:
@@ -260,7 +297,7 @@ def export_login_log_list(export_click):
             fuc.FefferyFancyMessage('导出失败', type='error')
         ]
 
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
@@ -269,12 +306,15 @@ def export_login_log_list(export_click):
     prevent_initial_call=True
 )
 def reset_login_log_export_status(data):
+    """
+    导出完成后重置下载组件数据回调，防止重复下载文件
+    """
     time.sleep(0.5)
     if data:
 
         return None
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -285,6 +325,9 @@ def reset_login_log_export_status(data):
     prevent_initial_call=True
 )
 def unlock_user(unlock_click, selected_rows):
+    """
+    解锁用户回调
+    """
     if unlock_click:
         user_name = selected_rows[0].get('user_name')
         unlock_info_res = unlock_user_api(dict(user_name=user_name))
@@ -300,4 +343,4 @@ def unlock_user(unlock_click, selected_rows):
             fuc.FefferyFancyMessage('解锁失败', type='error')
         ]
 
-    return [dash.no_update] * 2
+    raise PreventUpdate

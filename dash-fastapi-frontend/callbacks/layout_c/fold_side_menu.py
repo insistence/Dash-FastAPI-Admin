@@ -3,6 +3,7 @@ from dash.dependencies import Input, Output, State
 from server import app
 
 
+# 侧边栏折叠回调
 app.clientside_callback(
     '''
     (nClicks, collapsed) => {

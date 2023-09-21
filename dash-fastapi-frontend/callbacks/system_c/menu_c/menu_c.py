@@ -2,6 +2,7 @@ import dash
 import time
 import uuid
 from dash.dependencies import Input, Output, State, ALL
+from dash.exceptions import PreventUpdate
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
@@ -12,22 +13,31 @@ from api.menu import get_menu_tree_api, get_menu_tree_for_edit_option_api, get_m
 
 
 @app.callback(
-    [Output('menu-list-table', 'data', allow_duplicate=True),
-     Output('menu-list-table', 'key'),
-     Output('menu-list-table', 'defaultExpandedRowKeys'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('menu-fold', 'nClicks')],
-    [Input('menu-search', 'nClicks'),
-     Input('menu-refresh', 'nClicks'),
-     Input('menu-operations-store', 'data'),
-     Input('menu-fold', 'nClicks')],
-    [State('menu-menu_name-input', 'value'),
-     State('menu-status-select', 'value'),
-     State('menu-list-table', 'defaultExpandedRowKeys'),
-     State('menu-button-perms-container', 'data')],
+    output=dict(
+        menu_table_data=Output('menu-list-table', 'data', allow_duplicate=True),
+        menu_table_key=Output('menu-list-table', 'key'),
+        menu_table_defaultexpandedrowkeys=Output('menu-list-table', 'defaultExpandedRowKeys'),
+        api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+        fold_click=Output('menu-fold', 'nClicks')
+    ),
+    inputs=dict(
+        search_click=Input('menu-search', 'nClicks'),
+        refresh_click=Input('menu-refresh', 'nClicks'),
+        operations=Input('menu-operations-store', 'data'),
+        fold_click=Input('menu-fold', 'nClicks')
+    ),
+    state=dict(
+        menu_name=State('menu-menu_name-input', 'value'),
+        status_select=State('menu-status-select', 'value'),
+        in_default_expanded_row_keys=State('menu-list-table', 'defaultExpandedRowKeys'),
+        button_perms=State('menu-button-perms-container', 'data')
+    ),
     prevent_initial_call=True
 )
 def get_menu_table_data(search_click, refresh_click, operations, fold_click, menu_name, status_select, in_default_expanded_row_keys, button_perms):
+    """
+    获取菜单表格数据回调（进行表格相关增删查改操作后均会触发此回调）
+    """
 
     query_params = dict(
         menu_name=menu_name,
@@ -90,15 +100,40 @@ def get_menu_table_data(search_click, refresh_click, operations, fold_click, men
 
             if fold_click:
                 if not in_default_expanded_row_keys:
-                    return [table_data_new, str(uuid.uuid4()), default_expanded_row_keys, {'timestamp': time.time()}, None]
+                    return dict(
+                        menu_table_data=table_data_new,
+                        menu_table_key=str(uuid.uuid4()),
+                        menu_table_defaultexpandedrowkeys=default_expanded_row_keys,
+                        api_check_token_trigger={'timestamp': time.time()},
+                        fold_click=None
+                    )
 
-            return [table_data_new, str(uuid.uuid4()), [], {'timestamp': time.time()}, None]
+            return dict(
+                menu_table_data=table_data_new,
+                menu_table_key=str(uuid.uuid4()),
+                menu_table_defaultexpandedrowkeys=[],
+                api_check_token_trigger={'timestamp': time.time()},
+                fold_click=None
+            )
 
-        return [dash.no_update, dash.no_update, dash.no_update, {'timestamp': time.time()}, None]
+        return dict(
+            menu_table_data=dash.no_update,
+            menu_table_key=dash.no_update,
+            menu_table_defaultexpandedrowkeys=dash.no_update,
+            api_check_token_trigger={'timestamp': time.time()},
+            fold_click=None
+        )
 
-    return [dash.no_update] * 4 + [None]
+    return dict(
+        menu_table_data=dash.no_update,
+        menu_table_key=dash.no_update,
+        menu_table_defaultexpandedrowkeys=dash.no_update,
+        api_check_token_trigger=dash.no_update,
+        fold_click=None
+    )
 
 
+# 重置菜单搜索表单数据回调
 app.clientside_callback(
     '''
     (reset_click) => {
@@ -116,6 +151,7 @@ app.clientside_callback(
 )
 
 
+# 隐藏/显示菜单搜索表单回调
 app.clientside_callback(
     '''
     (hidden_click, hidden_status) => {
@@ -143,36 +179,55 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def get_select_icon(icon):
+    """
+    获取新增或编辑表单中选择的icon回调
+    """
     if icon:
         return [
             icon,
             fac.AntdIcon(icon=icon)
         ]
 
-    return [dash.no_update] * 2
-
+    raise PreventUpdate
 
 
 @app.callback(
-    [Output('menu-modal', 'visible', allow_duplicate=True),
-     Output('menu-modal', 'title'),
-     Output('menu-parent_id', 'treeData'),
-     Output('menu-parent_id', 'value'),
-     Output('menu-menu_type', 'value'),
-     Output('menu-icon', 'value', allow_duplicate=True),
-     Output('menu-icon', 'prefix', allow_duplicate=True),
-     Output('menu-menu_name', 'value'),
-     Output('menu-order_num', 'value'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('menu-edit-id-store', 'data'),
-     Output('menu-operations-store-bk', 'data')],
-    [Input({'type': 'menu-operation-button', 'index': ALL}, 'nClicks'),
-     Input('menu-list-table', 'nClicksButton')],
-    [State('menu-list-table', 'clickedContent'),
-     State('menu-list-table', 'recentlyButtonClickedRow')],
+    output=dict(
+        modal=dict(visible=Output('menu-modal', 'visible', allow_duplicate=True), title=Output('menu-modal', 'title')),
+        form_value=dict(
+            parent_tree=Output('menu-parent_id', 'treeData'), parent_id=Output('menu-parent_id', 'value'),
+            menu_type=Output('menu-menu_type', 'value'), icon=Output('menu-icon', 'value', allow_duplicate=True),
+            icon_prefix=Output('menu-icon', 'prefix', allow_duplicate=True), icon_category=Output('icon-category', 'value'),
+            menu_name=Output('menu-menu_name', 'value'), order_num=Output('menu-order_num', 'value')
+        ),
+        form_validate=[
+            Output('menu-parent_id-form-item', 'validateStatus', allow_duplicate=True),
+            Output('menu-menu_name-form-item', 'validateStatus', allow_duplicate=True),
+            Output('menu-order_num-form-item', 'validateStatus', allow_duplicate=True),
+            Output('menu-parent_id-form-item', 'help', allow_duplicate=True),
+            Output('menu-menu_name-form-item', 'help', allow_duplicate=True),
+            Output('menu-order_num-form-item', 'help', allow_duplicate=True)
+        ],
+        other=dict(
+            api_check_token_trigger=Output('api-check-token', 'data', allow_duplicate=True),
+            edit_row_info=Output('menu-edit-id-store', 'data'),
+            modal_type=Output('menu-operations-store-bk', 'data')
+        )
+    ),
+    inputs=dict(
+        operation_click=Input({'type': 'menu-operation-button', 'index': ALL}, 'nClicks'),
+        button_click=Input('menu-list-table', 'nClicksButton')
+    ),
+    state=dict(
+        clicked_content=State('menu-list-table', 'clickedContent'),
+        recently_button_clicked_row=State('menu-list-table', 'recentlyButtonClickedRow')
+    ),
     prevent_initial_call=True
 )
 def add_edit_menu_modal(operation_click, button_click, clicked_content, recently_button_clicked_row):
+    """
+    显示新增或编辑菜单弹窗回调
+    """
     trigger_id = dash.ctx.triggered_id
     if trigger_id == {'index': 'add', 'type': 'menu-operation-button'} or (trigger_id == 'menu-list-table' and clicked_content != '删除'):
         menu_params = dict(menu_name='')
@@ -184,58 +239,70 @@ def add_edit_menu_modal(operation_click, button_click, clicked_content, recently
             tree_data = tree_info['data']
 
             if trigger_id == {'index': 'add', 'type': 'menu-operation-button'}:
-                return [
-                    True,
-                    '新增菜单',
-                    tree_data,
-                    '0',
-                    'M',
-                    None,
-                    None,
-                    None,
-                    None,
-                    {'timestamp': time.time()},
-                    None,
-                    {'type': 'add'}
-                ]
+                return dict(
+                    modal=dict(visible=True, title='新增菜单'),
+                    form_value=dict(
+                        parent_tree=tree_data, parent_id='0', menu_type='M', icon=None,
+                        icon_prefix=None, icon_category=None, menu_name=None, order_num=None
+                    ),
+                    form_validate=[None] * 6,
+                    other=dict(
+                        api_check_token_trigger={'timestamp': time.time()},
+                        edit_row_info=None,
+                        modal_type={'type': 'add'}
+                    )
+                )
             elif trigger_id == 'menu-list-table' and clicked_content == '新增':
-                return [
-                    True,
-                    '新增菜单',
-                    tree_data,
-                    str(recently_button_clicked_row['key']),
-                    'M',
-                    None,
-                    None,
-                    None,
-                    None,
-                    {'timestamp': time.time()},
-                    None,
-                    {'type': 'add'}
-                ]
+                return dict(
+                    modal=dict(visible=True, title='新增菜单'),
+                    form_value=dict(
+                        parent_tree=tree_data, parent_id=str(recently_button_clicked_row['key']), menu_type='M',
+                        icon=None, icon_prefix=None, icon_category=None, menu_name=None, order_num=None
+                    ),
+                    form_validate=[None] * 6,
+                    other=dict(
+                        api_check_token_trigger={'timestamp': time.time()},
+                        edit_row_info=None,
+                        modal_type={'type': 'add'}
+                    )
+                )
             elif trigger_id == 'menu-list-table' and clicked_content == '修改':
                 menu_id = int(recently_button_clicked_row['key'])
                 menu_info_res = get_menu_detail_api(menu_id=menu_id)
                 if menu_info_res['code'] == 200:
                     menu_info = menu_info_res['data']
-                    return [
-                        True,
-                        '编辑菜单',
-                        tree_data,
-                        str(menu_info.get('parent_id')),
-                        menu_info.get('menu_type'),
-                        menu_info.get('icon'),
-                        fac.AntdIcon(icon=menu_info.get('icon')),
-                        menu_info.get('menu_name'),
-                        menu_info.get('order_num'),
-                        {'timestamp': time.time()},
-                        menu_info,
-                        {'type': 'edit'}
-                    ]
+                    return dict(
+                        modal=dict(visible=True, title='编辑菜单'),
+                        form_value=dict(
+                            parent_tree=tree_data, parent_id=str(menu_info.get('parent_id')),
+                            menu_type=menu_info.get('menu_type'), icon=menu_info.get('icon'),
+                            icon_prefix=fac.AntdIcon(icon=menu_info.get('icon')), icon_category=menu_info.get('icon'),
+                            menu_name=menu_info.get('menu_name'), order_num=menu_info.get('order_num')
+                        ),
+                        form_validate=[None] * 6,
+                        other=dict(
+                            api_check_token_trigger={'timestamp': time.time()},
+                            edit_row_info=menu_info,
+                            modal_type={'type': 'edit'}
+                        )
+                    )
 
-        return [dash.no_update] * 9 + [{'timestamp': time.time()}, None, None]
+        return dict(
+            modal=dict(visible=dash.no_update, title=dash.no_update),
+            form_value=dict(
+                parent_tree=dash.no_update, parent_id=dash.no_update, menu_type=dash.no_update,
+                icon=dash.no_update, icon_prefix=dash.no_update, icon_category=dash.no_update,
+                menu_name=dash.no_update, order_num=dash.no_update
+            ),
+            form_validate=[dash.no_update] * 6,
+            other=dict(
+                api_check_token_trigger={'timestamp': time.time()},
+                edit_row_info=None,
+                modal_type=None
+            )
+        )
 
-    return [dash.no_update] * 10 + [None, None]
+    raise PreventUpdate
 
 
 @app.callback(
@@ -258,7 +325,7 @@ def get_bottom_content(menu_value):
     elif menu_value == 'F':
         return [button_type.render(), str(uuid.uuid4()), {'type': 'F'}]
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 @app.callback(
@@ -293,7 +360,7 @@ def modal_confirm_trigger(confirm, menu_type):
                 {'timestamp': time.time()}
             ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -306,6 +373,9 @@ def modal_confirm_trigger(confirm, menu_type):
     prevent_initial_call=True
 )
 def menu_delete_modal(button_click, clicked_content, recently_button_clicked_row):
+    """
+    显示删除菜单二次确认弹窗回调
+    """
     if button_click:
 
         if clicked_content == '删除':
@@ -319,7 +389,7 @@ def menu_delete_modal(button_click, clicked_content, recently_button_clicked_row
             {'menu_ids': menu_ids}
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
 
 
 @app.callback(
@@ -331,6 +401,9 @@ def menu_delete_modal(button_click, clicked_content, recently_button_clicked_row
     prevent_initial_call=True
 )
 def menu_delete_confirm(delete_confirm, menu_ids_data):
+    """
+    删除菜单弹窗确认回调，实现删除操作
+    """
     if delete_confirm:
 
         params = menu_ids_data
@@ -348,4 +421,4 @@ def menu_delete_confirm(delete_confirm, menu_ids_data):
             fuc.FefferyFancyMessage('删除失败', type='error')
         ]
 
-    return [dash.no_update] * 3
+    raise PreventUpdate
