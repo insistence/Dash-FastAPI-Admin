@@ -197,7 +197,7 @@ class DeptDao:
         """
         db_dept = SysDept(**dept.dict())
         db.add(db_dept)
-        db.refresh(db_dept)  # 刷新
+        db.flush()
 
         return db_dept
 
