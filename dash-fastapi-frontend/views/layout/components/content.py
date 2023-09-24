@@ -16,7 +16,24 @@ def render_main_content():
                                 'label': '首页',
                                 'key': '首页',
                                 'closable': False,
-                                'children': render_dashboard()
+                                'children': render_dashboard(),
+                                'contextMenu': [
+                                    {
+                                        'key': '刷新页面',
+                                        'label': '刷新页面',
+                                        'icon': 'antd-reload'
+                                    },
+                                    {
+                                        'key': '关闭其他',
+                                        'label': '关闭其他',
+                                        'icon': 'antd-close-circle'
+                                    },
+                                    {
+                                        'key': '全部关闭',
+                                        'label': '全部关闭',
+                                        'icon': 'antd-close-circle'
+                                    }
+                                ]
                             }
                         ],
                         id='tabs-container',
