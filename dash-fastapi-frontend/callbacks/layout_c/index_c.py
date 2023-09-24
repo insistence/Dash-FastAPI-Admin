@@ -28,7 +28,7 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
     具体策略：
         1.当左侧某个菜单项被新选中，且右侧标签页子项尚未包含此项时，新建并切换
         2.当左侧某个菜单项被新选中，且右侧标签页子项已包含此项时，切换
-        3.当右侧标签页子项某项被删除时，销毁对应标签页的同时切换回主标签页
+        3.当右侧标签页子项某项被删除时，销毁对应标签页的同时切换回最后新增的标签页
     """
 
     trigger_id = dash.ctx.triggered_id
@@ -154,18 +154,24 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
                         'icon': 'antd-close-circle'
                     }
                 ]
-                if index == 1 and len(origin_items) == 2:
-                    new_items[0]['contextMenu'] = context_menu
-                elif len(origin_items) == 3:
-                    context_menu.insert(1, {
-                        'key': '关闭当前',
-                        'label': '关闭当前',
-                        'icon': 'antd-close'
-                    })
-                    if index == 1:
-                        new_items[2]['contextMenu'] = context_menu
-                    if index == 2:
-                        new_items[1]['contextMenu'] = context_menu
+                if index == 1:
+                    if len(origin_items) == 2:
+                        new_items[0]['contextMenu'] = context_menu
+                    else:
+                        origin_items[2]['contextMenu'].remove({
+                            'key': '关闭左侧',
+                            'label': '关闭左侧',
+                            'icon': 'antd-arrow-left'
+                        })
+                        new_items[2]['contextMenu'] = origin_items[2]['contextMenu']
+                elif index == 2:
+                    if len(origin_items) == 3:
+                        origin_items[1]['contextMenu'].remove({
+                            'key': '关闭右侧',
+                            'label': '关闭右侧',
+                            'icon': 'antd-arrow-right'
+                        })
+                        new_items[1]['contextMenu'] = origin_items[1]['contextMenu']
                 else:
                     if index == len(origin_items) - 1:
                         new_items[index - 1]['contextMenu'] = item['contextMenu']
@@ -227,18 +233,24 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                             'icon': 'antd-close-circle'
                         }
                     ]
-                    if index == 1 and len(origin_items) == 2:
-                        new_items[0]['contextMenu'] = context_menu
-                    elif len(origin_items) == 3:
-                        context_menu.insert(1, {
-                            'key': '关闭当前',
-                            'label': '关闭当前',
-                            'icon': 'antd-close'
-                        })
-                        if index == 1:
-                            new_items[2]['contextMenu'] = context_menu
-                        if index == 2:
-                            new_items[1]['contextMenu'] = context_menu
+                    if index == 1:
+                        if len(origin_items) == 2:
+                            new_items[0]['contextMenu'] = context_menu
+                        else:
+                            origin_items[2]['contextMenu'].remove({
+                                'key': '关闭左侧',
+                                'label': '关闭左侧',
+                                'icon': 'antd-arrow-left'
+                            })
+                            new_items[2]['contextMenu'] = origin_items[2]['contextMenu']
+                    elif index == 2:
+                        if len(origin_items) == 3:
+                            origin_items[1]['contextMenu'].remove({
+                                'key': '关闭右侧',
+                                'label': '关闭右侧',
+                                'icon': 'antd-arrow-right'
+                            })
+                            new_items[1]['contextMenu'] = origin_items[1]['contextMenu']
                     else:
                         if index == len(origin_items) - 1:
                             new_items[index - 1]['contextMenu'] = item['contextMenu']
