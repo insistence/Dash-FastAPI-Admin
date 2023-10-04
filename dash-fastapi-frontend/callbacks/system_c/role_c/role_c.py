@@ -167,7 +167,7 @@ def get_role_table_data(search_click, refresh_click, pagination, operations, rol
                                     direction='vertical'
                                 ),
                                 placement='bottomRight'
-                            )
+                            ) if 'system:role:edit' in button_perms else []
                         ]
                     )
 

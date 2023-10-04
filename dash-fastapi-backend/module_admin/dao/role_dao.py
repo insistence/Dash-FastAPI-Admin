@@ -1,8 +1,9 @@
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import Session
-from module_admin.entity.do.role_do import SysRole, SysRoleMenu
+from module_admin.entity.do.role_do import SysRole, SysRoleMenu, SysRoleDept
+from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.do.menu_do import SysMenu
-from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RoleQueryModel, RoleDetailModel
+from module_admin.entity.vo.role_vo import RoleModel, RoleMenuModel, RoleDeptModel, RoleQueryModel, RoleDetailModel
 from utils.time_format_util import list_format_datetime, object_format_datetime
 from datetime import datetime, time
 
@@ -74,9 +75,15 @@ class RoleDao:
             .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
             .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
             .distinct().all()
+        query_role_dept_info = db.query(SysDept).select_from(SysRole) \
+            .filter(SysRole.del_flag == 0, SysRole.role_id == role_id) \
+            .outerjoin(SysRoleDept, SysRole.role_id == SysRoleDept.role_id) \
+            .outerjoin(SysDept, and_(SysRoleDept.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+            .distinct().all()
         results = dict(
             role=object_format_datetime(query_role_basic_info),
             menu=list_format_datetime(query_role_menu_info),
+            dept=list_format_datetime(query_role_dept_info),
         )
 
         return RoleDetailModel(**results)
@@ -176,4 +183,27 @@ class RoleDao:
         """
         db.query(SysRoleMenu) \
             .filter(SysRoleMenu.role_id == role_menu.role_id) \
+            .delete()
+
+    @classmethod
+    def add_role_dept_dao(cls, db: Session, role_dept: RoleDeptModel):
+        """
+        新增角色部门关联信息数据库操作
+        :param db: orm对象
+        :param role_dept: 用户角色部门关联对象
+        :return:
+        """
+        db_role_dept = SysRoleDept(**role_dept.dict())
+        db.add(db_role_dept)
+
+    @classmethod
+    def delete_role_dept_dao(cls, db: Session, role_dept: RoleDeptModel):
+        """
+        删除角色部门关联信息数据库操作
+        :param db: orm对象
+        :param role_dept: 角色部门关联对象
+        :return:
+        """
+        db.query(SysRoleDept) \
+            .filter(SysRoleDept.role_id == role_dept.role_id) \
             .delete()

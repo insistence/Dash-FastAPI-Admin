@@ -21,6 +21,11 @@ def edit_role_api(page_obj: dict):
     return api_request(method='patch', url='/system/role/edit', is_headers=True, json=page_obj)
 
 
+def role_datascope_api(page_obj: dict):
+
+    return api_request(method='patch', url='/system/role/dataScope', is_headers=True, json=page_obj)
+
+
 def delete_role_api(page_obj: dict):
 
     return api_request(method='post', url='/system/role/delete', is_headers=True, json=page_obj)

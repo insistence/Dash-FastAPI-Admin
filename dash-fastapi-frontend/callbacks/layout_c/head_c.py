@@ -72,7 +72,7 @@ app.clientside_callback(
         return true;
     }
     ''',
-    Output('trigger-reload-output', 'reload'),
+    Output('trigger-reload-output', 'reload', allow_duplicate=True),
     Input('index-reload', 'nClicks'),
     prevent_initial_call=True
 )

@@ -1,7 +1,7 @@
 from sqlalchemy import and_, or_, desc, func
 from sqlalchemy.orm import Session
 from module_admin.entity.do.user_do import SysUser, SysUserRole, SysUserPost
-from module_admin.entity.do.role_do import SysRole, SysRoleMenu
+from module_admin.entity.do.role_do import SysRole, SysRoleMenu, SysRoleDept
 from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.do.menu_do import SysMenu
@@ -139,11 +139,12 @@ class UserDao:
         return CurrentUserInfo(**results)
 
     @classmethod
-    def get_user_list(cls, db: Session, query_object: UserQueryModel):
+    def get_user_list(cls, db: Session, query_object: UserQueryModel, data_scope_sql: str):
         """
         根据查询参数获取用户列表信息
         :param db: orm对象
         :param query_object: 查询参数对象
+        :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 用户列表信息对象
         """
         user_list = db.query(SysUser, SysDept) \
@@ -160,7 +161,8 @@ class UserDao:
                     SysUser.create_time.between(
                         datetime.combine(datetime.strptime(query_object.create_time_start, '%Y-%m-%d'), time(00, 00, 00)),
                         datetime.combine(datetime.strptime(query_object.create_time_end, '%Y-%m-%d'), time(23, 59, 59)))
-                    if query_object.create_time_start and query_object.create_time_end else True
+                    if query_object.create_time_start and query_object.create_time_end else True,
+                    eval(data_scope_sql)
                     ) \
             .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
             .distinct().all()
