@@ -10,14 +10,15 @@ class UserService:
     """
 
     @classmethod
-    def get_user_list_services(cls, result_db: Session, query_object: UserQueryModel):
+    def get_user_list_services(cls, result_db: Session, query_object: UserQueryModel, data_scope_sql: str):
         """
         获取用户列表信息service
         :param result_db: orm对象
         :param query_object: 查询参数对象
+        :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 用户列表信息对象
         """
-        user_list_result = UserDao.get_user_list(result_db, query_object)
+        user_list_result = UserDao.get_user_list(result_db, query_object, data_scope_sql)
 
         return user_list_result
 

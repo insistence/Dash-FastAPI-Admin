@@ -2,7 +2,7 @@ from dash import dcc, html
 import feffery_antd_components as fac
 
 import callbacks.system_c.role_c.role_c
-from . import allocate_user
+from . import data_scope, allocate_user
 from api.role import get_role_list_api
 
 
@@ -109,7 +109,7 @@ def render(button_perms):
                                 direction='vertical'
                             ),
                             placement='bottomRight'
-                        )
+                        ) if 'system:role:edit' in button_perms else []
                     ]
                 )
 
@@ -129,6 +129,9 @@ def render(button_perms):
         # 角色管理模块菜单权限存储容器
         dcc.Store(id='role-menu-store'),
         dcc.Store(id='current-role-menu-store'),
+        # 角色管理模块数据权限存储容器
+        dcc.Store(id='role-dept-store'),
+        dcc.Store(id='current-role-dept-store'),
         fac.AntdRow(
             [
                 fac.AntdCol(
@@ -683,6 +686,17 @@ def render(button_perms):
             title='提示',
             renderFooter=True,
             centered=True
+        ),
+
+        # 数据权限modal
+        fac.AntdModal(
+            data_scope.render(),
+            id='role-datascope-modal',
+            title='数据权限',
+            mask=False,
+            width=600,
+            renderFooter=True,
+            okClickClose=False
         ),
 
         # 分配用户modal

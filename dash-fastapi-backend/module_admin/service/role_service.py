@@ -101,6 +101,42 @@ class RoleService:
         return CrudRoleResponse(**result)
 
     @classmethod
+    def role_datascope_services(cls, result_db: Session, page_object: RoleDataScopeModel):
+        """
+        分配角色数据权限service
+        :param result_db: orm对象
+        :param page_object: 角色数据权限对象
+        :return: 分配角色数据权限结果
+        """
+        edit_role = page_object.dict(exclude_unset=True)
+        del edit_role['dept_id']
+        role_info = cls.detail_role_services(result_db, edit_role.get('role_id'))
+        if role_info:
+            if role_info.role.role_name != page_object.role_name:
+                role = RoleDao.get_role_by_info(result_db, RoleModel(**dict(role_name=page_object.role_name)))
+                if role:
+                    result = dict(is_success=False, message='角色名称已存在')
+                    return CrudRoleResponse(**result)
+            try:
+                RoleDao.edit_role_dao(result_db, edit_role)
+                role_id_dict = dict(role_id=page_object.role_id)
+                RoleDao.delete_role_dept_dao(result_db, RoleDeptModel(**role_id_dict))
+                if page_object.dept_id and page_object.data_scope == '2':
+                    dept_id_list = page_object.dept_id.split(',')
+                    for dept in dept_id_list:
+                        dept_dict = dict(role_id=page_object.role_id, dept_id=dept)
+                        RoleDao.add_role_dept_dao(result_db, RoleDeptModel(**dept_dict))
+                result_db.commit()
+                result = dict(is_success=True, message='分配成功')
+            except Exception as e:
+                result_db.rollback()
+                result = dict(is_success=False, message=str(e))
+        else:
+            result = dict(is_success=False, message='角色不存在')
+
+        return CrudRoleResponse(**result)
+
+    @classmethod
     def delete_role_services(cls, result_db: Session, page_object: DeleteRoleModel):
         """
         删除角色信息service

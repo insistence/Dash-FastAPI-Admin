@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Union, Optional, List
 from module_admin.entity.vo.user_vo import RoleModel
+from module_admin.entity.vo.dept_vo import DeptModel
 from module_admin.entity.vo.menu_vo import MenuModel
 
 
@@ -10,6 +11,17 @@ class RoleMenuModel(BaseModel):
     """
     role_id: Optional[int]
     menu_id: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+
+class RoleDeptModel(BaseModel):
+    """
+    角色和部门关联表对应pydantic模型
+    """
+    role_id: Optional[int]
+    dept_id: Optional[int]
 
     class Config:
         orm_mode = True
@@ -65,6 +77,13 @@ class AddRoleModel(RoleModel):
     type: Optional[str]
 
 
+class RoleDataScopeModel(RoleModel):
+    """
+    角色数据权限模型
+    """
+    dept_id: Optional[str]
+
+
 class DeleteRoleModel(BaseModel):
     """
     删除角色模型
@@ -80,3 +99,4 @@ class RoleDetailModel(BaseModel):
     """
     role: Union[RoleModel, None]
     menu: List[Union[MenuModel, None]]
+    dept: List[Union[DeptModel, None]]

@@ -75,6 +75,24 @@ async def edit_system_role(request: Request, edit_role: AddRoleModel, query_db: 
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))
+
+
+@roleController.patch("/role/dataScope", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:edit'))])
+@log_decorator(title='角色管理', business_type=4)
+async def edit_system_role_datascope(request: Request, role_data_scope: RoleDataScopeModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
+    try:
+        role_data_scope.update_by = current_user.user.user_name
+        role_data_scope.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        role_data_scope_result = RoleService.role_datascope_services(query_db, role_data_scope)
+        if role_data_scope_result.is_success:
+            logger.info(role_data_scope_result.message)
+            return response_200(data=role_data_scope_result, message=role_data_scope_result.message)
+        else:
+            logger.warning(role_data_scope_result.message)
+            return response_400(data="", message=role_data_scope_result.message)
+    except Exception as e:
+        logger.exception(e)
+        return response_500(data="", message=str(e))
     
     
 @roleController.post("/role/delete", response_model=CrudRoleResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:role:remove'))])

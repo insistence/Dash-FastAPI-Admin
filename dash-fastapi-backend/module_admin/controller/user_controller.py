@@ -12,6 +12,7 @@ from utils.response_util import *
 from utils.log_util import *
 from utils.common_util import bytes2file_response
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
+from module_admin.aspect.data_scope import GetDataScope
 from module_admin.annotation.log_annotation import log_decorator
 
 
@@ -19,11 +20,11 @@ userController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
-async def get_system_user_list(request: Request, user_page_query: UserPageObject, query_db: Session = Depends(get_db)):
+async def get_system_user_list(request: Request, user_page_query: UserPageObject, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysUser'))):
     try:
         user_query = UserQueryModel(**user_page_query.dict())
         # 获取全量数据
-        user_query_result = UserService.get_user_list_services(query_db, user_query)
+        user_query_result = UserService.get_user_list_services(query_db, user_query, data_scope_sql)
         # 分页操作
         user_page_query_result = get_page_obj(user_query_result, user_page_query.page_num, user_page_query.page_size)
         logger.info('获取成功')
