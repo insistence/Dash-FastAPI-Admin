@@ -1,13 +1,13 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.5</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.6</h1>
 <h4 align="center">基于Dash+FastAPI前后端分离的纯Python快速开发框架</h4>
 <p align="center">
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/stargazers"><img src="https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark"></a>
-	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.5-brightgreen.svg"></a>
+	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.6-brightgreen.svg"></a>
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
-    <img src="https://img.shields.io/badge/python-≥3.8-blue">
+    <img src="https://img.shields.io/badge/python-3.8 | 3.9-blue">
     <img src="https://img.shields.io/badge/MySQL-≥5.7-blue">
 </p>
 
@@ -24,7 +24,7 @@ Dash-FastAPI-Admin是一套全部开源的快速开发平台，毫无保留给�
 ## 内置功能
 
 1.  用户管理：用户是系统操作者，该功能主要完成系统用户配置。
-2.  角色管理：角色菜单权限分配。
+2.  角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。
 3.  菜单管理：配置系统菜单，操作权限，按钮权限标识等。
 4.  部门管理：配置系统组织机构（公司、部门、小组）。
 5.  岗位管理：配置系统用户所属担任职务。
