@@ -97,4 +97,4 @@ app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓�
 app.include_router(commonController, prefix="/common", tags=['通用模块'])
 
 if __name__ == '__main__':
-    uvicorn.run(app='app:app', host="127.0.0.1", port=9099, reload=True)
+    uvicorn.run(app='app:app', host="0.0.0.0", port=9099, reload=True)
