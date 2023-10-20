@@ -60,6 +60,9 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
         return response if stream else response.json()
     except Exception as e:
         logger.error("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求结果:{}",
-                     session.get('user')['user_name'], request.remote_addr, method, url, str(e))
+                     session.get('user_info').get('user_name') if session.get('user_info') else None,
+                     request.remote_addr, method, url, str(e))
+        session['code'] = 500
+        session['message'] = str(e)
 
-        raise Exception
+        return dict(code=500, data='', message=str(e))
