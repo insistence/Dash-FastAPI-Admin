@@ -15,14 +15,15 @@ from utils.tree_tool import find_title_by_key, find_modules_by_key, find_href_by
     [Output('tabs-container', 'items', allow_duplicate=True),
      Output('tabs-container', 'activeKey', allow_duplicate=True)],
     [Input('index-side-menu', 'currentKey'),
-     Input('tabs-container', 'latestDeletePane')],
-    [State('tabs-container', 'items'),
+     Input('tabs-container', 'tabCloseCounts')],
+    [State('tabs-container', 'latestDeletePane'),
+     State('tabs-container', 'items'),
      State('tabs-container', 'activeKey'),
      State('menu-info-store-container', 'data'),
      State('menu-list-store-container', 'data')],
     prevent_initial_call=True
 )
-def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, activeKey, menu_info, menu_list):
+def handle_tab_switch_and_create(currentKey, tabCloseCounts, latestDeletePane, origin_items, activeKey, menu_info, menu_list):
     """
     这个回调函数用于处理标签页子项的新建、切换及删除
     具体策略：
