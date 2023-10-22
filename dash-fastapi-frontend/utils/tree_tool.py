@@ -206,21 +206,23 @@ def get_dept_tree(pid: int, permission_list: list):
     return dept_list
 
 
-def list_to_tree(permission_list: list) -> list:
+def list_to_tree(permission_list: list, sub_id_str: str, parent_id_str: str) -> list:
     """
-    工具方法：根据菜单信息生成树形嵌套数据
-    :param permission_list: 菜单列表信息
-    :return: 菜单树形嵌套数据
+    工具方法：根据列表信息生成树形嵌套数据
+    :param permission_list: 列表信息
+    :param sub_id_str: 子id字符串
+    :param parent_id_str: 父id字符串
+    :return: 树形嵌套数据
     """
-    # 转成menu_id为Key的字典
-    mapping: dict = dict(zip([i['menu_id'] for i in permission_list], permission_list))
+    # 转成id为key的字典
+    mapping: dict = dict(zip([i[sub_id_str] for i in permission_list], permission_list))
 
     # 树容器
     container: list = []
 
     for d in permission_list:
         # 如果找不到父级项，则是根节点
-        parent: dict = mapping.get(d['parent_id'])
+        parent: dict = mapping.get(d[parent_id_str])
         if parent is None:
             container.append(d)
         else:

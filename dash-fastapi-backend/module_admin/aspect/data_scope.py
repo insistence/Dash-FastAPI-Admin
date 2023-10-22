@@ -8,9 +8,11 @@ class GetDataScope:
     """
     获取当前用户数据权限对应的查询sql语句
     """
-    def __init__(self, query_alias: Optional[str] = '', db_alias: Optional[str] = 'db'):
+    def __init__(self, query_alias: Optional[str] = '', db_alias: Optional[str] = 'db', user_alias: Optional[str] = 'user_id', dept_alias: Optional[str] = 'dept_id'):
         self.query_alias = query_alias
         self.db_alias = db_alias
+        self.user_alias = user_alias
+        self.dept_alias = dept_alias
 
     def __call__(self, current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
         user_id = current_user.user.user_id
@@ -22,13 +24,13 @@ class GetDataScope:
         if self.query_alias == '' or max_data_scope == 1 or user_id == 1:
             param_sql = '1 == 1'
         elif max_data_scope == 2:
-            param_sql = f'{self.query_alias}.dept_id.in_({self.db_alias}.query(SysRoleDept.dept_id).filter(SysRoleDept.role_id == {max_role_id}))'
+            param_sql = f"{self.query_alias}.{self.dept_alias}.in_({self.db_alias}.query(SysRoleDept.dept_id).filter(SysRoleDept.role_id == {max_role_id})) if hasattr({self.query_alias}, '{self.dept_alias}') else 1 == 1"
         elif max_data_scope == 3:
-            param_sql = f'{self.query_alias}.dept_id == {dept_id}'
+            param_sql = f"{self.query_alias}.{self.dept_alias} == {dept_id} if hasattr({self.query_alias}, '{self.dept_alias}') else 1 == 1"
         elif max_data_scope == 4:
-            param_sql = f'{self.query_alias}.dept_id.in_({self.db_alias}.query(SysDept.dept_id).filter(or_(SysDept.dept_id == {dept_id}, func.find_in_set({dept_id}, SysDept.ancestors))))'
+            param_sql = f"{self.query_alias}.{self.dept_alias}.in_({self.db_alias}.query(SysDept.dept_id).filter(or_(SysDept.dept_id == {dept_id}, func.find_in_set({dept_id}, SysDept.ancestors)))) if hasattr({self.query_alias}, '{self.dept_alias}') else 1 == 1"
         elif max_data_scope == 5:
-            param_sql = f'{self.query_alias}.user_id == {user_id}'
+            param_sql = f"{self.query_alias}.{self.user_alias} == {user_id} if hasattr({self.query_alias}, '{self.user_alias}') else 1 == 1"
         else:
             param_sql = '1 == 0'
 

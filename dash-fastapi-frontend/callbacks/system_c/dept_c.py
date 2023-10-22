@@ -6,7 +6,7 @@ from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
-from utils.tree_tool import get_dept_tree
+from utils.tree_tool import list_to_tree
 from api.dept import get_dept_tree_api, get_dept_list_api, add_dept_api, edit_dept_api, delete_dept_api, \
     get_dept_detail_api, get_dept_tree_for_edit_option_api
 
@@ -98,7 +98,7 @@ def get_dept_table_data(search_click, refresh_click, operations, fold_click, dep
                     item['status'] = dict(tag='正常', color='blue')
                 else:
                     item['status'] = dict(tag='停用', color='volcano')
-            table_data_new = get_dept_tree(0, table_data)
+            table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
 
             if fold_click:
                 if in_default_expanded_row_keys:

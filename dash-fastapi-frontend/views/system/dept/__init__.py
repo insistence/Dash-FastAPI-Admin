@@ -3,7 +3,7 @@ import feffery_antd_components as fac
 
 import callbacks.system_c.dept_c
 from api.dept import get_dept_list_api
-from utils.tree_tool import get_dept_tree
+from utils.tree_tool import list_to_tree
 
 
 def render(button_perms):
@@ -63,7 +63,7 @@ def render(button_perms):
                 item['status'] = dict(tag='正常', color='blue')
             else:
                 item['status'] = dict(tag='停用', color='volcano')
-        table_data_new = get_dept_tree(0, table_data)
+        table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
 
     return [
         dcc.Store(id='dept-button-perms-container', data=button_perms),

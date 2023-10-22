@@ -8,40 +8,43 @@ class DeptService:
     """
 
     @classmethod
-    def get_dept_tree_services(cls, result_db: Session, page_object: DeptModel):
+    def get_dept_tree_services(cls, result_db: Session, page_object: DeptModel, data_scope_sql: str):
         """
         获取部门树信息service
         :param result_db: orm对象
         :param page_object: 查询参数对象
+        :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 部门树信息对象
         """
-        dept_list_result = DeptDao.get_dept_list_for_tree(result_db, page_object)
-        dept_tree_result = cls.get_dept_tree(0, DeptTree(dept_tree=dept_list_result))
+        dept_list_result = DeptDao.get_dept_list_for_tree(result_db, page_object, data_scope_sql)
+        dept_tree_result = cls.list_to_tree(dept_list_result)
 
         return dept_tree_result
 
     @classmethod
-    def get_dept_tree_for_edit_option_services(cls, result_db: Session, page_object: DeptModel):
+    def get_dept_tree_for_edit_option_services(cls, result_db: Session, page_object: DeptModel, data_scope_sql: str):
         """
         获取部门编辑部门树信息service
         :param result_db: orm对象
         :param page_object: 查询参数对象
+        :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 部门树信息对象
         """
-        dept_list_result = DeptDao.get_dept_info_for_edit_option(result_db, page_object)
-        dept_tree_result = cls.get_dept_tree(0, DeptTree(dept_tree=dept_list_result))
+        dept_list_result = DeptDao.get_dept_info_for_edit_option(result_db, page_object, data_scope_sql)
+        dept_tree_result = cls.list_to_tree(dept_list_result)
 
         return dept_tree_result
 
     @classmethod
-    def get_dept_list_services(cls, result_db: Session, page_object: DeptModel):
+    def get_dept_list_services(cls, result_db: Session, page_object: DeptModel, data_scope_sql: str):
         """
         获取部门列表信息service
         :param result_db: orm对象
         :param page_object: 分页查询参数对象
+        :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 部门列表信息对象
         """
-        dept_list_result = DeptDao.get_dept_list(result_db, page_object)
+        dept_list_result = DeptDao.get_dept_list(result_db, page_object, data_scope_sql)
 
         return dept_list_result
 
@@ -153,6 +156,34 @@ class DeptService:
         dept = DeptDao.get_dept_detail_by_id(result_db, dept_id=dept_id)
 
         return dept
+
+    @classmethod
+    def list_to_tree(cls, permission_list: list) -> list:
+        """
+        工具方法：根据部门列表信息生成树形嵌套数据
+        :param permission_list: 部门列表信息
+        :return: 部门树形嵌套数据
+        """
+        permission_list = [dict(title=item.dept_name, key=str(item.dept_id), value=str(item.dept_id), parent_id=str(item.parent_id)) for item in permission_list]
+        # 转成dept_id为key的字典
+        mapping: dict = dict(zip([i['key'] for i in permission_list], permission_list))
+
+        # 树容器
+        container: list = []
+
+        for d in permission_list:
+            # 如果找不到父级项，则是根节点
+            parent: dict = mapping.get(d['parent_id'])
+            if parent is None:
+                container.append(d)
+            else:
+                children: list = parent.get('children')
+                if not children:
+                    children = []
+                children.append(d)
+                parent.update({'children': children})
+
+        return container
 
     @classmethod
     def get_dept_tree(cls, pid: int, permission_list: DeptTree):
