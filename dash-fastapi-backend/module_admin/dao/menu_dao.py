@@ -52,25 +52,25 @@ class MenuDao:
         :param role: 用户角色列表信息
         :return: 菜单列表信息
         """
-        menu_result = []
-        for item in role:
-            if item.role_id == 1:
-                menu_result = db.query(SysMenu) \
-                    .filter(SysMenu.menu_id != menu_info.menu_id, SysMenu.parent_id != menu_info.menu_id,
-                            SysMenu.status == 0) \
-                    .all()
-            else:
-                menu_result = db.query(SysMenu).select_from(SysUser) \
-                    .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-                    .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-                    .outerjoin(SysRole,
-                               and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
-                    .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-                    .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
-                                             SysMenu.menu_id != menu_info.menu_id, SysMenu.parent_id != menu_info.menu_id,
-                                             SysMenu.status == 0)) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
+        role_id_list = [item.role_id for item in role]
+        if 1 in role_id_list:
+            menu_result = db.query(SysMenu) \
+                .filter(SysMenu.menu_id != menu_info.menu_id, SysMenu.parent_id != menu_info.menu_id,
+                        SysMenu.status == 0) \
+                .all()
+        else:
+            menu_result = db.query(SysMenu).select_from(SysUser) \
+                .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
+                .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+                .outerjoin(SysRole,
+                           and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+                .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
+                .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
+                                    SysMenu.menu_id != menu_info.menu_id,
+                                    SysMenu.parent_id != menu_info.menu_id,
+                                    SysMenu.status == 0)) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
 
         return list_format_datetime(menu_result)
 
@@ -84,28 +84,26 @@ class MenuDao:
         :param role: 用户角色列表信息
         :return: 菜单列表信息
         """
-        menu_query_all = []
-        for item in role:
-            if item.role_id == 1:
-                menu_query_all = db.query(SysMenu) \
-                    .filter(SysMenu.status == 0,
-                            SysMenu.menu_name.like(f'%{menu_info.menu_name}%') if menu_info.menu_name else True) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
-                break
-            else:
-                menu_query_all = db.query(SysMenu).select_from(SysUser) \
-                    .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-                    .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-                    .outerjoin(SysRole,
-                               and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
-                    .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-                    .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
-                                             SysMenu.status == 0,
-                                             SysMenu.menu_name.like(
-                                                 f'%{menu_info.menu_name}%') if menu_info.menu_name else True)) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
+        role_id_list = [item.role_id for item in role]
+        if 1 in role_id_list:
+            menu_query_all = db.query(SysMenu) \
+                .filter(SysMenu.status == 0,
+                        SysMenu.menu_name.like(f'%{menu_info.menu_name}%') if menu_info.menu_name else True) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
+        else:
+            menu_query_all = db.query(SysMenu).select_from(SysUser) \
+                .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
+                .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+                .outerjoin(SysRole,
+                           and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+                .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
+                .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
+                                    SysMenu.status == 0,
+                                    SysMenu.menu_name.like(
+                                        f'%{menu_info.menu_name}%') if menu_info.menu_name else True)) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
 
         return list_format_datetime(menu_query_all)
 
@@ -119,29 +117,27 @@ class MenuDao:
         :param role: 用户角色列表
         :return: 菜单列表信息对象
         """
-        menu_query_all = []
-        for item in role:
-            if item.role_id == 1:
-                menu_query_all = db.query(SysMenu) \
-                    .filter(SysMenu.status == page_object.status if page_object.status else True,
-                            SysMenu.menu_name.like(
-                                f'%{page_object.menu_name}%') if page_object.menu_name else True) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
-                break
-            else:
-                menu_query_all = db.query(SysMenu).select_from(SysUser) \
-                    .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-                    .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-                    .outerjoin(SysRole,
-                               and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
-                    .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-                    .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
-                                             SysMenu.status == page_object.status if page_object.status else True,
-                                             SysMenu.menu_name.like(
-                                                 f'%{page_object.menu_name}%') if page_object.menu_name else True)) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
+        role_id_list = [item.role_id for item in role]
+        if 1 in role_id_list:
+            menu_query_all = db.query(SysMenu) \
+                .filter(SysMenu.status == page_object.status if page_object.status else True,
+                        SysMenu.menu_name.like(
+                            f'%{page_object.menu_name}%') if page_object.menu_name else True) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
+        else:
+            menu_query_all = db.query(SysMenu).select_from(SysUser) \
+                .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
+                .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+                .outerjoin(SysRole,
+                           and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+                .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
+                .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id,
+                                    SysMenu.status == page_object.status if page_object.status else True,
+                                    SysMenu.menu_name.like(
+                                        f'%{page_object.menu_name}%') if page_object.menu_name else True)) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
 
         result = dict(
             rows=list_format_datetime(menu_query_all),
