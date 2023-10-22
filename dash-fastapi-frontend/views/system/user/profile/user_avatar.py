@@ -19,7 +19,7 @@ def render():
             [
                 fac.AntdImage(
                     id='user-avatar-image-info',
-                    src=session.get('user_info').get('avatar'),
+                    src=f"{ApiBaseUrlConfig.BaseUrl}{session.get('user_info').get('avatar')}&token={session.get('Authorization')}",
                     preview=False,
                     height='120px',
                     width='120px',
@@ -112,7 +112,9 @@ def render():
                             fac.AntdUpload(
                                 id='avatar-upload-choose',
                                 apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
-                                downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
+                                apiUrlExtraParams={'taskPath': 'avatarUpload'},
+                                downloadUrl=f"{ApiBaseUrlConfig.BaseUrl}/common/caches",
+                                downloadUrlExtraParams={'taskPath': 'avatarUpload', 'token': session.get('Authorization')},
                                 headers={'Authorization': 'Bearer ' + session.get('Authorization')},
                                 fileMaxSize=10,
                                 showUploadList=False,

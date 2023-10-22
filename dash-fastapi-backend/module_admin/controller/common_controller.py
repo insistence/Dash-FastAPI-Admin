@@ -1,40 +1,43 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends, File, Form
+from sqlalchemy.orm import Session
 from config.env import CachePathConfig
+from config.get_db import get_db
 from module_admin.service.login_service import get_current_user
 from module_admin.service.common_service import *
 from module_admin.service.config_service import ConfigService
 from utils.response_util import *
 from utils.log_util import *
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
+from typing import Optional
 
 
 commonController = APIRouter()
 
 
 @commonController.post("/upload", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
-async def common_upload(request: Request, uploadId: str = Form(), file: UploadFile = File(...)):
+async def common_upload(request: Request, taskPath: str = Form(), uploadId: str = Form(), file: UploadFile = File(...)):
     try:
         try:
-            os.makedirs(os.path.join(CachePathConfig.PATH, uploadId))
+            os.makedirs(os.path.join(CachePathConfig.PATH, taskPath, uploadId))
         except FileExistsError:
             pass
-        CommonService.upload_service(CachePathConfig.PATH, uploadId, file)
+        CommonService.upload_service(CachePathConfig.PATH, taskPath, uploadId, file)
         logger.info('上传成功')
-        return response_200(data={'filename': file.filename}, message="上传成功")
+        return response_200(data={'filename': file.filename, 'path': f'/common/{CachePathConfig.PATHSTR}?taskPath={taskPath}&taskId={uploadId}&filename={file.filename}'}, message="上传成功")
     except Exception as e:
         logger.exception(e)
         return response_500(data="", message=str(e))
 
 
 @commonController.post("/uploadForEditor", dependencies=[Depends(get_current_user), Depends(CheckUserInterfaceAuth('common'))])
-async def editor_upload(request: Request, uploadId: str = Form(), file: UploadFile = File(...)):
+async def editor_upload(request: Request, baseUrl: str = Form(), uploadId: str = Form(), taskPath: str = Form(), file: UploadFile = File(...)):
     try:
         try:
-            os.makedirs(os.path.join(CachePathConfig.PATH, uploadId))
+            os.makedirs(os.path.join(CachePathConfig.PATH, taskPath, uploadId))
         except FileExistsError:
             pass
-        CommonService.upload_service(CachePathConfig.PATH, uploadId, file)
+        CommonService.upload_service(CachePathConfig.PATH, taskPath, uploadId, file)
         logger.info('上传成功')
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -42,7 +45,7 @@ async def editor_upload(request: Request, uploadId: str = Form(), file: UploadFi
                 {
                     'errno': 0,
                     'data': {
-                        'url': f'{request.base_url}common/{CachePathConfig.PATHSTR}?taskId={uploadId}&filename={file.filename}'
+                        'url': f'{baseUrl}/common/{CachePathConfig.PATHSTR}?taskPath={taskPath}&taskId={uploadId}&filename={file.filename}'
                     },
                 }
             )
@@ -61,11 +64,16 @@ async def editor_upload(request: Request, uploadId: str = Form(), file: UploadFi
 
 
 @commonController.get(f"/{CachePathConfig.PATHSTR}")
-def common_download(request: Request, taskId: str, filename: str):
+async def common_download(request: Request, taskPath: str, taskId: str, filename: str, token: Optional[str] = None, query_db: Session = Depends(get_db)):
     try:
         def generate_file():
-            with open(os.path.join(CachePathConfig.PATH, taskId, filename), 'rb') as response_file:
+            with open(os.path.join(CachePathConfig.PATH, taskPath, taskId, filename), 'rb') as response_file:
                 yield from response_file
+        if taskPath not in ['notice']:
+            current_user = await get_current_user(request, token, query_db)
+            if current_user:
+                logger.info('获取成功')
+                return streaming_response_200(data=generate_file())
         logger.info('获取成功')
         return streaming_response_200(data=generate_file())
     except Exception as e:

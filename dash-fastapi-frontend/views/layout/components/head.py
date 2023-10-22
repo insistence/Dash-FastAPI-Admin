@@ -1,6 +1,7 @@
 from dash import html
 import feffery_antd_components as fac
 from flask import session
+from config.global_config import ApiBaseUrlConfig
 import callbacks.layout_c.head_c
 
 
@@ -95,7 +96,7 @@ def render_head_content():
                             fac.AntdAvatar(
                                 id='avatar-info',
                                 mode='image',
-                                src=session.get('user_info').get('avatar'),
+                                src=f"{ApiBaseUrlConfig.BaseUrl}{session.get('user_info').get('avatar')}&token={session.get('Authorization')}",
                                 size=36
                             ),
                             count=6,

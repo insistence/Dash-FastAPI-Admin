@@ -683,8 +683,8 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 103, 'admin', '超级管理员', '00', 'niangao@163.com', '18888888888', '1', 'http://127.0.0.1:9099/common/caches?taskId=avatar&filename=admin_avatar.jpeg', '$2b$12$dW/S5ummJs3Z5fMXqsesWuJgTimgtpK85L0zFhUAuFmHDznII/F66', '0', '0', '127.0.0.1', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', '管理员');
-INSERT INTO `sys_user` VALUES (2, 105, 'niangao', '年糕', '00', 'niangao@qq.com', '16688888888', '0', 'http://127.0.0.1:9099/common/caches?taskId=avatar&filename=ry_avatar.jpeg', '$2b$12$UkNwXNmyQ2RbS1BROXmCRelWLkEgKWQmVsY1S9O1/nZpUSPud1Oz2', '0', '0', '127.0.0.1', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', '测试员');
+INSERT INTO `sys_user` VALUES (1, 103, 'admin', '超级管理员', '00', 'niangao@163.com', '18888888888', '1', '/common/caches?taskPath=avatar&taskId=admin&filename=admin_avatar.jpeg', '$2b$12$dW/S5ummJs3Z5fMXqsesWuJgTimgtpK85L0zFhUAuFmHDznII/F66', '0', '0', '127.0.0.1', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', '管理员');
+INSERT INTO `sys_user` VALUES (2, 105, 'niangao', '年糕', '00', 'niangao@qq.com', '16688888888', '0', '/common/caches?taskPath=avatar&taskId=ry&filename=ry_avatar.jpeg', '$2b$12$UkNwXNmyQ2RbS1BROXmCRelWLkEgKWQmVsY1S9O1/nZpUSPud1Oz2', '0', '0', '127.0.0.1', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', 'admin', '2023-05-23 16:13:33', '测试员');
 
 -- ----------------------------
 -- Table structure for sys_user_post

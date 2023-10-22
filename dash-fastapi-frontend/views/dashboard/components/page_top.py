@@ -3,6 +3,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from flask import session
+from config.global_config import ApiBaseUrlConfig
 
 
 def render_page_top():
@@ -13,7 +14,7 @@ def render_page_top():
                     fac.AntdAvatar(
                         id='dashboard-avatar-info',
                         mode='image',
-                        src=session.get('user_info').get('avatar'),
+                        src=f"{ApiBaseUrlConfig.BaseUrl}{session.get('user_info').get('avatar')}&token={session.get('Authorization')}",
                         size='large'
                     ),
                     className='avatar',

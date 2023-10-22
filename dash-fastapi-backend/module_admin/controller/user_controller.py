@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request
 from fastapi import Depends
 import base64
 from config.get_db import get_db
-from config.env import CachePathConfig
 from module_admin.service.login_service import get_current_user
 from module_admin.service.user_service import *
 from module_admin.entity.vo.user_vo import *
@@ -109,7 +108,7 @@ async def change_system_user_profile_avatar(request: Request, edit_user: AddUser
         base64_string = avatar.split(',', 1)[1]
         # 解码 base64 字符串
         file_data = base64.b64decode(base64_string)
-        dir_path = os.path.join(CachePathConfig.PATH, 'avatar')
+        dir_path = os.path.join(CachePathConfig.PATH, 'avatar', current_user.user.user_name)
         try:
             os.makedirs(dir_path)
         except FileExistsError:
@@ -118,7 +117,7 @@ async def change_system_user_profile_avatar(request: Request, edit_user: AddUser
         with open(filepath, 'wb') as f:
             f.write(file_data)
         edit_user.user_id = current_user.user.user_id
-        edit_user.avatar = f'{request.base_url}common/{CachePathConfig.PATHSTR}?taskId=avatar&filename={current_user.user.user_name}_avatar.jpeg'
+        edit_user.avatar = f'/common/{CachePathConfig.PATHSTR}?taskPath=avatar&taskId={current_user.user.user_name}&filename={current_user.user.user_name}_avatar.jpeg'
         edit_user.update_by = current_user.user.user_name
         edit_user.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         edit_user_result = UserService.edit_user_services(query_db, edit_user)
