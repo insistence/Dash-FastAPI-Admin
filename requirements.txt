@@ -23,7 +23,7 @@ email-validator==2.0.0.post2
 et-xmlfile==1.1.0
 fastapi==0.95.1
 feffery-antd-charts==0.0.1rc17
-feffery-antd-components==0.2.10rc18
+feffery-antd-components==0.2.10
 feffery-markdown-components==0.2.10
 feffery-utils-components==0.2.0b1
 Flask==2.2.5
