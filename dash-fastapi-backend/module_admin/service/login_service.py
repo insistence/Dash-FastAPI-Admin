@@ -11,7 +11,7 @@ from module_admin.entity.vo.login_vo import *
 from module_admin.dao.login_dao import *
 from module_admin.service.user_service import UserService
 from module_admin.dao.user_dao import *
-from config.env import JwtConfig
+from config.env import JwtConfig, RedisInitKeyConfig
 from utils.pwd_util import *
 from utils.response_util import *
 from utils.message_util import *
@@ -73,13 +73,13 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
     if user is None:
         logger.warning("用户token不合法")
         raise AuthException(data="", message="用户token不合法")
-    redis_token = await request.app.state.redis.get(f'access_token:{session_id}')
+    redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
     # 此方法可实现同一账号同一时间只能登录一次
-    # redis_token = await request.app.state.redis.get(f'access_token:{user.user_basic_info[0].user_id}')
+    # redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info[0].user_id}")
     if token == redis_token:
-        await request.app.state.redis.set(f'access_token:{session_id}', redis_token,
+        await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", redis_token,
                                           ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
-        # await request.app.state.redis.set(f'access_token:{user.user_basic_info[0].user_id}', redis_token,
+        # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info[0].user_id}", redis_token,
         #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
 
         return CurrentUserInfoServiceResponse(
@@ -102,14 +102,14 @@ async def get_sms_code_services(request: Request, result_db: Session, user: Rese
     :param user: 用户对象
     :return: 短信验证码对象
     """
-    redis_sms_result = await request.app.state.redis.get(f"sms_code:{user.session_id}")
+    redis_sms_result = await request.app.state.redis.get(f"{RedisInitKeyConfig.SMS_CODE.get('key')}:{user.session_id}")
     if redis_sms_result:
         return SmsCode(**dict(is_success=False, sms_code='', session_id='', message='短信验证码仍在有效期内'))
     is_user = UserDao.get_user_by_name(result_db, user.user_name)
     if is_user:
         sms_code = str(random.randint(100000, 999999))
         session_id = str(uuid.uuid4())
-        await request.app.state.redis.set(f"sms_code:{session_id}", sms_code, ex=timedelta(minutes=2))
+        await request.app.state.redis.set(f"{RedisInitKeyConfig.SMS_CODE.get('key')}:{session_id}", sms_code, ex=timedelta(minutes=2))
         # 此处模拟调用短信服务
         message_service(sms_code)
 
@@ -126,7 +126,7 @@ async def forget_user_services(request: Request, result_db: Session, forget_user
     :param forget_user: 重置用户对象
     :return: 重置结果
     """
-    redis_sms_result = await request.app.state.redis.get(f"sms_code:{forget_user.session_id}")
+    redis_sms_result = await request.app.state.redis.get(f"{RedisInitKeyConfig.SMS_CODE.get('key')}:{forget_user.session_id}")
     if forget_user.sms_code == redis_sms_result:
         forget_user.password = PwdUtil.get_password_hash(forget_user.password)
         forget_user.user_id = UserDao.get_user_by_name(result_db, forget_user.user_name).user_id
@@ -135,7 +135,7 @@ async def forget_user_services(request: Request, result_db: Session, forget_user
     elif not redis_sms_result:
         result = dict(is_success=False, message='短信验证码已过期')
     else:
-        await request.app.state.redis.delete(f"sms_code:{forget_user.session_id}")
+        await request.app.state.redis.delete(f"{RedisInitKeyConfig.SMS_CODE.get('key')}:{forget_user.session_id}")
         result = dict(is_success=False, message='短信验证码不正确')
 
     return CrudUserResponse(**result)
@@ -148,7 +148,7 @@ async def logout_services(request: Request, session_id: str):
     :param session_id: 会话编号
     :return: 退出登录结果
     """
-    await request.app.state.redis.delete(f'access_token:{session_id}')
+    await request.app.state.redis.delete(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
     # await request.app.state.redis.delete(f'{current_user.user.user_id}_access_token')
     # await request.app.state.redis.delete(f'{current_user.user.user_id}_session_id')
 
@@ -162,7 +162,7 @@ async def check_login_captcha(request: Request, login_user: UserLogin):
     :param login_user: 登录用户对象
     :return: 校验结果
     """
-    captcha_value = await request.app.state.redis.get(f'captcha_codes:{login_user.session_id}')
+    captcha_value = await request.app.state.redis.get(f"{RedisInitKeyConfig.CAPTCHA_CODES.get('key')}:{login_user.session_id}")
     if not captcha_value:
         logger.warning("验证码已失效")
         raise LoginException(data="", message="验证码已失效")
@@ -180,7 +180,7 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     :param login_user: 登录用户对象
     :return: 校验结果
     """
-    account_lock = await request.app.state.redis.get(f"account_lock:{login_user.user_name}")
+    account_lock = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCOUNT_LOCK.get('key')}:{login_user.user_name}")
     if login_user.user_name == account_lock:
         logger.warning("账号已锁定，请稍后再试")
         raise LoginException(data="", message="账号已锁定，请稍后再试")
@@ -192,16 +192,16 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
         logger.warning("用户不存在")
         raise LoginException(data="", message="用户不存在")
     if not PwdUtil.verify_password(login_user.password, user[0].password):
-        cache_password_error_count = await request.app.state.redis.get(f"password_error_count:{login_user.user_name}")
+        cache_password_error_count = await request.app.state.redis.get(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
         password_error_counted = 0
         if cache_password_error_count:
             password_error_counted = cache_password_error_count
         password_error_count = int(password_error_counted) + 1
-        await request.app.state.redis.set(f"password_error_count:{login_user.user_name}", password_error_count,
+        await request.app.state.redis.set(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}", password_error_count,
                                           ex=timedelta(minutes=10))
         if password_error_count > 5:
-            await request.app.state.redis.delete(f"password_error_count:{login_user.user_name}")
-            await request.app.state.redis.set(f"account_lock:{login_user.user_name}", login_user.user_name,
+            await request.app.state.redis.delete(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
+            await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCOUNT_LOCK.get('key')}:{login_user.user_name}", login_user.user_name,
                                               ex=timedelta(minutes=10))
             logger.warning("10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
             raise LoginException(data="", message="10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
@@ -210,7 +210,7 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     if user[0].status == '1':
         logger.warning("用户已停用")
         raise LoginException(data="", message="用户已停用")
-    await request.app.state.redis.delete(f"password_error_count:{login_user.user_name}")
+    await request.app.state.redis.delete(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
     return user
 
 

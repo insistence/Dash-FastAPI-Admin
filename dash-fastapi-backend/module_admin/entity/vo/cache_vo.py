@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Any
 
 
 class CacheMonitorModel(BaseModel):
@@ -9,3 +9,13 @@ class CacheMonitorModel(BaseModel):
     command_stats: Optional[List]
     db_size: Optional[int]
     info: Optional[dict]
+
+
+class CacheInfoModel(BaseModel):
+    """
+    缓存监控对象对应pydantic模型
+    """
+    cache_key: Optional[str]
+    cache_name: Optional[str]
+    cache_value: Optional[Any]
+    remark: Optional[str]

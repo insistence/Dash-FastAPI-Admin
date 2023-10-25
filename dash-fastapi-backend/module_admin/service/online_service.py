@@ -1,6 +1,6 @@
 from fastapi import Request
 from jose import jwt
-from config.env import JwtConfig
+from config.env import JwtConfig, RedisInitKeyConfig
 from module_admin.entity.vo.online_vo import *
 
 
@@ -17,7 +17,7 @@ class OnlineService:
         :param query_object: 查询参数对象
         :return: 在线用户列表信息
         """
-        access_token_keys = await request.app.state.redis.keys('access_token*')
+        access_token_keys = await request.app.state.redis.keys(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}*")
         if not access_token_keys:
             access_token_keys = []
         access_token_values_list = [await request.app.state.redis.get(key) for key in access_token_keys]
@@ -62,7 +62,7 @@ class OnlineService:
         if page_object.session_ids.split(','):
             session_id_list = page_object.session_ids.split(',')
             for session_id in session_id_list:
-                await request.app.state.redis.delete(f'access_token:{session_id}')
+                await request.app.state.redis.delete(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
             result = dict(is_success=True, message='强退成功')
         else:
             result = dict(is_success=False, message='传入session_id为空')
