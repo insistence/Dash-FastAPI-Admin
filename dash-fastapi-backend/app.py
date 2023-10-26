@@ -71,6 +71,12 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     return response_401(data=exc.data, message=exc.message)
 
 
+# 自定义权限检验异常
+@app.exception_handler(PermissionException)
+async def permission_exception_handler(request: Request, exc: PermissionException):
+    return response_403(data=exc.data, message=exc.message)
+
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(

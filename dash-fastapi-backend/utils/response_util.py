@@ -50,6 +50,21 @@ def response_401(*, data: Any = None, message: str = "获取失败") -> Response
     )
 
 
+def response_403(*, data: Any = None, message: str = "获取失败") -> Response:
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content=jsonable_encoder(
+            {
+                'code': 403,
+                'message': message,
+                'data': data,
+                'success': 'false',
+                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        )
+    )
+
+
 def response_500(*, data: Any = None, message: str = "接口异常") -> Response:
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -75,6 +90,15 @@ def streaming_response_200(*, data: Any = None):
 class AuthException(Exception):
     """
     自定义令牌异常AuthException
+    """
+    def __init__(self, data: str = None, message: str = None):
+        self.data = data
+        self.message = message
+
+
+class PermissionException(Exception):
+    """
+    自定义权限异常PermissionException
     """
     def __init__(self, data: str = None, message: str = None):
         self.data = data

@@ -1,7 +1,7 @@
 from fastapi import Depends
 from module_admin.entity.vo.user_vo import CurrentUserInfoServiceResponse
 from module_admin.service.login_service import get_current_user
-from utils.response_util import AuthException
+from utils.response_util import PermissionException
 
 
 class CheckUserInterfaceAuth:
@@ -16,4 +16,4 @@ class CheckUserInterfaceAuth:
         user_auth_list.append('common')
         if self.perm_str in user_auth_list:
             return True
-        raise AuthException(data="", message="该用户无此接口权限")
+        raise PermissionException(data="", message="该用户无此接口权限")
