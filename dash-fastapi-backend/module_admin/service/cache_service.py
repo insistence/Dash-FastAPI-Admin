@@ -1,6 +1,7 @@
 from fastapi import Request
 from module_admin.entity.vo.cache_vo import *
 from config.env import RedisInitKeyConfig
+from config.get_redis import RedisUtil
 
 
 class CacheService:
@@ -69,3 +70,49 @@ class CacheService:
         cache_value = await request.app.state.redis.get(f"{cache_name}:{cache_key}")
 
         return CacheInfoModel(cache_key=cache_key, cache_name=cache_name, cache_value=cache_value, remark="")
+
+    @classmethod
+    async def clear_cache_monitor_cache_name_services(cls, request: Request, cache_name: str):
+        """
+        清除缓存名称对应所有键值service
+        :param request: Request对象
+        :param cache_name: 缓存名称
+        :return: 操作缓存响应信息
+        """
+        cache_keys = await request.app.state.redis.keys(f"{cache_name}*")
+        if cache_keys:
+            await request.app.state.redis.delete(*cache_keys)
+        result = dict(is_success=True, message=f"{cache_name}对应键值清除成功")
+
+        return CrudCacheResponse(**result)
+
+    @classmethod
+    async def clear_cache_monitor_cache_key_services(cls, request: Request, cache_name: str, cache_key: str):
+        """
+        清除缓存名称对应所有键值service
+        :param request: Request对象
+        :param cache_name: 缓存名称
+        :param cache_key: 缓存键名
+        :return: 操作缓存响应信息
+        """
+        await request.app.state.redis.delete(f"{cache_name}:{cache_key}")
+        result = dict(is_success=True, message=f"{cache_name}:{cache_key}清除成功")
+
+        return CrudCacheResponse(**result)
+
+    @classmethod
+    async def clear_cache_monitor_all_services(cls, request: Request):
+        """
+        清除所有缓存service
+        :param request: Request对象
+        :return: 操作缓存响应信息
+        """
+        cache_keys = await request.app.state.redis.keys()
+        if cache_keys:
+            await request.app.state.redis.delete(*cache_keys)
+
+        result = dict(is_success=True, message="所有缓存清除成功")
+        await RedisUtil.init_sys_dict(request.app.state.redis)
+        await RedisUtil.init_sys_config(request.app.state.redis)
+
+        return CrudCacheResponse(**result)

@@ -19,3 +19,11 @@ class CacheInfoModel(BaseModel):
     cache_name: Optional[str]
     cache_value: Optional[Any]
     remark: Optional[str]
+
+
+class CrudCacheResponse(BaseModel):
+    """
+    操作缓存响应模型
+    """
+    is_success: bool
+    message: str
