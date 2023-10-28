@@ -96,7 +96,7 @@ def get_menu_table_data(search_click, refresh_click, operations, fold_click, men
                     item['status'] = dict(tag='正常', color='blue')
                 else:
                     item['status'] = dict(tag='停用', color='volcano')
-            table_data_new = list_to_tree(table_data)
+            table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
 
             if fold_click:
                 if not in_default_expanded_row_keys:

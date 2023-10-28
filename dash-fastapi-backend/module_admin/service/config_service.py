@@ -1,4 +1,5 @@
 from fastapi import Request
+from config.env import RedisInitKeyConfig
 from module_admin.entity.vo.config_vo import *
 from module_admin.dao.config_dao import *
 from utils.common_util import export_list2excel
@@ -30,14 +31,14 @@ class ConfigService:
         :return:
         """
         # 获取以sys_config:开头的键列表
-        keys = await redis.keys('sys_config:*')
+        keys = await redis.keys(f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:*")
         # 删除匹配的键
         if keys:
             await redis.delete(*keys)
         config_all = ConfigDao.get_config_list(result_db, ConfigQueryModel(**dict()))
         for config_obj in config_all:
             if config_obj.config_type == 'Y':
-                await redis.set(f'sys_config:{config_obj.config_key}', config_obj.config_value)
+                await redis.set(f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:{config_obj.config_key}", config_obj.config_value)
 
     @classmethod
     async def query_config_list_from_cache_services(cls, redis, config_key: str):
@@ -47,7 +48,7 @@ class ConfigService:
         :param config_key: 参数键名
         :return: 参数键名对应值
         """
-        result = await redis.get(f'sys_config:{config_key}')
+        result = await redis.get(f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:{config_key}")
 
         return result
 

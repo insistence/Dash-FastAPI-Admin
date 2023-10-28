@@ -999,7 +999,9 @@ def render(button_perms):
                     fac.AntdDraggerUpload(
                         id='user-upload-choose',
                         apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
+                        apiUrlExtraParams={'taskPath': 'userUpload'},
                         downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
+                        downloadUrlExtraParams={'taskPath': 'userUpload', 'token': session.get('Authorization')},
                         headers={'Authorization': 'Bearer ' + session.get('Authorization')},
                         fileTypes=['xls', 'xlsx'],
                         fileListMaxLength=1,

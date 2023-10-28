@@ -59,7 +59,7 @@ def render(button_perms):
                 item['status'] = dict(tag='正常', color='blue')
             else:
                 item['status'] = dict(tag='停用', color='volcano')
-        table_data_new = list_to_tree(table_data)
+        table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
 
     return [
         dcc.Store(id='menu-button-perms-container', data=button_perms),

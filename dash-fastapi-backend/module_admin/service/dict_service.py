@@ -1,5 +1,6 @@
 from fastapi import Request
 import json
+from config.env import RedisInitKeyConfig
 from module_admin.entity.vo.dict_vo import *
 from module_admin.dao.dict_dao import *
 from utils.common_util import export_list2excel
@@ -215,7 +216,7 @@ class DictDataService:
         :return:
         """
         # 获取以sys_dict:开头的键列表
-        keys = await redis.keys('sys_dict:*')
+        keys = await redis.keys(f"{RedisInitKeyConfig.SYS_DICT.get('key')}:*")
         # 删除匹配的键
         if keys:
             await redis.delete(*keys)
@@ -224,7 +225,7 @@ class DictDataService:
             dict_type = dict_type_obj.dict_type
             dict_data_list = DictDataDao.query_dict_data_list(result_db, dict_type)
             dict_data = [DictDataModel(**vars(row)).dict() for row in dict_data_list if row]
-            await redis.set(f'sys_dict:{dict_type}', json.dumps(dict_data, ensure_ascii=False))
+            await redis.set(f"{RedisInitKeyConfig.SYS_DICT.get('key')}:{dict_type}", json.dumps(dict_data, ensure_ascii=False))
 
     @classmethod
     async def query_dict_data_list_from_cache_services(cls, redis, dict_type: str):
@@ -235,7 +236,7 @@ class DictDataService:
         :return: 字典数据列表信息对象
         """
         result = []
-        dict_data_list_result = await redis.get(f'sys_dict:{dict_type}')
+        dict_data_list_result = await redis.get(f"{RedisInitKeyConfig.SYS_DICT.get('key')}:{dict_type}")
         if dict_data_list_result:
             result = json.loads(dict_data_list_result)
 

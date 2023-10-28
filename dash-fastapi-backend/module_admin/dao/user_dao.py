@@ -58,34 +58,32 @@ class UserDao:
             .distinct().all()
         query_user_dept_info = db.query(SysDept).select_from(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-            .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+            .join(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
             .distinct().all()
         query_user_role_info = db.query(SysRole).select_from(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-            .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+            .join(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
             .distinct().all()
         query_user_post_info = db.query(SysPost).select_from(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserPost, SysUser.user_id == SysUserPost.user_id) \
-            .outerjoin(SysPost, and_(SysUserPost.post_id == SysPost.post_id, SysPost.status == 0)) \
+            .join(SysPost, and_(SysUserPost.post_id == SysPost.post_id, SysPost.status == 0)) \
             .distinct().all()
-        query_user_menu_info = []
-        for item in query_user_role_info:
-            if item.role_id == 1:
-                query_user_menu_info = db.query(SysMenu) \
-                    .filter(SysMenu.status == 0) \
-                    .distinct().all()
-                break
-            else:
-                query_user_menu_info = db.query(SysMenu).select_from(SysUser) \
-                    .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-                    .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-                    .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
-                    .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-                    .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
-                    .order_by(SysMenu.order_num) \
-                    .distinct().all()
+        role_id_list = [item.role_id for item in query_user_role_info]
+        if 1 in role_id_list:
+            query_user_menu_info = db.query(SysMenu) \
+                .filter(SysMenu.status == 0) \
+                .distinct().all()
+        else:
+            query_user_menu_info = db.query(SysMenu).select_from(SysUser) \
+                .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
+                .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
+                .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+                .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
+                .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
+                .order_by(SysMenu.order_num) \
+                .distinct().all()
         results = dict(
             user_basic_info=list_format_datetime(query_user_basic_info),
             user_dept_info=list_format_datetime(query_user_dept_info),
@@ -109,24 +107,24 @@ class UserDao:
             .distinct().all()
         query_user_dept_info = db.query(SysDept).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
-            .outerjoin(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+            .join(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
             .distinct().all()
         query_user_role_info = db.query(SysRole).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
-            .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
+            .join(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
             .distinct().all()
         query_user_post_info = db.query(SysPost).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserPost, SysUser.user_id == SysUserPost.user_id) \
-            .outerjoin(SysPost, and_(SysUserPost.post_id == SysPost.post_id, SysPost.status == 0)) \
+            .join(SysPost, and_(SysUserPost.post_id == SysPost.post_id, SysPost.status == 0)) \
             .distinct().all()
         query_user_menu_info = db.query(SysMenu).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
             .outerjoin(SysRole, and_(SysUserRole.role_id == SysRole.role_id, SysRole.status == 0, SysRole.del_flag == 0)) \
             .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-            .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
+            .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
             .distinct().all()
         results = dict(
             user_basic_info=list_format_datetime(query_user_basic_info),

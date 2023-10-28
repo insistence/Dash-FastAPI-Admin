@@ -71,6 +71,12 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     return response_401(data=exc.data, message=exc.message)
 
 
+# 自定义权限检验异常
+@app.exception_handler(PermissionException)
+async def permission_exception_handler(request: Request, exc: PermissionException):
+    return response_403(data=exc.data, message=exc.message)
+
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
@@ -97,4 +103,4 @@ app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓�
 app.include_router(commonController, prefix="/common", tags=['通用模块'])
 
 if __name__ == '__main__':
-    uvicorn.run(app='app:app', host="127.0.0.1", port=9099, reload=True)
+    uvicorn.run(app='app:app', host="0.0.0.0", port=9099, reload=True)

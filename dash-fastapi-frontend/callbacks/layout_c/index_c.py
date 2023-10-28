@@ -15,14 +15,15 @@ from utils.tree_tool import find_title_by_key, find_modules_by_key, find_href_by
     [Output('tabs-container', 'items', allow_duplicate=True),
      Output('tabs-container', 'activeKey', allow_duplicate=True)],
     [Input('index-side-menu', 'currentKey'),
-     Input('tabs-container', 'latestDeletePane')],
-    [State('tabs-container', 'items'),
+     Input('tabs-container', 'tabCloseCounts')],
+    [State('tabs-container', 'latestDeletePane'),
+     State('tabs-container', 'items'),
      State('tabs-container', 'activeKey'),
      State('menu-info-store-container', 'data'),
      State('menu-list-store-container', 'data')],
     prevent_initial_call=True
 )
-def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, activeKey, menu_info, menu_list):
+def handle_tab_switch_and_create(currentKey, tabCloseCounts, latestDeletePane, origin_items, activeKey, menu_info, menu_list):
     """
     这个回调函数用于处理标签页子项的新建、切换及删除
     具体策略：
@@ -175,7 +176,7 @@ def handle_tab_switch_and_create(currentKey, latestDeletePane, origin_items, act
                 else:
                     if index == len(origin_items) - 1:
                         new_items[index - 1]['contextMenu'] = item['contextMenu']
-                new_items.remove(item)
+                del new_items[index]
                 break
         new_origin_items = [
             item for item in
@@ -254,7 +255,7 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                     else:
                         if index == len(origin_items) - 1:
                             new_items[index - 1]['contextMenu'] = item['contextMenu']
-                    new_items.remove(item)
+                    del new_items[index]
                     break
             new_origin_items = [
                 item for item in
@@ -268,9 +269,14 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
             ]
 
         elif clickedContextMenu['menuKey'] == '关闭其他':
-            for item in origin_items:
-                if item['key'] != clickedContextMenu['tabKey'] and item['key'] != '首页':
-                    new_items.remove(item)
+            current_index = 0
+            for index, item in enumerate(origin_items):
+                if item['key'] == clickedContextMenu['tabKey']:
+                    current_index = index
+            for i in range(1, current_index):
+                del new_items[1]
+            for j in range(current_index+1, len(origin_items)+1):
+                del new_items[2]
             context_menu = [
                 {
                     'key': '刷新页面',
@@ -316,8 +322,8 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                     })
                     new_items[index]['contextMenu'] = item['contextMenu']
                     break
-            for item in origin_items[1:current_index]:
-                new_items.remove(item)
+            for i in range(1, current_index):
+                del new_items[1]
 
             return [
                 new_items,
@@ -337,8 +343,8 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                     })
                     new_items[index]['contextMenu'] = item['contextMenu']
                     break
-            for item in origin_items[current_index+1:]:
-                new_items.remove(item)
+            for i in range(current_index+1, len(origin_items)+1):
+                del new_items[current_index+1]
 
             return [
                 new_items,
@@ -346,9 +352,8 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                 dash.no_update
             ]
 
-        for item in origin_items:
-            if item['key'] != '首页':
-                new_items.remove(item)
+        for i in range(len(origin_items)):
+            del new_items[1]
         new_items[0]['contextMenu'] = [
             {
                 'key': '刷新页面',

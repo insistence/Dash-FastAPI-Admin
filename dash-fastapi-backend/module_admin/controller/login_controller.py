@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from module_admin.service.login_service import *
 from module_admin.entity.vo.login_vo import *
 from module_admin.dao.login_dao import *
-from config.env import JwtConfig
+from config.env import JwtConfig, RedisInitKeyConfig
 from utils.response_util import *
 from utils.log_util import *
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
@@ -16,7 +16,7 @@ loginController = APIRouter()
 @loginController.post("/loginByAccount", response_model=Token)
 @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = Depends(), query_db: Session = Depends(get_db)):
-    captcha_enabled = True if await request.app.state.redis.get(f'sys_config:sys.account.captchaEnabled') == 'true' else False
+    captcha_enabled = True if await request.app.state.redis.get(f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:sys.account.captchaEnabled") == 'true' else False
     user = UserLogin(
         **dict(
             user_name=form_data.username,
@@ -44,10 +44,10 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
             },
             expires_delta=access_token_expires
         )
-        await request.app.state.redis.set(f'access_token:{session_id}', access_token,
+        await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", access_token,
                                           ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
         # 此方法可实现同一账号同一时间只能登录一次
-        # await request.app.state.redis.set(f'access_token:{result[0].user_id}', access_token,
+        # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{result[0].user_id}", access_token,
         #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
         logger.info('登录成功')
         # 判断请求是否来自于api文档，如果是返回指定格式的结果，用于修复api文档认证成功后token显示undefined的bug

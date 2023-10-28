@@ -142,6 +142,7 @@ def get_filepath_from_url(url: str):
     file_info = url.split("?")[1].split("&")
     task_id = file_info[0].split("=")[1]
     file_name = file_info[1].split("=")[1]
-    filepath = os.path.join(CachePathConfig.PATH, task_id, file_name)
+    task_path = file_info[2].split("=")[1]
+    filepath = os.path.join(CachePathConfig.PATH, task_path, task_id, file_name)
 
     return filepath

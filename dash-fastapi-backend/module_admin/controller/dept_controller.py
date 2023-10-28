@@ -8,6 +8,7 @@ from module_admin.dao.dept_dao import *
 from utils.response_util import *
 from utils.log_util import *
 from module_admin.aspect.interface_auth import CheckUserInterfaceAuth
+from module_admin.aspect.data_scope import GetDataScope
 from module_admin.annotation.log_annotation import log_decorator
 
 
@@ -15,9 +16,9 @@ deptController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @deptController.post("/dept/tree", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
-async def get_system_dept_tree(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db)):
+async def get_system_dept_tree(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
-        dept_query_result = DeptService.get_dept_tree_services(query_db, dept_query)
+        dept_query_result = DeptService.get_dept_tree_services(query_db, dept_query, data_scope_sql)
         logger.info('获取成功')
         return response_200(data=dept_query_result, message="获取成功")
     except Exception as e:
@@ -26,9 +27,9 @@ async def get_system_dept_tree(request: Request, dept_query: DeptModel, query_db
 
 
 @deptController.post("/dept/forEditOption", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
-async def get_system_dept_tree_for_edit_option(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db)):
+async def get_system_dept_tree_for_edit_option(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
-        dept_query_result = DeptService.get_dept_tree_for_edit_option_services(query_db, dept_query)
+        dept_query_result = DeptService.get_dept_tree_for_edit_option_services(query_db, dept_query, data_scope_sql)
         logger.info('获取成功')
         return response_200(data=dept_query_result, message="获取成功")
     except Exception as e:
@@ -37,9 +38,9 @@ async def get_system_dept_tree_for_edit_option(request: Request, dept_query: Dep
 
 
 @deptController.post("/dept/get", response_model=DeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:list'))])
-async def get_system_dept_list(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db)):
+async def get_system_dept_list(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
-        dept_query_result = DeptService.get_dept_list_services(query_db, dept_query)
+        dept_query_result = DeptService.get_dept_list_services(query_db, dept_query, data_scope_sql)
         logger.info('获取成功')
         return response_200(data=dept_query_result, message="获取成功")
     except Exception as e:

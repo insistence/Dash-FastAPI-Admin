@@ -252,7 +252,9 @@ def init_render_editor(html_string):
                         allowedFileTypes: ['image/*'],
                         // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
                         meta: {
+                            baseUrl: '% s',
                             uploadId: '% s',
+                            taskPath: 'notice'
                         },
                         // 将 meta 拼接到 url 参数中，默认 false
                         metaWithUrl: true,
@@ -279,7 +281,9 @@ def init_render_editor(html_string):
                         allowedFileTypes: ['video/*'],
                         // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
                         meta: {
+                            baseUrl: '% s',
                             uploadId: '% s',
+                            taskPath: 'notice'
                         },
                         // 将 meta 拼接到 url 参数中，默认 false
                         metaWithUrl: true,
@@ -311,7 +315,7 @@ def init_render_editor(html_string):
                 config: toolbarConfig,
                 mode: 'default'
             })
-            ''' % (url, f'notice_{uuid.uuid4()}', token, url, f'notice_{uuid.uuid4()}', token, html_string)
+            ''' % (url, ApiBaseUrlConfig.BaseUrl, str(uuid.uuid4()), token, url, ApiBaseUrlConfig.BaseUrl, str(uuid.uuid4()), token, html_string)
 
     return js_string
 

@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from flask import session
+from operator import itemgetter
 
 from server import app
 from config.global_config import RouterConfig
@@ -106,7 +107,7 @@ def router(pathname, url_trigger, session_token):
             if current_user_result['code'] == 200:
                 current_user = current_user_result['data']
                 menu_list = current_user['menu']
-                user_menu_list = [item for item in menu_list if item.get('visible') == '0']
+                user_menu_list = sorted([item for item in menu_list if item.get('visible') == '0'], key=itemgetter('order_num'))
                 menu_info = deal_user_menu_info(0, menu_list)
                 user_menu_info = deal_user_menu_info(0, user_menu_list)
                 search_panel_data = get_search_panel_data(user_menu_list)
@@ -255,4 +256,4 @@ def router(pathname, url_trigger, session_token):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8088, debug=True)
+    app.run(host='0.0.0.0', port=8088, debug=True)
