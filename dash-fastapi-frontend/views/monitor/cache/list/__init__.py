@@ -70,6 +70,13 @@ def render(button_perms):
                                     fac.AntdText('缓存列表')
                                 ]
                             ),
+                            extra=fac.AntdButton(
+                                id='refresh-cache_name',
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-reload'
+                                )
+                            ),
                             size='small',
                             style={
                                 'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
@@ -120,6 +127,13 @@ def render(button_perms):
                                     fac.AntdIcon(icon='antd-key'),
                                     fac.AntdText('键名列表')
                                 ]
+                            ),
+                            extra=fac.AntdButton(
+                                id='refresh-cache_key',
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-reload'
+                                )
                             ),
                             size='small',
                             style={
@@ -178,6 +192,14 @@ def render(button_perms):
                                     fac.AntdIcon(icon='antd-file-text'),
                                     fac.AntdText('缓存内容')
                                 ]
+                            ),
+                            extra=fac.AntdButton(
+                                '清除全部',
+                                id='clear-all-cache',
+                                type='link',
+                                icon=fac.AntdIcon(
+                                    icon='antd-clear'
+                                )
                             ),
                             size='small',
                             style={
