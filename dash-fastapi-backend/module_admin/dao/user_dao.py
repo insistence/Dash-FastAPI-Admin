@@ -6,7 +6,7 @@ from module_admin.entity.do.dept_do import SysDept
 from module_admin.entity.do.post_do import SysPost
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.user_vo import UserModel, UserRoleModel, UserPostModel, CurrentUserInfo, UserQueryModel, UserRoleQueryModel
-from utils.time_format_util import list_format_datetime, format_datetime_dict_list
+from utils.time_format_util import object_format_datetime, list_format_datetime, format_datetime_dict_list
 from datetime import datetime, time
 from typing import Union, List
 
@@ -55,11 +55,11 @@ class UserDao:
         """
         query_user_basic_info = db.query(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
-            .distinct().all()
+            .distinct().first()
         query_user_dept_info = db.query(SysDept).select_from(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .join(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
-            .distinct().all()
+            .distinct().first()
         query_user_role_info = db.query(SysRole).select_from(SysUser) \
             .filter(SysUser.status == 0, SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
@@ -85,8 +85,8 @@ class UserDao:
                 .order_by(SysMenu.order_num) \
                 .distinct().all()
         results = dict(
-            user_basic_info=list_format_datetime(query_user_basic_info),
-            user_dept_info=list_format_datetime(query_user_dept_info),
+            user_basic_info=object_format_datetime(query_user_basic_info),
+            user_dept_info=object_format_datetime(query_user_dept_info),
             user_role_info=list_format_datetime(query_user_role_info),
             user_post_info=list_format_datetime(query_user_post_info),
             user_menu_info=list_format_datetime(query_user_menu_info)
@@ -104,11 +104,11 @@ class UserDao:
         """
         query_user_basic_info = db.query(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
-            .distinct().all()
+            .distinct().first()
         query_user_dept_info = db.query(SysDept).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .join(SysDept, and_(SysUser.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
-            .distinct().all()
+            .distinct().first()
         query_user_role_info = db.query(SysRole).select_from(SysUser) \
             .filter(SysUser.del_flag == 0, SysUser.user_id == user_id) \
             .outerjoin(SysUserRole, SysUser.user_id == SysUserRole.user_id) \
@@ -127,8 +127,8 @@ class UserDao:
             .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
             .distinct().all()
         results = dict(
-            user_basic_info=list_format_datetime(query_user_basic_info),
-            user_dept_info=list_format_datetime(query_user_dept_info),
+            user_basic_info=object_format_datetime(query_user_basic_info),
+            user_dept_info=object_format_datetime(query_user_dept_info),
             user_role_info=list_format_datetime(query_user_role_info),
             user_post_info=list_format_datetime(query_user_post_info),
             user_menu_info=list_format_datetime(query_user_menu_info)

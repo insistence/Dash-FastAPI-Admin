@@ -65,7 +65,8 @@ def render(button_perms):
                                                     fac.AntdIcon(icon='antd-cluster'),
                                                     fac.AntdText('所属部门'),
                                                     html.Div(
-                                                        session.get('dept_info').get('dept_name') + "/" + ','.join(
+                                                        session.get('dept_info').get('dept_name') if session.get(
+                                                            'dept_info') else "" + "/" + ','.join(
                                                             [item.get('post_name') for item in
                                                              session.get('post_info')]),
                                                         id='profile_c-dept',

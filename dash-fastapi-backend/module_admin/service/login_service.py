@@ -83,8 +83,8 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
         #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
 
         return CurrentUserInfoServiceResponse(
-            user=user.user_basic_info[0],
-            dept=user.user_dept_info[0],
+            user=user.user_basic_info,
+            dept=user.user_dept_info,
             role=user.user_role_info,
             post=user.user_post_info,
             menu=user.user_menu_info

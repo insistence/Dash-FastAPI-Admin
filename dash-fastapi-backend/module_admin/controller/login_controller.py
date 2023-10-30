@@ -38,7 +38,7 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
             data={
                 "user_id": str(result[0].user_id),
                 "user_name": result[0].user_name,
-                "dept_name": result[1].dept_name,
+                "dept_name": result[1].dept_name if result[1] else None,
                 "session_id": session_id,
                 "login_info": user.login_info
             },

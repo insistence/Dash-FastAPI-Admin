@@ -136,7 +136,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
                 else:
                     current_user = await get_current_user(request, token, query_db)
                     oper_name = current_user.user.user_name
-                    dept_name = current_user.dept.dept_name
+                    dept_name = current_user.dept.dept_name if current_user.dept else None
                     operation_log = dict(
                         title=title,
                         business_type=business_type,
