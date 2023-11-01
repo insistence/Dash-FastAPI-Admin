@@ -64,7 +64,7 @@ def reset_submit_user_info(reset_click, nick_name, phonenumber, email, sex):
             None if nick_name else '请输入用户昵称！',
             None if phonenumber else '请输入手机号码！',
             None if email else '请输入邮箱！',
-            {'timestamp': time.time()},
+            dash.no_update,
             fuc.FefferyFancyMessage('修改失败', type='error'),
         ]
 

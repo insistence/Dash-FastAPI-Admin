@@ -104,7 +104,7 @@ def menu_confirm_menu(confirm_trigger, modal_type, edit_row_info, parent_id, men
             ],
             modal_visible=dash.no_update,
             operations=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            api_check_token_trigger=dash.no_update,
             global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
         )
 

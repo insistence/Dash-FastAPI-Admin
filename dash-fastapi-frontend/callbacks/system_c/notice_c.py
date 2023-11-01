@@ -500,7 +500,7 @@ def notice_confirm(confirm_trigger, modal_type, edit_row_info, notice_title, not
             notice_type_form_help=None if notice_type else '请输入公告类型！',
             modal_visible=dash.no_update,
             operations=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            api_check_token_trigger=dash.no_update,
             global_message_container=fuc.FefferyFancyMessage('处理失败', type='error')
         )
 

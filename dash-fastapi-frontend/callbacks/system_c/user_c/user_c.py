@@ -358,7 +358,7 @@ def usr_add_confirm(add_confirm, post, role, form_value, form_label):
             form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            api_check_token_trigger=dash.no_update,
             global_message_container=fuc.FefferyFancyMessage('新增失败', type='error')
         )
 
@@ -513,7 +513,7 @@ def usr_edit_confirm(edit_confirm, edit_row_info, post, role, form_value, form_l
             form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            api_check_token_trigger=dash.no_update,
             global_message_container=fuc.FefferyFancyMessage('编辑失败', type='error')
         )
 
