@@ -76,7 +76,7 @@ def reset_submit_user_info(reset_click, old_password, new_password, confirm_pass
             None if old_password else '请输入旧密码！',
             None if new_password else '请输入新密码！',
             None if confirm_password else '请输入确认密码！',
-            {'timestamp': time.time()},
+            dash.no_update,
             fuc.FefferyFancyMessage('修改失败', type='error'),
         ]
 

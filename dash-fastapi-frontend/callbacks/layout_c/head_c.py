@@ -45,7 +45,8 @@ app.clientside_callback(
 
 # 退出登录回调
 @app.callback(
-    Output('redirect-container', 'children', allow_duplicate=True),
+    [Output('redirect-container', 'children', allow_duplicate=True),
+     Output('token-container', 'data', allow_duplicate=True)],
     Input('logout-modal', 'okCounts'),
     prevent_initial_call=True
 )
@@ -60,9 +61,10 @@ def logout_confirm(okCounts):
                     pathname='/login',
                     id='index-redirect'
                 ),
+                None
             ]
 
-    return dash.no_update
+    return [dash.no_update] * 2
 
 
 # 全局页面重载回调

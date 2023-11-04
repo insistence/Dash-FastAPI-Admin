@@ -75,16 +75,16 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
         raise AuthException(data="", message="用户token不合法")
     redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
     # 此方法可实现同一账号同一时间只能登录一次
-    # redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info[0].user_id}")
+    # redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}")
     if token == redis_token:
         await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", redis_token,
                                           ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
-        # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info[0].user_id}", redis_token,
+        # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}", redis_token,
         #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
 
         return CurrentUserInfoServiceResponse(
-            user=user.user_basic_info[0],
-            dept=user.user_dept_info[0],
+            user=user.user_basic_info,
+            dept=user.user_dept_info,
             role=user.user_role_info,
             post=user.user_post_info,
             menu=user.user_menu_info

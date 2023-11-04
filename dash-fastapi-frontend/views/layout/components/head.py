@@ -50,7 +50,7 @@ def render_head_content():
                 'display': 'flex',
                 'alignItems': 'center'
             },
-            flex='24'
+            flex='21'
         ),
 
         # 页首中部搜索区域
@@ -85,6 +85,23 @@ def render_head_content():
                 }
             ),
             flex='6'
+        ),
+
+        # 页首开源项目地址
+        fac.AntdCol(
+            html.A(
+                html.Img(
+                    src='https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark'
+                ),
+                href='https://gitee.com/insistence2022/dash-fastapi-admin',
+                target='_blank'
+            ),
+            style={
+                'height': '100%',
+                'display': 'flex',
+                'alignItems': 'center'
+            },
+            flex='3'
         ),
 
         # 页首右侧用户信息区域

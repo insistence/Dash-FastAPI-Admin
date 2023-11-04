@@ -128,8 +128,8 @@ class CurrentUserInfo(BaseModel):
     """
     数据库返回当前用户信息
     """
-    user_basic_info: List[Union[UserModel, None]]
-    user_dept_info: List[Union[DeptModel, None]]
+    user_basic_info: Union[UserModel, None]
+    user_dept_info: Union[DeptModel, None]
     user_role_info: List[Union[RoleModel, None]]
     user_post_info: List[Union[PostModel, None]]
     user_menu_info: Union[List, None]

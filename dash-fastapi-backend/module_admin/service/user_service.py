@@ -139,8 +139,8 @@ class UserService:
         user = UserDao.get_user_detail_by_id(result_db, user_id=user_id)
 
         return UserDetailModel(
-            user=user.user_basic_info[0],
-            dept=user.user_dept_info[0],
+            user=user.user_basic_info,
+            dept=user.user_dept_info,
             role=user.user_role_info,
             post=user.user_post_info
         )
@@ -155,7 +155,7 @@ class UserService:
         """
         reset_user = page_object.dict(exclude_unset=True)
         if page_object.old_password:
-            user = UserDao.get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info[0]
+            user = UserDao.get_user_detail_by_id(result_db, user_id=page_object.user_id).user_basic_info
             if not PwdUtil.verify_password(page_object.old_password, user.password):
                 result = dict(is_success=False, message='旧密码不正确')
                 return CrudUserResponse(**result)

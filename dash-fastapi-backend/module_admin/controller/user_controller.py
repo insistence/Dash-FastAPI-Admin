@@ -201,10 +201,10 @@ async def export_system_user_template(request: Request, query_db: Session = Depe
 
 @userController.post("/user/export", dependencies=[Depends(CheckUserInterfaceAuth('system:user:export'))])
 @log_decorator(title='用户管理', business_type=5)
-async def export_system_user_list(request: Request, user_query: UserQueryModel, query_db: Session = Depends(get_db)):
+async def export_system_user_list(request: Request, user_query: UserQueryModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysUser'))):
     try:
         # 获取全量数据
-        user_query_result = UserService.get_user_list_services(query_db, user_query)
+        user_query_result = UserService.get_user_list_services(query_db, user_query, data_scope_sql)
         user_export_result = UserService.export_user_list_services(user_query_result)
         logger.info('导出成功')
         return streaming_response_200(data=bytes2file_response(user_export_result))

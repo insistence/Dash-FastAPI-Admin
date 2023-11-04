@@ -28,7 +28,8 @@ def check_api_response(data):
 
 # api拦截器——退出登录二次确认
 @app.callback(
-    Output('redirect-container', 'children', allow_duplicate=True),
+    [Output('redirect-container', 'children', allow_duplicate=True),
+     Output('token-container', 'data', allow_duplicate=True)],
     Input('token-invalid-modal', 'okCounts'),
     prevent_initial_call=True
 )
@@ -41,10 +42,11 @@ def redirect_page(okCounts):
             dcc.Location(
                 pathname='/login',
                 id='index-redirect'
-            )
+            ),
+            None
         ]
 
-    return dash.no_update
+    return [dash.no_update] * 2
 
 
 # 应用初始化主题颜色
