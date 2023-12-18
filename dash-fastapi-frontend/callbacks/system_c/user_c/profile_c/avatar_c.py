@@ -11,7 +11,7 @@ from api.user import change_user_avatar_api
 
 @app.callback(
     [Output('avatar-cropper-modal', 'visible', allow_duplicate=True),
-     Output('avatar-src-data', 'data', allow_duplicate=True)],
+     Output('avatar-cropper', 'src', allow_duplicate=True)],
     Input('avatar-edit-click', 'n_clicks'),
     State('user-avatar-image-info', 'src'),
     prevent_initial_call=True
@@ -27,7 +27,7 @@ def avatar_cropper_modal_visible(n_clicks, user_avatar_image_info):
 
 
 @app.callback(
-    Output('avatar-src-data', 'data', allow_duplicate=True),
+    Output('avatar-cropper', 'src', allow_duplicate=True),
     Input('avatar-upload-choose', 'listUploadTaskRecord'),
     prevent_initial_call=True
 )
@@ -42,88 +42,36 @@ def upload_user_avatar(list_upload_task_record):
     raise PreventUpdate
 
 
-@app.callback(
-    Output('avatar-cropper', 'jsString'),
-    Input('avatar-src-data', 'data'),
+# 头像放大、缩小、逆时针旋转、顺时针旋转操作浏览器端回调
+app.clientside_callback(
+    """
+    (zoomOut, zoomIn, rotateLeft, rotateRight) => {
+            triggered_id = window.dash_clientside.callback_context.triggered[0].prop_id;
+            if (triggered_id == 'zoom-out.nClicks') {
+                return [{isZoom: true, ratio: 0.1}, window.dash_clientside.no_update];
+            }
+            else if (triggered_id == 'zoom-in.nClicks') {
+                return [{isZoom: true, ratio: -0.1}, window.dash_clientside.no_update];
+            }
+            else if (triggered_id == 'rotate-left.nClicks') {
+                return [window.dash_clientside.no_update, {isRotate: true, degree: -90}];
+            }
+            else if (triggered_id == 'rotate-right.nClicks') {
+                return [window.dash_clientside.no_update, {isRotate: true, degree: 90}];
+            }
+            else {
+                throw window.dash_clientside.PreventUpdate;
+            }
+        }
+    """,
+    [Output('avatar-cropper', 'zoom'),
+     Output('avatar-cropper', 'rotate')],
+    [Input('zoom-out', 'nClicks'),
+     Input('zoom-in', 'nClicks'),
+     Input('rotate-left', 'nClicks'),
+     Input('rotate-right', 'nClicks')],
     prevent_initial_call=True
 )
-def edit_user_avatar(src_data):
-    """
-    使用cropper.js编辑头像回调
-    """
-
-    return """
-            // 创建新图像元素
-            var newImage = document.createElement('img');
-            newImage.id = 'user-avatar-image';
-            newImage.src = '% s';
-            newImage.onload = function() {
-                // 删除旧图像元素
-                var oldImage = document.getElementById('user-avatar-image');
-                oldImage.parentNode.removeChild(oldImage);
-                // 销毁旧的 Cropper.js 实例
-                var oldCropper = oldImage.cropper;
-                if (oldCropper) {
-                    oldCropper.destroy();
-                }
-                // 将新图像添加到页面中
-                var container = document.getElementById('avatar-cropper-container');
-                container.appendChild(newImage);
-                // var image = document.getElementById('user-avatar-image');
-                var previewImage = document.getElementById('user-avatar-image-preview');
-                // 创建新的 Cropper 实例
-                var cropper = new Cropper(newImage, {
-                  viewMode: 1,
-                  dragMode: 'none',
-                  initialAspectRatio: 1,
-                  aspectRatio: 1,
-                  preview: previewImage,
-                  background: true,
-                  autoCropArea: 0.6,
-                  zoomOnWheel: true,
-                  crop: function(event) {
-                    // 当裁剪框的位置或尺寸发生改变时触发的回调函数
-                    console.log(event.detail.x);
-                    console.log(event.detail.y);
-                    console.log(event.detail.width);
-                    console.log(event.detail.height);
-                    console.log(event.detail.rotate);
-                    console.log(event.detail.scaleX);
-                    console.log(event.detail.scaleY);
-                    // 当需要获取裁剪后的数据时
-                    var croppedDataUrl = cropper.getCroppedCanvas().toDataURL("image/jpeg", 1);
-                    sessionStorage.setItem('cropper-avatar-base64', JSON.stringify({avatarBase64: croppedDataUrl}))
-                  }
-                });
-                // 获取旋转按钮的引用
-                var rotateLeftButton = document.getElementById('rotate-left');
-                var rotateRightButton = document.getElementById('rotate-right');
-
-                // 添加点击事件监听器
-                rotateLeftButton.addEventListener('click', function() {
-                  // 向左旋转图像90度
-                  cropper.rotate(-90);
-                });
-                rotateRightButton.addEventListener('click', function() {
-                  // 向右旋转图像90度
-                  cropper.rotate(90);
-                });
-                // 获取缩小按钮和放大按钮的引用
-                var zoomOutButton = document.getElementById('zoom-out');
-                var zoomInButton = document.getElementById('zoom-in');
-
-                // 添加点击事件监听器
-                zoomOutButton.addEventListener('click', function() {
-                  // 放大图像
-                  cropper.zoom(0.1);
-                });
-
-                zoomInButton.addEventListener('click', function() {
-                  // 缩小图像
-                  cropper.zoom(-0.1);
-                });
-            }
-        """ % src_data
 
 
 @app.callback(
@@ -133,7 +81,7 @@ def edit_user_avatar(src_data):
      Output('user-avatar-image-info', 'key'),
      Output('avatar-info', 'key')],
     Input('change-avatar-submit', 'nClicks'),
-    State('cropper-avatar-base64', 'data'),
+    State('avatar-cropper', 'croppedImageData'),
     prevent_initial_call=True
 )
 def change_user_avatar_callback(submit_click, avatar_data):
@@ -142,7 +90,7 @@ def change_user_avatar_callback(submit_click, avatar_data):
     """
 
     if submit_click:
-        params = dict(type='avatar', avatar=avatar_data['avatarBase64'])
+        params = dict(type='avatar', avatar=avatar_data)
         change_avatar_result = change_user_avatar_api(params)
         if change_avatar_result.get('code') == 200:
 
