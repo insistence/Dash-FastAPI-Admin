@@ -1,15 +1,12 @@
 import dash
 import time
 import uuid
-import re
 import json
-from flask import session
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
-from config.global_config import ApiBaseUrlConfig
 from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, delete_notice_api, get_notice_detail_api
 from api.dict import query_dict_data_list_api
 
@@ -215,119 +212,14 @@ def change_notice_delete_button_status(table_rows_selected):
 
 
 @app.callback(
-    Output('notice-init-editor', 'jsString'),
-    Input('notice-written-editor-store', 'data'),
-    prevent_initial_call=True
-)
-def init_render_editor(html_string):
-    """
-    初始化富文本编辑器回调
-    """
-    url = f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor'
-    token = 'Bearer ' + session.get('Authorization')
-
-    js_string = '''
-            const { i18nChangeLanguage, createEditor, createToolbar } = window.wangEditor
-            
-            // 切换至中文
-            i18nChangeLanguage('zh-CN')
-            
-            const editorConfig = {
-                placeholder: '请输入...',
-                onChange(editor) {
-                  const html = editor.getHtml()
-                  sessionStorage.setItem('notice-content', JSON.stringify({html: html}))
-                },
-                // 图片和视频上传参数配置
-                MENU_CONF: {
-                    uploadImage: {
-                        server: '% s',
-                        // form-data fieldName ，默认值 'editor-uploaded-file'
-                        fieldName: 'file',
-                        // 单个文件的最大体积限制，默认为 2M
-                        maxFileSize: 10 * 1024 * 1024, // 10M
-                        // 最多可上传几个文件，默认为 100
-                        maxNumberOfFiles: 10,
-                        // 选择文件时的类型限制，默认为 ['image/*'] 。如不想限制，则设置为 []
-                        allowedFileTypes: ['image/*'],
-                        // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
-                        meta: {
-                            baseUrl: '% s',
-                            uploadId: '% s',
-                            taskPath: 'notice'
-                        },
-                        // 将 meta 拼接到 url 参数中，默认 false
-                        metaWithUrl: true,
-                        // 自定义增加 http  header
-                        headers: {
-                            Authorization: '% s'
-                        },
-                        // 跨域是否传递 cookie ，默认为 false
-                        withCredentials: true,
-                        // 超时时间，默认为 10 秒
-                        timeout: 5 * 1000, // 5 秒
-                        // 小于该值就插入 base64 格式（而不上传），默认为 0
-                        base64LimitSize: 500 * 1024 // 500KB
-                    },
-                    uploadVideo: {
-                        server: '% s',
-                        // form-data fieldName ，默认值 'wangeditor-uploaded-video'
-                        fieldName: 'file',
-                        // 单个文件的最大体积限制，默认为 10M
-                        maxFileSize: 100 * 1024 * 1024, // 100M
-                        // 最多可上传几个文件，默认为 5
-                        maxNumberOfFiles: 3,
-                        // 选择文件时的类型限制，默认为 ['video/*'] 。如不想限制，则设置为 []
-                        allowedFileTypes: ['video/*'],
-                        // 自定义上传参数，例如传递验证的 token 等。参数会被添加到 formData 中，一起上传到服务端。
-                        meta: {
-                            baseUrl: '% s',
-                            uploadId: '% s',
-                            taskPath: 'notice'
-                        },
-                        // 将 meta 拼接到 url 参数中，默认 false
-                        metaWithUrl: true,
-                        // 自定义增加 http  header
-                        headers: {
-                            Authorization: '% s'
-                        },
-                        // 跨域是否传递 cookie ，默认为 false
-                        withCredentials: true,
-                        // 超时时间，默认为 30 秒
-                        timeout: 15 * 1000, // 15 秒
-                    }
-                }
-            }
-            
-            
-            const editor = createEditor({
-                selector: '#notice-notice_content-editor-container',
-                html: '% s',
-                config: editorConfig,
-                mode: 'default'
-            })
-            
-            const toolbarConfig = {}
-            
-            const toolbar = createToolbar({
-                editor,
-                selector: '#notice-notice_content-toolbar-container',
-                config: toolbarConfig,
-                mode: 'default'
-            })
-            ''' % (url, ApiBaseUrlConfig.BaseUrl, str(uuid.uuid4()), token, url, ApiBaseUrlConfig.BaseUrl, str(uuid.uuid4()), token, html_string)
-
-    return js_string
-
-
-@app.callback(
     output=dict(
         modal=dict(visible=Output('notice-modal', 'visible', allow_duplicate=True), title=Output('notice-modal', 'title')),
         form_value=dict(
             notice_title=Output('notice-notice_title', 'value'),
             notice_type=Output('notice-notice_type', 'value'),
             status=Output('notice-status', 'value'),
-            editor_content=Output('notice-written-editor-store', 'data'),
+            notice_content=Output('notice-content', 'htmlValue'),
+            editor_key=Output('notice-content', 'key')
         ),
         form_validate=[
             Output('notice-notice_title-form-item', 'validateStatus', allow_duplicate=True),
@@ -364,7 +256,7 @@ def add_edit_notice_modal(operation_click, button_click, selected_row_keys, clic
         if trigger_id == {'index': 'add', 'type': 'notice-operation-button'}:
             return dict(
                 modal=dict(visible=True, title='新增通知公告'),
-                form_value=dict(notice_title=None, notice_type=None, status='0', editor_content='<p><br></p>'),
+                form_value=dict(notice_title=None, notice_type=None, status='0', notice_content=None, editor_key=str(uuid.uuid4())),
                 form_validate=[None] * 4,
                 other=dict(
                     api_check_token_trigger=dash.no_update,
@@ -388,7 +280,8 @@ def add_edit_notice_modal(operation_click, button_click, selected_row_keys, clic
                         notice_title=notice_info.get('notice_title'),
                         notice_type=notice_info.get('notice_type'),
                         status=notice_info.get('status'),
-                        editor_content=re.sub(r"\n", "", notice_content)
+                        notice_content=notice_content,
+                        editor_key=str(uuid.uuid4())
                     ),
                     form_validate=[None] * 4,
                     other=dict(
@@ -404,7 +297,8 @@ def add_edit_notice_modal(operation_click, button_click, selected_row_keys, clic
                 notice_title=dash.no_update,
                 notice_type=dash.no_update,
                 status=dash.no_update,
-                editor_content=dash.no_update
+                notice_content=dash.no_update,
+                editor_key=dash.no_update
             ),
             form_validate=[dash.no_update] * 4,
             other=dict(
@@ -437,7 +331,7 @@ def add_edit_notice_modal(operation_click, button_click, selected_row_keys, clic
         notice_title=State('notice-notice_title', 'value'),
         notice_type=State('notice-notice_type', 'value'),
         status=State('notice-status', 'value'),
-        notice_content=State('notice-content', 'data')
+        notice_content=State('notice-content', 'htmlValue')
     ),
     prevent_initial_call=True
 )
@@ -448,10 +342,10 @@ def notice_confirm(confirm_trigger, modal_type, edit_row_info, notice_title, not
     if confirm_trigger:
         if all([notice_title, notice_type]):
             params_add = dict(notice_title=notice_title, notice_type=notice_type, status=status,
-                              notice_content=notice_content.get('html'))
+                              notice_content=notice_content)
             params_edit = dict(notice_id=edit_row_info.get('notice_id') if edit_row_info else None,
                                notice_title=notice_title,
-                               notice_type=notice_type, status=status, notice_content=notice_content.get('html'))
+                               notice_type=notice_type, status=status, notice_content=notice_content)
             api_res = {}
             modal_type = modal_type.get('type')
             if modal_type == 'add':
