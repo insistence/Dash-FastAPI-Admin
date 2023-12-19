@@ -9,12 +9,6 @@ import callbacks.system_c.user_c.profile_c.avatar_c
 
 def render():
     return [
-        dcc.Store(id='init-cropper'),
-        dcc.Store(id='avatar-src-data'),
-        # 监听裁剪的图片数据
-        fuc.FefferySessionStorage(
-            id='cropper-avatar-base64'
-        ),
         html.Div(
             [
                 fac.AntdImage(
@@ -58,7 +52,6 @@ def render():
             }
             '''
         ),
-        fuc.FefferyExecuteJs(id='avatar-cropper'),
         fac.AntdModal(
             [
                 fac.AntdRow(
@@ -67,11 +60,21 @@ def render():
                             [
                                 html.Div(
                                     [
-                                        html.Img(
-                                            id='user-avatar-image',
-                                            height='120px',
-                                            width='120px'
-                                        ),
+
+                                        fuc.FefferyImageCropper(
+                                            id='avatar-cropper',
+                                            alt='avatar',
+                                            aspectRatio=1,
+                                            dragMode='move',
+                                            cropBoxMovable=False,
+                                            cropBoxResizable=False,
+                                            wheelZoomRatio=0.01,
+                                            preview='#user-avatar-image-preview',
+                                            style={
+                                                'width': '100%',
+                                                'height': '100%'
+                                            }
+                                        )
                                     ],
                                     id='avatar-cropper-container',
                                     style={

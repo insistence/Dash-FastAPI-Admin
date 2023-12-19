@@ -1,9 +1,12 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
+from flask import session
 import json
+import uuid
 
 import callbacks.system_c.notice_c
+from config.global_config import ApiBaseUrlConfig
 from api.notice import get_notice_list_api
 from api.dict import query_dict_data_list_api
 
@@ -354,17 +357,6 @@ def render(button_perms):
         ),
 
         # 新增和编辑通知公告modal
-        # 初始化渲染富文本编辑器
-        fuc.FefferyExecuteJs(
-            id='notice-init-editor'
-        ),
-        # 回写内容到富文本编辑器
-        dcc.Store(id='notice-written-editor-store'),
-        # 监听富文本编辑器内容并取回
-        fuc.FefferySessionStorage(
-            id='notice-content'
-        ),
-
         fac.AntdModal(
             [
                 fac.AntdForm(
@@ -453,26 +445,51 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        html.Div(
-                                            [
-                                                html.Div(
-                                                    id='notice-notice_content-toolbar-container',
-                                                    style={
-                                                        'borderBottom': '1px solid #ccc'
-                                                    }
-                                                ),
-                                                html.Div(
-                                                    id='notice-notice_content-editor-container',
-                                                    style={
-                                                        'height': 300,
-                                                        'width': '100%'
-                                                    }
-                                                )
-                                            ],
-                                            id='notice-notice_content-editor-wrapper',
+                                        fuc.FefferyRichTextEditor(
+                                            id='notice-content',
+                                            editorConfig={
+                                                'placeholder': '请输入...'
+                                            },
+                                            uploadImage={
+                                                'server': f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor',
+                                                'fieldName': 'file',
+                                                'maxFileSize': 10 * 1024 * 1024,
+                                                'maxNumberOfFiles': 10,
+                                                'meta': {
+                                                    'baseUrl': ApiBaseUrlConfig.BaseUrl,
+                                                    'uploadId': str(uuid.uuid4()),
+                                                    'taskPath': 'notice'
+                                                },
+                                                'metaWithUrl': True,
+                                                'headers': {
+                                                    'Authorization': 'Bearer ' + session.get('Authorization')
+                                                },
+                                                'withCredentials': True,
+                                                'timeout': 5 * 1000,
+                                                'base64LimitSize': 500 * 1024
+                                            },
+                                            uploadVideo={
+                                                'server': f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor',
+                                                'fieldName': 'file',
+                                                'maxFileSize': 100 * 1024 * 1024,
+                                                'maxNumberOfFiles': 3,
+                                                'meta': {
+                                                    'baseUrl': ApiBaseUrlConfig.BaseUrl,
+                                                    'uploadId': str(uuid.uuid4()),
+                                                    'taskPath': 'notice'
+                                                },
+                                                'metaWithUrl': True,
+                                                'headers': {
+                                                    'Authorization': 'Bearer ' + session.get('Authorization')
+                                                },
+                                                'withCredentials': True,
+                                                'timeout': 15 * 1000
+                                            },
+                                            editorStyle={
+                                                'height': 300,
+                                                'width': '100%'
+                                            },
                                             style={
-                                                'zIndex': 9999,
-                                                'border': '1px solid #ccc',
                                                 'marginBottom': 15
                                             }
                                         ),
