@@ -86,12 +86,14 @@ class DeptDao:
                     SysDept.parent_id != dept_info.dept_id,
                     SysDept.del_flag == 0, SysDept.status == 0,
                     eval(data_scope_sql)) \
-            .all()
+            .order_by(SysDept.order_num) \
+            .distinct().all()
         dept = cls.get_dept_by_id(db, dept_info.dept_id)
         parent = cls.get_dept_by_id(db, dept.parent_id)
-        dept_result.insert(0, parent)
+        if parent:
+            dept_result.insert(-1, parent)
 
-        return list_format_datetime(list(set(dept_result)))
+        return list_format_datetime(sorted(set(dept_result), key=dept_result.index))
 
     @classmethod
     def get_children_dept(cls, db: Session, dept_id: int):
