@@ -8,6 +8,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.role import get_role_list_api, get_role_detail_api, add_role_api, edit_role_api, delete_role_api, export_role_list_api
 from api.menu import get_menu_tree_api
 
@@ -503,7 +504,7 @@ def role_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_la
         # 获取所有输入表单项对应的value及label
         form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[2]}
         form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[3]}
-        if all([form_value_state.get(k) for k in form_label_output_list]):
+        if all(validate_data_not_empty(item) for item in [form_value_state.get(k) for k in form_label_output_list]):
             menu_half_checked_keys = menu_half_checked_keys if menu_half_checked_keys else []
             menu_checked_keys = menu_checked_keys if menu_checked_keys else []
             if parent_checked:
@@ -550,8 +551,8 @@ def role_confirm(confirm_trigger, modal_type, edit_row_info, form_value, form_la
             )
 
         return dict(
-            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
-            form_label_validate_info=[None if form_value_state.get(k) else form_label_state.get(k) for k in form_label_output_list],
+            form_label_validate_status=[None if validate_data_not_empty(form_value_state.get(k)) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if validate_data_not_empty(form_value_state.get(k)) else form_label_state.get(k) for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
             api_check_token_trigger=dash.no_update,

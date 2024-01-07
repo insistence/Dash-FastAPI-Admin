@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.dict import get_dict_data_list_api, get_dict_data_detail_api, add_dict_data_api, edit_dict_data_api, delete_dict_data_api, export_dict_data_list_api
 
 
@@ -306,7 +307,7 @@ def dict_data_confirm(confirm_trigger, modal_type, edit_row_info, form_value, fo
         # 获取所有输入表单项对应的value及label
         form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
         form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
-        if all([form_value_state.get(k) for k in form_label_output_list]):
+        if all(validate_data_not_empty(item) for item in [form_value_state.get(k) for k in form_label_output_list]):
             params_add = form_value_state
             params_edit = params_add.copy()
             params_edit['dict_code'] = edit_row_info.get('dict_code') if edit_row_info else None
@@ -346,8 +347,8 @@ def dict_data_confirm(confirm_trigger, modal_type, edit_row_info, form_value, fo
             )
 
         return dict(
-            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
-            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            form_label_validate_status=[None if validate_data_not_empty(form_value_state.get(k)) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if validate_data_not_empty(form_value_state.get(k)) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
             api_check_token_trigger=dash.no_update,

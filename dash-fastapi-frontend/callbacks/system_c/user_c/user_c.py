@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.dept import get_dept_tree_api
 from api.user import get_user_list_api, get_user_detail_api, add_user_api, edit_user_api, delete_user_api, reset_user_password_api, batch_import_user_api, download_user_import_template_api, export_user_list_api
 from api.role import get_role_select_option_api
@@ -328,7 +329,7 @@ def usr_add_confirm(add_confirm, post, role, form_value, form_label):
         form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
         form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
 
-        if all([form_value_state.get(k) for k in form_label_output_list]):
+        if all(validate_data_not_empty(item) for item in [form_value_state.get(k) for k in form_label_output_list]):
             params = form_value_state
             params['post_id'] = ','.join(map(str, post)) if post else ''
             params['role_id'] = ','.join(map(str, role)) if role else ''
@@ -354,8 +355,8 @@ def usr_add_confirm(add_confirm, post, role, form_value, form_label):
             )
 
         return dict(
-            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
-            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            form_label_validate_status=[None if validate_data_not_empty(form_value_state.get(k)) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if validate_data_not_empty(form_value_state.get(k)) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
             api_check_token_trigger=dash.no_update,
@@ -482,7 +483,7 @@ def usr_edit_confirm(edit_confirm, edit_row_info, post, role, form_value, form_l
         form_value_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]}
         form_label_state = {x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]}
 
-        if all([form_value_state.get(k) for k in form_label_output_list]):
+        if all(validate_data_not_empty(item) for item in [form_value_state.get(k) for k in form_label_output_list]):
             params = form_value_state
             params['user_id'] = edit_row_info.get('user_id') if edit_row_info else None
             params['post_id'] = ','.join(map(str, post)) if post else ''
@@ -509,8 +510,8 @@ def usr_edit_confirm(edit_confirm, edit_row_info, post, role, form_value, form_l
             )
 
         return dict(
-            form_label_validate_status=[None if form_value_state.get(k) else 'error' for k in form_label_output_list],
-            form_label_validate_info=[None if form_value_state.get(k) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
+            form_label_validate_status=[None if validate_data_not_empty(form_value_state.get(k)) else 'error' for k in form_label_output_list],
+            form_label_validate_info=[None if validate_data_not_empty(form_value_state.get(k)) else f'{form_label_state.get(k)}不能为空!' for k in form_label_output_list],
             modal_visible=dash.no_update,
             operations=dash.no_update,
             api_check_token_trigger=dash.no_update,

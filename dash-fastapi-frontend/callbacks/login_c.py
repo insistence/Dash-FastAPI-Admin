@@ -6,6 +6,7 @@ from flask import session
 import time
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.login import login_api, get_captcha_image_api
 
 
@@ -41,7 +42,7 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
         if captcha_hidden:
             input_captcha = 'hidden'
         # 校验全部输入值是否不为空
-        if all([username, password, input_captcha]):
+        if all(validate_data_not_empty(item) for item in [username, password, input_captcha]):
 
             try:
                 user_params = dict(username=username, password=password, captcha=input_captcha, session_id=session_id)
@@ -95,12 +96,12 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                 )
 
         return dict(
-            username_form_status=None if username else 'error',
-            password_form_status=None if password else 'error',
-            captcha_form_status=None if input_captcha else 'error',
-            username_form_help=None if username else '请输入用户名！',
-            password_form_help=None if password else '请输入密码！',
-            captcha_form_help=None if input_captcha else '请输入验证码！',
+            username_form_status=None if validate_data_not_empty(username) else 'error',
+            password_form_status=None if validate_data_not_empty(password) else 'error',
+            captcha_form_status=None if validate_data_not_empty(input_captcha) else 'error',
+            username_form_help=None if validate_data_not_empty(username) else '请输入用户名！',
+            password_form_help=None if validate_data_not_empty(password) else '请输入密码！',
+            captcha_form_help=None if validate_data_not_empty(input_captcha) else '请输入验证码！',
             image_click=dash.no_update,
             submit_loading=False,
             token=None,
