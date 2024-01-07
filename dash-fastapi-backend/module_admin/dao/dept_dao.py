@@ -88,12 +88,8 @@ class DeptDao:
                     eval(data_scope_sql)) \
             .order_by(SysDept.order_num) \
             .distinct().all()
-        dept = cls.get_dept_by_id(db, dept_info.dept_id)
-        parent = cls.get_dept_by_id(db, dept.parent_id)
-        if parent:
-            dept_result.insert(-1, parent)
 
-        return list_format_datetime(sorted(set(dept_result), key=dept_result.index))
+        return list_format_datetime(dept_result)
 
     @classmethod
     def get_children_dept(cls, db: Session, dept_id: int):
