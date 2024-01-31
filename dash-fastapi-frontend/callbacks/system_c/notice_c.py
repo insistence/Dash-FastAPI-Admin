@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.notice import get_notice_list_api, add_notice_api, edit_notice_api, delete_notice_api, get_notice_detail_api
 from api.dict import query_dict_data_list_api
 
@@ -340,7 +341,7 @@ def notice_confirm(confirm_trigger, modal_type, edit_row_info, notice_title, not
     新增或编辑通知公告弹窗确认回调，实现新增或编辑操作
     """
     if confirm_trigger:
-        if all([notice_title, notice_type]):
+        if all(validate_data_not_empty(item) for item in [notice_title, notice_type]):
             params_add = dict(notice_title=notice_title, notice_type=notice_type, status=status,
                               notice_content=notice_content)
             params_edit = dict(notice_id=edit_row_info.get('notice_id') if edit_row_info else None,
@@ -388,10 +389,10 @@ def notice_confirm(confirm_trigger, modal_type, edit_row_info, notice_title, not
             )
 
         return dict(
-            notice_title_form_status=None if notice_title else 'error',
-            notice_type_form_status=None if notice_type else 'error',
-            notice_title_form_help=None if notice_title else '请输入公告标题！',
-            notice_type_form_help=None if notice_type else '请输入公告类型！',
+            notice_title_form_status=None if validate_data_not_empty(notice_title) else 'error',
+            notice_type_form_status=None if validate_data_not_empty(notice_type) else 'error',
+            notice_title_form_help=None if validate_data_not_empty(notice_title) else '请输入公告标题！',
+            notice_type_form_help=None if validate_data_not_empty(notice_type) else '请输入公告类型！',
             modal_visible=dash.no_update,
             operations=dash.no_update,
             api_check_token_trigger=dash.no_update,

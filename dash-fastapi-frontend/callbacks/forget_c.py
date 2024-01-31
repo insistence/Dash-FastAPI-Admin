@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.user import forget_user_pwd_api
 from api.message import send_message_api
 
@@ -38,7 +39,7 @@ from api.message import send_message_api
 def forget_auth(nClicks, username, password, password_again, input_captcha, session_id):
     if nClicks:
     # 校验全部输入值是否不为空
-        if all([username, password, password_again, input_captcha]):
+        if all(validate_data_not_empty(item) for item in [username, password, password_again, input_captcha]):
 
             if password == password_again:
                 try:
@@ -107,14 +108,14 @@ def forget_auth(nClicks, username, password, password_again, input_captcha, sess
                 )
 
         return dict(
-            username_form_status=None if username else 'error',
-            password_form_status=None if password else 'error',
-            password_again_form_status=None if password_again else 'error',
-            captcha_form_status=None if input_captcha else 'error',
-            username_form_help=None if username else '请输入用户名！',
-            password_form_help=None if password else '请输入新密码！',
-            password_again_form_help=None if password_again else '请再次输入新密码！',
-            captcha_form_help=None if input_captcha else '请输入短信验证码！',
+            username_form_status=None if validate_data_not_empty(username) else 'error',
+            password_form_status=None if validate_data_not_empty(password) else 'error',
+            password_again_form_status=None if validate_data_not_empty(password_again) else 'error',
+            captcha_form_status=None if validate_data_not_empty(input_captcha) else 'error',
+            username_form_help=None if validate_data_not_empty(username) else '请输入用户名！',
+            password_form_help=None if validate_data_not_empty(password) else '请输入新密码！',
+            password_again_form_help=None if validate_data_not_empty(password_again) else '请再次输入新密码！',
+            captcha_form_help=None if validate_data_not_empty(input_captcha) else '请输入短信验证码！',
             submit_loading=False,
             redirect_container=None,
             global_message_container=None

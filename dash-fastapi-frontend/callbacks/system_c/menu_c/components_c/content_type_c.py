@@ -5,6 +5,7 @@ from dash.exceptions import PreventUpdate
 import feffery_utils_components as fuc
 
 from server import app
+from utils.common import validate_data_not_empty
 from api.menu import add_menu_api, edit_menu_api
 
 
@@ -48,7 +49,7 @@ def menu_confirm_content(confirm_trigger, modal_type, edit_row_info, parent_id, 
     菜单类型为目录时新增或编辑弹窗确认回调，实现新增或编辑操作
     """
     if confirm_trigger:
-        if all([parent_id, menu_name, order_num, path]):
+        if all(validate_data_not_empty(item) for item in [parent_id, menu_name, order_num, path]):
             params_add = dict(parent_id=parent_id, menu_type=menu_type, icon=icon, menu_name=menu_name, order_num=order_num,
                             is_frame=is_frame, path=path, visible=visible, status=status)
             params_edit = dict(menu_id=edit_row_info.get('menu_id') if edit_row_info else None, parent_id=parent_id, menu_type=menu_type, icon=icon,
@@ -87,14 +88,14 @@ def menu_confirm_content(confirm_trigger, modal_type, edit_row_info, parent_id, 
 
         return dict(
             form_validate=[
-                None if parent_id else 'error',
-                None if menu_name else 'error',
-                None if order_num else 'error',
-                None if path else 'error',
-                None if parent_id else '请选择上级菜单！',
-                None if menu_name else '请输入菜单名称！',
-                None if order_num else '请输入显示排序！',
-                None if path else '请输入路由地址！',
+                None if validate_data_not_empty(parent_id) else 'error',
+                None if validate_data_not_empty(menu_name) else 'error',
+                None if validate_data_not_empty(order_num) else 'error',
+                None if validate_data_not_empty(path) else 'error',
+                None if validate_data_not_empty(parent_id) else '请选择上级菜单！',
+                None if validate_data_not_empty(menu_name) else '请输入菜单名称！',
+                None if validate_data_not_empty(order_num) else '请输入显示排序！',
+                None if validate_data_not_empty(path) else '请输入路由地址！',
             ],
             modal_visible=dash.no_update,
             operations=dash.no_update,

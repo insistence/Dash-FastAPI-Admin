@@ -1,12 +1,12 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.9</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.0.10</h1>
 <h4 align="center">基于Dash+FastAPI前后端分离的纯Python快速开发框架</h4>
 <p align="center">
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/stargazers"><img src="https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark"></a>
     <a href="https://github.com/insistence/Dash-FastAPI-Admin"><img src="https://img.shields.io/github/stars/insistence/Dash-FastAPI-Admin?style=social"></a>
-	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.9-brightgreen.svg"></a>
+	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.0.10-brightgreen.svg"></a>
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
     <img src="https://img.shields.io/badge/python-3.8 | 3.9-blue">
     <img src="https://img.shields.io/badge/MySQL-≥5.7-blue">
@@ -20,6 +20,12 @@ Dash-FastAPI-Admin是一套全部开源的快速开发平台，毫无保留给�
 * 后端采用FastAPI、sqlalchemy、MySQL、Redis、OAuth2 & Jwt。
 * 权限认证使用OAuth2 & Jwt，支持多终端认证系统。
 * 支持加载动态权限菜单，多方式轻松权限控制。
+* Vue2版本：
+  - Gitte仓库地址：https://gitee.com/insistence2022/RuoYi-Vue-FastAPI
+  - GitHub仓库地址：https://github.com/insistence/RuoYi-Vue-FastAPI
+* Vue3版本：
+  - Gitte仓库地址：https://gitee.com/insistence2022/RuoYi-Vue3-FastAPI
+  - GitHub仓库地址：https://github.com/insistence/RuoYi-Vue3-FastAPI
 * 特别鸣谢：<u>[RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue)</u> ，<u>[feffery-antd-components](https://github.com/CNFeffery/feffery-antd-components)</u>，<u>[feffery-utils-components](https://github.com/CNFeffery/feffery-utils-components)</u>。
 
 ## 内置功能
