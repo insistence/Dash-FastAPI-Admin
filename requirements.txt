@@ -17,7 +17,7 @@ psutil==5.9.5
 PyMySQL==1.0.3
 python-jose[cryptography]==3.3.0
 redis==5.0.1
-requests==2.30.0
+requests==2.31.0
 SQLAlchemy==1.4.48
 user-agents==2.2.0
 waitress==2.1.2
