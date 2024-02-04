@@ -1,3 +1,4 @@
+from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session
 from module_admin.entity.do.log_do import SysOperLog, SysLogininfor
 from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel, OperLogQueryModel, LoginLogQueryModel
@@ -32,6 +33,12 @@ class OperationLogDao:
         :param query_object: 查询参数对象
         :return: 操作日志列表信息对象
         """
+        if query_object.is_asc == 'ascend':
+            order_by_column = asc(getattr(SysOperLog, query_object.order_by_column, None))
+        elif query_object.is_asc == 'descend':
+            order_by_column = desc(getattr(SysOperLog, query_object.order_by_column, None))
+        else:
+            order_by_column = asc(SysOperLog.oper_time)
         operation_log_list = db.query(SysOperLog) \
             .filter(SysOperLog.title.like(f'%{query_object.title}%') if query_object.title else True,
                     SysOperLog.oper_name.like(f'%{query_object.oper_name}%') if query_object.oper_name else True,
@@ -42,7 +49,7 @@ class OperationLogDao:
                         datetime.combine(datetime.strptime(query_object.oper_time_end, '%Y-%m-%d'), time(23, 59, 59)))
                                 if query_object.oper_time_start and query_object.oper_time_end else True
                     )\
-            .distinct().all()
+            .distinct().order_by(order_by_column).all()
 
         return list_format_datetime(operation_log_list)
 
@@ -96,6 +103,12 @@ class LoginLogDao:
         :param query_object: 查询参数对象
         :return: 登录日志列表信息对象
         """
+        if query_object.is_asc == 'ascend':
+            order_by_column = asc(getattr(SysLogininfor, query_object.order_by_column, None))
+        elif query_object.is_asc == 'descend':
+            order_by_column = desc(getattr(SysLogininfor, query_object.order_by_column, None))
+        else:
+            order_by_column = asc(SysLogininfor.login_time)
         login_log_list = db.query(SysLogininfor) \
             .filter(SysLogininfor.ipaddr.like(f'%{query_object.ipaddr}%') if query_object.ipaddr else True,
                     SysLogininfor.user_name.like(f'%{query_object.user_name}%') if query_object.user_name else True,
@@ -105,7 +118,7 @@ class LoginLogDao:
                         datetime.combine(datetime.strptime(query_object.login_time_end, '%Y-%m-%d'), time(23, 59, 59)))
                                 if query_object.login_time_start and query_object.login_time_end else True
                     )\
-            .distinct().all()
+            .distinct().order_by(order_by_column).all()
 
         return list_format_datetime(login_log_list)
 

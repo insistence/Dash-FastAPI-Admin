@@ -23,6 +23,7 @@ from api.dict import query_dict_data_list_api
     inputs=dict(
         search_click=Input('operation_log-search', 'nClicks'),
         refresh_click=Input('operation_log-refresh', 'nClicks'),
+        sorter=Input('operation_log-list-table', 'sorter'),
         pagination=Input('operation_log-list-table', 'pagination'),
         operations=Input('operation_log-operations-store', 'data')
     ),
@@ -36,7 +37,7 @@ from api.dict import query_dict_data_list_api
     ),
     prevent_initial_call=True
 )
-def get_operation_log_table_data(search_click, refresh_click, pagination, operations, title, oper_name, business_type, status_select, oper_time_range, button_perms):
+def get_operation_log_table_data(search_click, refresh_click, sorter, pagination, operations, title, oper_name, business_type, status_select, oper_time_range, button_perms):
     """
     获取操作日志表格数据回调（进行表格相关增删查改操作后均会触发此回调）
     """
@@ -53,11 +54,13 @@ def get_operation_log_table_data(search_click, refresh_click, pagination, operat
         status=status_select,
         oper_time_start=oper_time_start,
         oper_time_end=oper_time_end,
+        order_by_column=sorter.get('columns')[0] if sorter else None,
+        is_asc=sorter.get('orders')[0] if sorter else None,
         page_num=1,
         page_size=10
     )
-    triggered_id = dash.ctx.triggered_id
-    if triggered_id == 'operation_log-list-table':
+    triggered_prop = dash.ctx.triggered[0].get('prop_id')
+    if triggered_prop == 'operation_log-list-table.pagination':
         query_params = dict(
             title=title,
             oper_name=oper_name,
@@ -65,6 +68,8 @@ def get_operation_log_table_data(search_click, refresh_click, pagination, operat
             status=status_select,
             oper_time_start=oper_time_start,
             oper_time_end=oper_time_end,
+            order_by_column=sorter.get('columns')[0] if sorter else None,
+            is_asc=sorter.get('orders')[0] if sorter else None,
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
