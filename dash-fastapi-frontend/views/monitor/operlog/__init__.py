@@ -361,6 +361,10 @@ def render(button_perms):
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
+                                            sortOptions={
+                                                'sortDataIndexes': ['oper_name', 'oper_time'],
+                                                'multiple': False
+                                            },
                                             pagination={
                                                 'pageSize': page_size,
                                                 'current': page_num,

@@ -21,6 +21,7 @@ from api.log import get_login_log_list_api, delete_login_log_api, clear_login_lo
     inputs=dict(
         search_click=Input('login_log-search', 'nClicks'),
         refresh_click=Input('login_log-refresh', 'nClicks'),
+        sorter=Input('login_log-list-table', 'sorter'),
         pagination=Input('login_log-list-table', 'pagination'),
         operations=Input('login_log-operations-store', 'data')
     ),
@@ -33,7 +34,7 @@ from api.log import get_login_log_list_api, delete_login_log_api, clear_login_lo
     ),
     prevent_initial_call=True
 )
-def get_login_log_table_data(search_click, refresh_click, pagination, operations, ipaddr, user_name, status_select, login_time_range, button_perms):
+def get_login_log_table_data(search_click, refresh_click, sorter, pagination, operations, ipaddr, user_name, status_select, login_time_range, button_perms):
     """
     获取登录日志表格数据回调（进行表格相关增删查改操作后均会触发此回调）
     """
@@ -49,17 +50,21 @@ def get_login_log_table_data(search_click, refresh_click, pagination, operations
         status=status_select,
         login_time_start=login_time_start,
         login_time_end=login_time_end,
+        order_by_column=sorter.get('columns')[0] if sorter else None,
+        is_asc=sorter.get('orders')[0] if sorter else None,
         page_num=1,
         page_size=10
     )
-    triggered_id = dash.ctx.triggered_id
-    if triggered_id == 'login_log-list-table':
+    triggered_prop = dash.ctx.triggered[0].get('prop_id')
+    if triggered_prop == 'login_log-list-table.pagination':
         query_params = dict(
             ipaddr=ipaddr,
             user_name=user_name,
             status=status_select,
             login_time_start=login_time_start,
             login_time_end=login_time_end,
+            order_by_column=sorter.get('columns')[0] if sorter else None,
+            is_asc=sorter.get('orders')[0] if sorter else None,
             page_num=pagination['current'],
             page_size=pagination['pageSize']
         )
