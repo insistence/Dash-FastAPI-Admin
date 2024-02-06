@@ -8,6 +8,7 @@ from flask import session
 from operator import itemgetter
 
 from server import app
+from config.env import AppConfig
 from config.global_config import RouterConfig
 from store.store import render_store_container
 
@@ -256,4 +257,4 @@ def router(pathname, url_trigger, session_token):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8088, debug=True)
+    app.run(host=AppConfig.app_host, port=AppConfig.app_port, debug=AppConfig.app_debug)

@@ -59,7 +59,7 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
     try:
         if token.startswith('Bearer'):
             token = token.split(' ')[1]
-        payload = jwt.decode(token, JwtConfig.SECRET_KEY, algorithms=[JwtConfig.ALGORITHM])
+        payload = jwt.decode(token, JwtConfig.jwt_secret_key, algorithms=[JwtConfig.jwt_algorithm])
         user_id: str = payload.get("user_id")
         session_id: str = payload.get("session_id")
         if user_id is None:
@@ -78,9 +78,9 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
     # redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}")
     if token == redis_token:
         await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", redis_token,
-                                          ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
+                                          ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
         # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}", redis_token,
-        #                                   ex=timedelta(minutes=JwtConfig.REDIS_TOKEN_EXPIRE_MINUTES))
+        #                                   ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
 
         return CurrentUserInfoServiceResponse(
             user=user.user_basic_info,
@@ -227,7 +227,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JwtConfig.SECRET_KEY, algorithm=JwtConfig.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, JwtConfig.jwt_secret_key, algorithm=JwtConfig.jwt_algorithm)
     return encoded_jwt
 
 
