@@ -12,6 +12,7 @@ from typing import Optional
 from module_admin.service.login_service import get_current_user
 from module_admin.service.log_service import OperationLogService, LoginLogService
 from module_admin.entity.vo.log_vo import OperLogModel, LogininforModel
+from config.env import AppConfig
 
 
 def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'operation'):
@@ -48,7 +49,7 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
             # 获取请求的url
             oper_url = request.url.path
             # 获取请求的ip及ip归属区域
-            oper_ip = request.headers.get('remote_addr')
+            oper_ip = request.headers.get('X-Forwarded-For') if AppConfig.app_env == 'prod' else request.headers.get('remote_addr')
             oper_location = '内网IP'
             try:
                 if oper_ip != '127.0.0.1' and oper_ip != 'localhost':
