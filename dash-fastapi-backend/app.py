@@ -18,6 +18,7 @@ from module_admin.controller.job_controller import jobController
 from module_admin.controller.server_controller import serverController
 from module_admin.controller.cache_controller import cacheController
 from module_admin.controller.common_controller import commonController
+from config.env import AppConfig
 from config.get_redis import RedisUtil
 from config.get_db import init_create_table
 from config.get_scheduler import SchedulerUtil
@@ -26,9 +27,10 @@ from utils.log_util import logger
 from utils.common_util import worship
 
 app = FastAPI(
-    title='Dash-FastAPI',
-    description='Dash-FastAPI接口文档',
-    version='1.0.0',
+    title=AppConfig.app_name,
+    description=f'{AppConfig.app_name}接口文档',
+    version=AppConfig.app_version,
+    root_path=AppConfig.app_root_path,
 )
 
 # 前端页面url
@@ -49,14 +51,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Dash-FastAPI开始启动")
+    logger.info(f"{AppConfig.app_name}开始启动")
     worship()
     await init_create_table()
     app.state.redis = await RedisUtil.create_redis_pool()
     await RedisUtil.init_sys_dict(app.state.redis)
     await RedisUtil.init_sys_config(app.state.redis)
     await SchedulerUtil.init_system_scheduler()
-    logger.info("Dash-FastAPI启动成功")
+    logger.info(f"{AppConfig.app_name}启动成功")
 
 
 @app.on_event("shutdown")
@@ -103,4 +105,9 @@ app.include_router(cacheController, prefix="/monitor", tags=['系统监控-缓�
 app.include_router(commonController, prefix="/common", tags=['通用模块'])
 
 if __name__ == '__main__':
-    uvicorn.run(app='app:app', host="0.0.0.0", port=9099, reload=True)
+    uvicorn.run(
+        app='app:app',
+        host=AppConfig.app_host,
+        port=AppConfig.app_port,
+        reload=AppConfig.app_reload
+    )

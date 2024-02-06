@@ -1,4 +1,5 @@
 import os
+from config.env import AppConfig
 
 
 class PathConfig:
@@ -21,7 +22,7 @@ class RouterConfig:
 class ApiBaseUrlConfig:
 
     # api基本url
-    BaseUrl = 'http://127.0.0.1:9099'
+    BaseUrl = AppConfig.app_base_url + AppConfig.app_proxy_path if AppConfig.app_is_proxy else AppConfig.app_base_url
     
     
 class IconConfig:

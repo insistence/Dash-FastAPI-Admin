@@ -1,6 +1,7 @@
 import requests
 from typing import Optional
 from flask import session, request
+from config.env import AppConfig
 from config.global_config import ApiBaseUrlConfig
 from server import logger
 
@@ -11,11 +12,12 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
     method = method.lower().strip()
     user_agent = request.headers.get('User-Agent')
     authorization = session.get('Authorization') if session.get('Authorization') else ''
+    remote_addr = request.headers.get("X-Forwarded-For") if AppConfig.app_env == 'prod' else request.remote_addr
     if is_headers:
-        api_headers = {'Authorization': 'Bearer ' + authorization, 'remote_addr': request.remote_addr,
+        api_headers = {'Authorization': 'Bearer ' + authorization, 'remote_addr': remote_addr,
                        'User-Agent': user_agent}
     else:
-        api_headers = {'remote_addr': request.remote_addr, 'User-Agent': user_agent}
+        api_headers = {'remote_addr': remote_addr, 'User-Agent': user_agent}
     try:
         if method == 'get':
             response = requests.get(url=api_url, params=params, data=data, json=json, headers=api_headers,

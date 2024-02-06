@@ -1,12 +1,12 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.1.0</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v1.2.0</h1>
 <h4 align="center">基于Dash+FastAPI前后端分离的纯Python快速开发框架</h4>
 <p align="center">
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/stargazers"><img src="https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark"></a>
     <a href="https://github.com/insistence/Dash-FastAPI-Admin"><img src="https://img.shields.io/github/stars/insistence/Dash-FastAPI-Admin?style=social"></a>
-	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.1.0-brightgreen.svg"></a>
+	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v1.2.0-brightgreen.svg"></a>
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
     <img src="https://img.shields.io/badge/python-3.8 | 3.9-blue">
     <img src="https://img.shields.io/badge/MySQL-≥5.7-blue">
@@ -97,7 +97,7 @@ Dash-FastAPI-Admin是一套全部开源的快速开发平台，毫无保留给�
 - *密码：admin123*
 - 演示地址：<a href="https://dfadmin.insistence.tech">dfadmin管理系统<a>
 
-## 项目运行相关
+## 项目开发及发布
 
 ```bash
 # 克隆项目
@@ -110,30 +110,94 @@ cd dash-fastapi-admin
 pip3 install -r requirements.txt
 ```
 
-### 前端
+### 开发
+
+#### 前端
 ```bash
 # 进入前端目录
 cd dash-fastapi-frontend
 
+# 配置应用信息
+在.env.dev文件中配置应用开发模式的相关信息
+
 # 运行前端
-python3 wsgi.py
+python3 app.py --env=dev
 ```
 
-### 后端
+#### 后端
 ```bash
 # 进入后端目录
 cd dash-fastapi-backend
 
 # 配置环境
-1.在config/env.py的DataBaseConfig类中配置数据库环境
-2.在config/env.py的RedisConfig类中配置redis环境
+1.在.env.dev文件中配置开发模式的数据库环境
+2.在.env.dev文件中配置开发模式的redis环境
 
 # 运行sql文件
 1.新建数据库dash-fastapi(默认，可修改)
 2.使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql
 
 # 运行后端
-python3 app.py
+python3 app.py --env=dev
+```
+
+### 发布
+
+本应用发布建议使用nginx部署，nginx代理配置参考如下：
+
+```bash
+server {
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header REMOTE-HOST $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:8088/;
+    }
+
+    location /prod-api {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header REMOTE-HOST $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:9099/;
+        rewrite ^/prod-api/(.*)$ /$1 break;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   html;
+    }
+}
+```
+
+#### 前端
+```bash
+# 进入前端目录
+cd dash-fastapi-frontend
+
+# 配置应用信息
+在.env.prod文件中配置应用发布的相关信息，注意：APP_BASE_URL需要配置为nginx代理的地址，例如上面的nginx代理监听的是8000端口，则APP_BASE_URL需要配置为http://127.0.0.1:8000
+
+# 运行前端
+python3 wsgi.py --env=prod
+```
+
+#### 后端
+```bash
+# 进入后端目录
+cd dash-fastapi-backend
+
+# 配置环境
+1.在.env.prod文件中配置生产模式的数据库环境
+2.在.env.prod文件中配置生产模式的redis环境
+
+# 运行sql文件
+1.新建数据库dash-fastapi(默认，可修改)
+2.使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql
+
+# 运行后端
+python3 app.py --env=prod
 ```
 
 ### 访问
