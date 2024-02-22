@@ -15,9 +15,9 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
     remote_addr = request.headers.get("X-Forwarded-For") if AppConfig.app_env == 'prod' else request.remote_addr
     if is_headers:
         api_headers = {'Authorization': 'Bearer ' + authorization, 'remote_addr': remote_addr,
-                       'User-Agent': user_agent}
+                       'User-Agent': user_agent, 'is_browser': 'no'}
     else:
-        api_headers = {'remote_addr': remote_addr, 'User-Agent': user_agent}
+        api_headers = {'remote_addr': remote_addr, 'User-Agent': user_agent, 'is_browser': 'no'}
     try:
         if method == 'get':
             response = requests.get(url=api_url, params=params, data=data, json=json, headers=api_headers,
@@ -49,13 +49,13 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
         if response_code == 200:
             logger.info("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求参数:{}||请求结果:{}",
                         session.get('user_info').get('user_name') if session.get('user_info') else None,
-                        request.remote_addr, method, url,
+                        remote_addr, method, url,
                         ','.join([str(x) for x in data_list if x]),
                         response_message)
         else:
             logger.warning("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求参数:{}||请求结果:{}",
                            session.get('user_info').get('user_name') if session.get('user_info') else None,
-                           request.remote_addr, method, url,
+                           remote_addr, method, url,
                            ','.join([str(x) for x in data_list if x]),
                            response_message)
 
@@ -63,7 +63,7 @@ def api_request(method: str, url: str, is_headers: bool, params: Optional[dict] 
     except Exception as e:
         logger.error("[api]请求人:{}||请求IP:{}||请求方法:{}||请求Api:{}||请求结果:{}",
                      session.get('user_info').get('user_name') if session.get('user_info') else None,
-                     request.remote_addr, method, url, str(e))
+                     remote_addr, method, url, str(e))
         session['code'] = 500
         session['message'] = str(e)
 
