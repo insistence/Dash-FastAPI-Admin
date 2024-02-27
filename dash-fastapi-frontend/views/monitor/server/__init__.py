@@ -4,7 +4,8 @@ import feffery_antd_components as fac
 from api.server import get_server_statistical_info_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
     cpu = {}
     mem = {}
     sys = {}

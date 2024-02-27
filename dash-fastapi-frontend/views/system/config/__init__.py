@@ -5,7 +5,8 @@ import callbacks.system_c.config_c
 from api.config import get_config_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     config_params = dict(page_num=1, page_size=10)
     table_info = get_config_list_api(config_params)

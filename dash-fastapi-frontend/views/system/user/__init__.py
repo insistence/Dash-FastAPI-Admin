@@ -10,7 +10,8 @@ from config.global_config import ApiBaseUrlConfig
 import callbacks.system_c.user_c.user_c
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
     dept_params = dict(dept_name='')
     user_params = dict(page_num=1, page_size=10)
     tree_info = get_dept_tree_api(dept_params)

@@ -7,7 +7,8 @@ from views.system.menu.components.icon_category import render_icon
 import callbacks.system_c.menu_c.menu_c
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
     table_data_new = []
     table_info = get_menu_list_api({})
     if table_info['code'] == 200:

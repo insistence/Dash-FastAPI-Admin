@@ -6,7 +6,8 @@ from api.dept import get_dept_list_api
 from utils.tree_tool import list_to_tree
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
     table_data_new = []
     default_expanded_row_keys = []
     table_info = get_dept_list_api({})
