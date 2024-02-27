@@ -3,7 +3,7 @@ import feffery_utils_components as fuc
 from config.global_config import ApiBaseUrlConfig
 
 
-def render(button_perms):
+def render(*args, **kwargs):
 
     return [
         html.Div(

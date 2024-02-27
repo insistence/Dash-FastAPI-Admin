@@ -5,7 +5,8 @@ import callbacks.monitor_c.logininfor_c
 from api.log import get_login_log_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     login_log_params = dict(page_num=1, page_size=10)
     table_info = get_login_log_list_api(login_log_params)

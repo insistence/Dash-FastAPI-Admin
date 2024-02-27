@@ -5,7 +5,8 @@ import callbacks.monitor_c.online_c
 from api.online import get_online_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     online_params = dict(page_num=1, page_size=10)
     table_info = get_online_list_api(online_params)

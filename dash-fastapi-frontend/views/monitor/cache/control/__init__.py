@@ -5,7 +5,8 @@ import callbacks.monitor_c.cache_c.control_c
 from api.cache import get_cache_statistical_info_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
     command_stats = []
     db_size = ''
     info = {}

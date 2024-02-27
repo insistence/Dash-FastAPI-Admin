@@ -5,7 +5,7 @@ from flask import session
 from . import user_avatar, user_info, reset_pwd
 
 
-def render(button_perms):
+def render(*args, **kwargs):
 
     return [
         fac.AntdRow(

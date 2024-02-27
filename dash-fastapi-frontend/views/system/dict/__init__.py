@@ -6,7 +6,8 @@ from . import dict_data
 from api.dict import get_dict_type_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     dict_type_params = dict(page_num=1, page_size=10)
     table_info = get_dict_type_list_api(dict_type_params)

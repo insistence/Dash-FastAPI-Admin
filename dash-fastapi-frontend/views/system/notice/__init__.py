@@ -11,7 +11,8 @@ from api.notice import get_notice_list_api
 from api.dict import query_dict_data_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     option = []
     option_table = []

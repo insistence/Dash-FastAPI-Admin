@@ -3,7 +3,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import feffery_antd_components as fac
 from jsonpath_ng import parse
-from flask import json
+from flask import json, session
 from collections import OrderedDict
 
 from server import app
@@ -53,10 +53,12 @@ def handle_tab_switch_and_create(currentKey, tabCloseCounts, latestDeletePane, o
         if currentKey == '个人资料':
             menu_title = '个人资料'
             button_perms = []
+            role_perms = []
             menu_modules = 'system.user.profile'
         else:
             menu_title = find_title_by_key(menu_info.get('menu_info'), currentKey)
             button_perms = [item.get('perms') for item in menu_list.get('menu_list') if str(item.get('parent_id')) == currentKey]
+            role_perms = [item.get('role_key') for item in session.get('role_info')]
             # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
             menu_modules = find_modules_by_key(menu_info.get('menu_info'), currentKey)
 
@@ -106,7 +108,7 @@ def handle_tab_switch_and_create(currentKey, tabCloseCounts, latestDeletePane, o
                     {
                         'label': menu_title,
                         'key': currentKey,
-                        'children': eval('views.' + menu_modules + '.render(button_perms)'),
+                        'children': eval('views.' + menu_modules + '.render(button_perms=button_perms, role_perms=role_perms)'),
                         'contextMenu': context_menu
                     }
                 )

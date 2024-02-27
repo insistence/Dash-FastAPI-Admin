@@ -5,7 +5,8 @@ import callbacks.system_c.post_c
 from api.post import get_post_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     post_params = dict(page_num=1, page_size=10)
     table_info = get_post_list_api(post_params)

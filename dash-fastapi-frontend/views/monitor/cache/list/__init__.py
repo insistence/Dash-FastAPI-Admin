@@ -5,7 +5,7 @@ from api.cache import get_cache_name_list_api
 import callbacks.monitor_c.cache_c.list_c
 
 
-def render(button_perms):
+def render(*args, **kwargs):
     cache_name_data = []
     cache_name_res = get_cache_name_list_api()
     if cache_name_res.get('code') == 200:

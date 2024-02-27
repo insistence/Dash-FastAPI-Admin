@@ -6,7 +6,8 @@ from . import data_scope, allocate_user
 from api.role import get_role_list_api
 
 
-def render(button_perms):
+def render(*args, **kwargs):
+    button_perms = kwargs.get('button_perms')
 
     role_params = dict(page_num=1, page_size=10)
     table_info = get_role_list_api(role_params)
