@@ -155,6 +155,22 @@ async def logout_services(request: Request, session_id: str):
     return True
 
 
+async def check_login_ip(request: Request, login_user: UserLogin):
+    """
+    校验用户登录ip是否在黑名单内
+    :param request: Request对象
+    :param login_user: 登录用户对象
+    :return: 校验结果
+    """
+    black_ip_value = await request.app.state.redis.get(
+        f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:sys.login.blackIPList")
+    black_ip_list = black_ip_value.split(',') if black_ip_value else []
+    if login_user.login_info.get('ipaddr') in black_ip_list:
+        logger.warning("当前IP禁止登录")
+        raise LoginException(data="", message="当前IP禁止登录")
+    return True
+
+
 async def check_login_captcha(request: Request, login_user: UserLogin):
     """
     校验用户登录验证码
@@ -180,6 +196,7 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     :param login_user: 登录用户对象
     :return: 校验结果
     """
+    await check_login_ip(request, login_user)
     account_lock = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCOUNT_LOCK.get('key')}:{login_user.user_name}")
     if login_user.user_name == account_lock:
         logger.warning("账号已锁定，请稍后再试")
