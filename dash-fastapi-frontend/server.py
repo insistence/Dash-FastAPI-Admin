@@ -39,16 +39,17 @@ def get_user_agent_info():
     user_string = str(request.user_agent)
     user_agent = parse(user_string)
     bw = user_agent.browser.family
-    bw_version = user_agent.browser.version[0]
-    if bw == 'IE':
-        logger.warning("[sys]请求人:{}||请求IP:{}||请求方法:{}||请求Data:{}",
-                session.get('name'), request_addr, request.method, '用户使用IE内核')
-        return "<h1 style='color: red'>请不要使用IE浏览器或360浏览器兼容模式</h1>"
-    if bw_version < 71:
-        logger.warning("[sys]请求人:{}||请求IP:{}||请求方法:{}||请求Data:{}",
-                       session.get('name'), request_addr, request.method, '用户Chrome内核版本太低')
-        return "<h1 style='color: red'>Chrome内核版本号太低，请升级浏览器</h1>" \
-               "<h1 style='color: red'><a href='https://www.google.cn/chrome/'>点击此处</a>可下载最新版Chrome浏览器</h1>"
+    if user_agent.browser.version != ():
+        bw_version = user_agent.browser.version[0]
+        if bw == 'IE':
+            logger.warning("[sys]请求人:{}||请求IP:{}||请求方法:{}||请求Data:{}",
+                    session.get('name'), request_addr, request.method, '用户使用IE内核')
+            return "<h1 style='color: red'>请不要使用IE浏览器或360浏览器兼容模式</h1>"
+        if bw_version < 71:
+            logger.warning("[sys]请求人:{}||请求IP:{}||请求方法:{}||请求Data:{}",
+                           session.get('name'), request_addr, request.method, '用户Chrome内核版本太低')
+            return "<h1 style='color: red'>Chrome内核版本号太低，请升级浏览器</h1>" \
+                   "<h1 style='color: red'><a href='https://www.google.cn/chrome/'>点击此处</a>可下载最新版Chrome浏览器</h1>"
 
 
 # 配置系统日志
