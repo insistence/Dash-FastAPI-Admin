@@ -51,114 +51,118 @@ def log_decorator(title: str, business_type: int, log_type: Optional[str] = 'ope
             # 获取请求的ip及ip归属区域
             oper_ip = request.headers.get('remote_addr') if request.headers.get('is_browser') == 'no' else request.headers.get('X-Forwarded-For')
             oper_location = '内网IP'
-            try:
-                if oper_ip != '127.0.0.1' and oper_ip != 'localhost':
-                    ip_result = requests.get(f'https://qifu-api.baidubce.com/ip/geo/v1/district?ip={oper_ip}')
-                    if ip_result.status_code == 200:
-                        prov = ip_result.json().get('data').get('prov')
-                        city = ip_result.json().get('data').get('city')
-                        if prov or city:
-                            oper_location = f'{prov}-{city}'
+            if AppConfig.app_ip_location_query:
+                try:
+                    if oper_ip != '127.0.0.1' and oper_ip != 'localhost':
+                        ip_result = requests.get(f'https://qifu-api.baidubce.com/ip/geo/v1/district?ip={oper_ip}')
+                        if ip_result.status_code == 200:
+                            prov = ip_result.json().get('data').get('prov')
+                            city = ip_result.json().get('data').get('city')
+                            if prov or city:
+                                oper_location = f'{prov}-{city}'
+                            else:
+                                oper_location = '未知'
                         else:
                             oper_location = '未知'
-                    else:
-                        oper_location = '未知'
-            except Exception as e:
-                oper_location = '未知'
-                print(e)
-            finally:
-                # 根据不同的请求类型使用不同的方法获取请求参数
-                content_type = request.headers.get("Content-Type")
-                if content_type and ("multipart/form-data" in content_type or 'application/x-www-form-urlencoded' in content_type):
-                    payload = await request.form()
-                    oper_param = "\n".join([f"{key}: {value}" for key, value in payload.items()])
-                else:
-                    payload = await request.body()
-                    oper_param = json.dumps(json.loads(str(payload, 'utf-8')), ensure_ascii=False)
-                # 日志表请求参数字段长度最大为2000，因此在此处判断长度
-                if len(oper_param) > 2000:
-                    oper_param = '请求参数过长'
+                except Exception as e:
+                    oper_location = '未知'
+                    print(e)
+            # 根据不同的请求类型使用不同的方法获取请求参数
+            content_type = request.headers.get("Content-Type")
+            if content_type and ("multipart/form-data" in content_type or 'application/x-www-form-urlencoded' in content_type):
+                payload = await request.form()
+                oper_param = "\n".join([f"{key}: {value}" for key, value in payload.items()])
+            else:
+                payload = await request.body()
+                oper_param = json.dumps(json.loads(str(payload, 'utf-8')), ensure_ascii=False)
+            # 日志表请求参数字段长度最大为2000，因此在此处判断长度
+            if len(oper_param) > 2000:
+                oper_param = '请求参数过长'
 
-                # 获取操作时间
-                oper_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                # 此处在登录之前向原始函数传递一些登录信息，用于监测在线用户的相关信息
-                login_log = {}
-                if log_type == 'login':
-                    user_agent_info = parse(user_agent)
-                    browser = f'{user_agent_info.browser.family} {user_agent_info.browser.version[0]}'
-                    system_os = f'{user_agent_info.os.family} {user_agent_info.os.version[0]}'
-                    login_log = dict(
-                        ipaddr=oper_ip,
-                        login_location=oper_location,
-                        browser=browser,
-                        os=system_os,
-                        login_time=oper_time
-                    )
-                    kwargs['form_data'].login_info = login_log
-                # 调用原始函数
-                result = await func(*args, **kwargs)
-                # 获取请求耗时
-                cost_time = float(time.time() - start_time) * 100
-                # 判断请求是否来自api文档
-                request_from_swagger = request.headers.get('referer').endswith('docs') if request.headers.get('referer') else False
-                request_from_redoc = request.headers.get('referer').endswith('redoc') if request.headers.get('referer') else False
-                # 根据响应结果的类型使用不同的方法获取响应结果参数
-                if isinstance(result, JSONResponse) or isinstance(result, ORJSONResponse) or isinstance(result, UJSONResponse):
-                    result_dict = json.loads(str(result.body, 'utf-8'))
+            # 获取操作时间
+            oper_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # 此处在登录之前向原始函数传递一些登录信息，用于监测在线用户的相关信息
+            login_log = {}
+            if log_type == 'login':
+                user_agent_info = parse(user_agent)
+                browser = f'{user_agent_info.browser.family}'
+                system_os = f'{user_agent_info.os.family}'
+                if user_agent_info.browser.version != ():
+                    browser += f' {user_agent_info.browser.version[0]}'
+                if user_agent_info.os.version != ():
+                    system_os += f' {user_agent_info.os.version[0]}'
+                login_log = dict(
+                    ipaddr=oper_ip,
+                    login_location=oper_location,
+                    browser=browser,
+                    os=system_os,
+                    login_time=oper_time
+                )
+                kwargs['form_data'].login_info = login_log
+            # 调用原始函数
+            result = await func(*args, **kwargs)
+            # 获取请求耗时
+            cost_time = float(time.time() - start_time) * 100
+            # 判断请求是否来自api文档
+            request_from_swagger = request.headers.get('referer').endswith('docs') if request.headers.get('referer') else False
+            request_from_redoc = request.headers.get('referer').endswith('redoc') if request.headers.get('referer') else False
+            # 根据响应结果的类型使用不同的方法获取响应结果参数
+            if isinstance(result, JSONResponse) or isinstance(result, ORJSONResponse) or isinstance(result, UJSONResponse):
+                result_dict = json.loads(str(result.body, 'utf-8'))
+            else:
+                if request_from_swagger or request_from_redoc:
+                    result_dict = {}
                 else:
-                    if request_from_swagger or request_from_redoc:
-                        result_dict = {}
+                    if result.status_code == 200:
+                        result_dict = {'code': result.status_code, 'message': '获取成功'}
                     else:
-                        if result.status_code == 200:
-                            result_dict = {'code': result.status_code, 'message': '获取成功'}
-                        else:
-                            result_dict = {'code': result.status_code, 'message': '获取失败'}
-                json_result = json.dumps(dict(code=result_dict.get('code'), message=result_dict.get('message')), ensure_ascii=False)
-                # 根据响应结果获取响应状态及异常信息
-                status = 1
-                error_msg = ''
-                if result_dict.get('code') == 200:
-                    status = 0
+                        result_dict = {'code': result.status_code, 'message': '获取失败'}
+            json_result = json.dumps(dict(code=result_dict.get('code'), message=result_dict.get('message')), ensure_ascii=False)
+            # 根据响应结果获取响应状态及异常信息
+            status = 1
+            error_msg = ''
+            if result_dict.get('code') == 200:
+                status = 0
+            else:
+                error_msg = result_dict.get('message')
+            # 根据日志类型向对应的日志表插入数据
+            if log_type == 'login':
+                # 登录请求来自于api文档时不记录登录日志，其余情况则记录
+                if request_from_swagger or request_from_redoc:
+                    pass
                 else:
-                    error_msg = result_dict.get('message')
-                # 根据日志类型向对应的日志表插入数据
-                if log_type == 'login':
-                    # 登录请求来自于api文档时不记录登录日志，其余情况则记录
-                    if request_from_swagger or request_from_redoc:
-                        pass
-                    else:
-                        user = kwargs.get('form_data')
-                        user_name = user.username
-                        login_log['user_name'] = user_name
-                        login_log['status'] = str(status)
-                        login_log['msg'] = result_dict.get('message')
+                    user = kwargs.get('form_data')
+                    user_name = user.username
+                    login_log['user_name'] = user_name
+                    login_log['status'] = str(status)
+                    login_log['msg'] = result_dict.get('message')
 
-                        LoginLogService.add_login_log_services(query_db, LogininforModel(**login_log))
-                else:
-                    current_user = await get_current_user(request, token, query_db)
-                    oper_name = current_user.user.user_name
-                    dept_name = current_user.dept.dept_name if current_user.dept else None
-                    operation_log = dict(
-                        title=title,
-                        business_type=business_type,
-                        method=func_path,
-                        request_method=request_method,
-                        operator_type=operator_type,
-                        oper_name=oper_name,
-                        dept_name=dept_name,
-                        oper_url=oper_url,
-                        oper_ip=oper_ip,
-                        oper_location=oper_location,
-                        oper_param=oper_param,
-                        json_result=json_result,
-                        status=status,
-                        error_msg=error_msg,
-                        oper_time=oper_time,
-                        cost_time=cost_time
-                    )
-                    OperationLogService.add_operation_log_services(query_db, OperLogModel(**operation_log))
+                    LoginLogService.add_login_log_services(query_db, LogininforModel(**login_log))
+            else:
+                current_user = await get_current_user(request, token, query_db)
+                oper_name = current_user.user.user_name
+                dept_name = current_user.dept.dept_name if current_user.dept else None
+                operation_log = dict(
+                    title=title,
+                    business_type=business_type,
+                    method=func_path,
+                    request_method=request_method,
+                    operator_type=operator_type,
+                    oper_name=oper_name,
+                    dept_name=dept_name,
+                    oper_url=oper_url,
+                    oper_ip=oper_ip,
+                    oper_location=oper_location,
+                    oper_param=oper_param,
+                    json_result=json_result,
+                    status=status,
+                    error_msg=error_msg,
+                    oper_time=oper_time,
+                    cost_time=cost_time
+                )
+                OperationLogService.add_operation_log_services(query_db, OperLogModel(**operation_log))
 
-                return result
+            return result
 
         return wrapper
 
