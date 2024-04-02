@@ -73,14 +73,18 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
     if user is None:
         logger.warning("用户token不合法")
         raise AuthException(data="", message="用户token不合法")
-    redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
-    # 此方法可实现同一账号同一时间只能登录一次
-    # redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}")
+    if AppConfig.app_same_time_login:
+        redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
+    else:
+        # 此方法可实现同一账号同一时间只能登录一次
+        redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}")
     if token == redis_token:
-        await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", redis_token,
-                                          ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
-        # await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}", redis_token,
-        #                                   ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
+        if AppConfig.app_same_time_login:
+            await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}", redis_token,
+                                              ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
+        else:
+            await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{user.user_basic_info.user_id}", redis_token,
+                                              ex=timedelta(minutes=JwtConfig.jwt_redis_expire_minutes))
 
         return CurrentUserInfoServiceResponse(
             user=user.user_basic_info,
