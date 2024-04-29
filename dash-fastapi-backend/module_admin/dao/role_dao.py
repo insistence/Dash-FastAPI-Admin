@@ -73,12 +73,12 @@ class RoleDao:
         query_role_menu_info = db.query(SysMenu).select_from(SysRole) \
             .filter(SysRole.del_flag == 0, SysRole.role_id == role_id) \
             .outerjoin(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id) \
-            .outerjoin(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
+            .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == 0)) \
             .distinct().all()
         query_role_dept_info = db.query(SysDept).select_from(SysRole) \
             .filter(SysRole.del_flag == 0, SysRole.role_id == role_id) \
             .outerjoin(SysRoleDept, SysRole.role_id == SysRoleDept.role_id) \
-            .outerjoin(SysDept, and_(SysRoleDept.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
+            .join(SysDept, and_(SysRoleDept.dept_id == SysDept.dept_id, SysDept.status == 0, SysDept.del_flag == 0)) \
             .distinct().all()
         results = dict(
             role=object_format_datetime(query_role_basic_info),
