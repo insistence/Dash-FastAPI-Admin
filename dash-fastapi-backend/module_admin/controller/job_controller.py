@@ -36,7 +36,9 @@ async def get_system_job_list(request: Request, job_page_query: JobPageObject, q
 async def add_system_job(request: Request, add_job: JobModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         add_job.create_by = current_user.user.user_name
+        add_job.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_job.update_by = current_user.user.user_name
+        add_job.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_job_result = JobService.add_job_services(query_db, add_job)
         if add_job_result.is_success:
             logger.info(add_job_result.message)
