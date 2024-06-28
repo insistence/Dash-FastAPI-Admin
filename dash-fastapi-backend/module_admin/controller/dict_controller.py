@@ -46,7 +46,9 @@ async def get_system_all_dict_type(request: Request, dict_type_query: DictTypeQu
 async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         add_dict_type.create_by = current_user.user.user_name
+        add_dict_type.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_dict_type.update_by = current_user.user.user_name
+        add_dict_type.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_dict_type_result = await DictTypeService.add_dict_type_services(request, query_db, add_dict_type)
         if add_dict_type_result.is_success:
             logger.info(add_dict_type_result.message)
@@ -166,7 +168,9 @@ async def query_system_dict_data_list(request: Request, dict_type: str, query_db
 async def add_system_dict_data(request: Request, add_dict_data: DictDataModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         add_dict_data.create_by = current_user.user.user_name
+        add_dict_data.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_dict_data.update_by = current_user.user.user_name
+        add_dict_data.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_dict_data_result = await DictDataService.add_dict_data_services(request, query_db, add_dict_data)
         if add_dict_data_result.is_success:
             logger.info(add_dict_data_result.message)

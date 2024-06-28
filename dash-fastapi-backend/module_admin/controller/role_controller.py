@@ -46,7 +46,9 @@ async def get_system_role_list(request: Request, role_page_query: RolePageObject
 async def add_system_role(request: Request, add_role: AddRoleModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         add_role.create_by = current_user.user.user_name
+        add_role.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_role.update_by = current_user.user.user_name
+        add_role.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_role_result = RoleService.add_role_services(query_db, add_role)
         if add_role_result.is_success:
             logger.info(add_role_result.message)

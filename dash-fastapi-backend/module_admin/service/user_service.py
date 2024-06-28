@@ -221,7 +221,9 @@ class UserService:
                         sex=row['sex'],
                         status=row['status'],
                         create_by=current_user.user.user_name,
-                        update_by=current_user.user.user_name
+                        create_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        update_by=current_user.user.user_name,
+                        update_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     )
                 )
                 user_info = UserDao.get_user_by_info(result_db, UserModel(**dict(user_name=row['user_name'])))
@@ -237,7 +239,8 @@ class UserService:
                                 phonenumber=row['phonenumber'],
                                 sex=row['sex'],
                                 status=row['status'],
-                                update_by=current_user.user.user_name
+                                update_by=current_user.user.user_name,
+                                update_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             )
                         ).dict(exclude_unset=True)
                         UserDao.edit_user_dao(result_db, edit_user)

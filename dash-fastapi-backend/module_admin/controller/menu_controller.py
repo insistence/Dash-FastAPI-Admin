@@ -52,7 +52,9 @@ async def get_system_menu_list(request: Request, menu_query: MenuModel, query_db
 async def add_system_menu(request: Request, add_menu: MenuModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
         add_menu.create_by = current_user.user.user_name
+        add_menu.create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_menu.update_by = current_user.user.user_name
+        add_menu.update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         add_menu_result = MenuService.add_menu_services(query_db, add_menu)
         if add_menu_result.is_success:
             logger.info(add_menu_result.message)
