@@ -97,7 +97,7 @@ async def edit_system_menu(
 @menuController.delete('/{menu_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:menu:remove'))])
 @Log(title='菜单管理', business_type=BusinessType.DELETE)
 async def delete_system_menu(request: Request, menu_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_menu = DeleteMenuModel(menuIds=menu_ids)
+    delete_menu = DeleteMenuModel(menu_ids=menu_ids)
     delete_menu_result = await MenuService.delete_menu_services(query_db, delete_menu)
     logger.info(delete_menu_result.message)
 

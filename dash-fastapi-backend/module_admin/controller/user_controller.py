@@ -140,10 +140,10 @@ async def delete_system_user(
 
             return ResponseUtil.failure(msg='当前登录用户不能删除')
         for user_id in user_id_list:
-            await UserService.check_user_allowed_services(UserModel(userId=int(user_id)))
+            await UserService.check_user_allowed_services(UserModel(user_id=int(user_id)))
             if not current_user.user.admin:
                 await UserService.check_user_data_scope_services(query_db, int(user_id), data_scope_sql)
-    delete_user = DeleteUserModel(userIds=user_ids, updateBy=current_user.user.user_name, updateTime=datetime.now())
+    delete_user = DeleteUserModel(user_ids=user_ids, update_by=current_user.user.user_name, update_time=datetime.now())
     delete_user_result = await UserService.delete_user_services(query_db, delete_user)
     logger.info(delete_user_result.message)
 
@@ -163,10 +163,10 @@ async def reset_system_user_pwd(
     if not current_user.user.admin:
         await UserService.check_user_data_scope_services(query_db, reset_user.user_id, data_scope_sql)
     edit_user = EditUserModel(
-        userId=reset_user.user_id,
+        user_id=reset_user.user_id,
         password=PwdUtil.get_password_hash(reset_user.password),
-        updateBy=current_user.user.user_name,
-        updateTime=datetime.now(),
+        update_by=current_user.user.user_name,
+        update_time=datetime.now(),
         type='pwd',
     )
     edit_user_result = await UserService.edit_user_services(query_db, edit_user)
@@ -188,10 +188,10 @@ async def change_system_user_status(
     if not current_user.user.admin:
         await UserService.check_user_data_scope_services(query_db, change_user.user_id, data_scope_sql)
     edit_user = EditUserModel(
-        userId=change_user.user_id,
+        user_id=change_user.user_id,
         status=change_user.status,
-        updateBy=current_user.user.user_name,
-        updateTime=datetime.now(),
+        update_by=current_user.user.user_name,
+        update_time=datetime.now(),
         type='status',
     )
     edit_user_result = await UserService.edit_user_services(query_db, edit_user)
@@ -255,10 +255,10 @@ async def change_system_user_profile_avatar(
         with open(avatar_path, 'wb') as f:
             f.write(avatarfile)
         edit_user = EditUserModel(
-            userId=current_user.user.user_id,
+            user_id=current_user.user.user_id,
             avatar=f'{UploadConfig.UPLOAD_PREFIX}/{relative_path}/{avatar_name}',
-            updateBy=current_user.user.user_name,
-            updateTime=datetime.now(),
+            update_by=current_user.user.user_name,
+            update_time=datetime.now(),
             type='avatar',
         )
         edit_user_result = await UserService.edit_user_services(query_db, edit_user)
@@ -277,13 +277,13 @@ async def change_system_user_profile_info(
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
     edit_user = EditUserModel(
-        **user_info.model_dump(exclude_unset=True, by_alias=True, exclude={'role_ids', 'post_ids'}),
-        userId=current_user.user.user_id,
-        userName=current_user.user.user_name,
-        updateBy=current_user.user.user_name,
-        updateTime=datetime.now(),
-        roleIds=current_user.user.role_ids.split(',') if current_user.user.role_ids else [],
-        postIds=current_user.user.post_ids.split(',') if current_user.user.post_ids else [],
+        **user_info.model_dump(exclude_unset=True, exclude={'role_ids', 'post_ids'}),
+        user_id=current_user.user.user_id,
+        user_name=current_user.user.user_name,
+        update_by=current_user.user.user_name,
+        update_time=datetime.now(),
+        role_ids=current_user.user.role_ids.split(',') if current_user.user.role_ids else [],
+        post_ids=current_user.user.post_ids.split(',') if current_user.user.post_ids else [],
         role=current_user.user.role,
     )
     edit_user_result = await UserService.edit_user_services(query_db, edit_user)
@@ -301,11 +301,11 @@ async def reset_system_user_password(
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
     reset_user = ResetUserModel(
-        userId=current_user.user.user_id,
-        oldPassword=reset_password.old_password,
+        user_id=current_user.user.user_id,
+        old_password=reset_password.old_password,
         password=reset_password.new_password,
-        updateBy=current_user.user.user_name,
-        updateTime=datetime.now(),
+        update_by=current_user.user.user_name,
+        update_time=datetime.now(),
     )
     reset_user_result = await UserService.reset_user_services(query_db, reset_user)
     logger.info(reset_user_result.message)
@@ -364,7 +364,7 @@ async def export_system_user_list(
     dependencies=[Depends(CheckUserInterfaceAuth('system:user:query'))],
 )
 async def get_system_allocated_role_list(request: Request, user_id: int, query_db: AsyncSession = Depends(get_db)):
-    user_role_query = UserRoleQueryModel(userId=user_id)
+    user_role_query = UserRoleQueryModel(user_id=user_id)
     user_role_allocated_query_result = await UserService.get_user_role_allocated_list_services(
         query_db, user_role_query
     )
@@ -381,8 +381,8 @@ async def get_system_allocated_role_list(request: Request, user_id: int, query_d
 @Log(title='用户管理', business_type=BusinessType.GRANT)
 async def update_system_role_user(
     request: Request,
-    user_id: int = Query(alias='userId'),
-    role_ids: str = Query(alias='roleIds'),
+    user_id: int = Query(),
+    role_ids: str = Query(),
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     user_data_scope_sql: str = Depends(GetDataScope('SysUser')),
@@ -392,7 +392,7 @@ async def update_system_role_user(
         await UserService.check_user_data_scope_services(query_db, user_id, user_data_scope_sql)
         await RoleService.check_role_data_scope_services(query_db, role_ids, role_data_scope_sql)
     add_user_role_result = await UserService.add_user_role_services(
-        query_db, CrudUserRoleModel(userId=user_id, roleIds=role_ids)
+        query_db, CrudUserRoleModel(user_id=user_id, role_ids=role_ids)
     )
     logger.info(add_user_role_result.message)
 

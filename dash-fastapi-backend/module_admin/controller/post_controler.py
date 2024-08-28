@@ -73,7 +73,7 @@ async def edit_system_post(
 @postController.delete('/{post_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:post:remove'))])
 @Log(title='岗位管理', business_type=BusinessType.DELETE)
 async def delete_system_post(request: Request, post_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_post = DeletePostModel(postIds=post_ids)
+    delete_post = DeletePostModel(post_ids=post_ids)
     delete_post_result = await PostService.delete_post_services(query_db, delete_post)
     logger.info(delete_post_result.message)
 

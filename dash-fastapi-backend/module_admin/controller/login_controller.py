@@ -32,12 +32,12 @@ async def login(
         else False
     )
     user = UserLogin(
-        userName=form_data.username,
+        user_name=form_data.username,
         password=form_data.password,
         code=form_data.code,
         uuid=form_data.uuid,
-        loginInfo=form_data.login_info,
-        captchaEnabled=captcha_enabled,
+        login_info=form_data.login_info,
+        captcha_enabled=captcha_enabled,
     )
     result = await LoginService.authenticate_user(request, query_db, user)
     access_token_expires = timedelta(minutes=JwtConfig.jwt_expire_minutes)

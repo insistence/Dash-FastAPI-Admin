@@ -92,7 +92,7 @@ async def refresh_system_dict(request: Request, query_db: AsyncSession = Depends
 @dictController.delete('/type/{dict_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
 @Log(title='字典类型', business_type=BusinessType.DELETE)
 async def delete_system_dict_type(request: Request, dict_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_dict_type = DeleteDictTypeModel(dictIds=dict_ids)
+    delete_dict_type = DeleteDictTypeModel(dict_ids=dict_ids)
     delete_dict_type_result = await DictTypeService.delete_dict_type_services(request, query_db, delete_dict_type)
     logger.info(delete_dict_type_result.message)
 
@@ -203,7 +203,7 @@ async def edit_system_dict_data(
 @dictController.delete('/data/{dict_codes}', dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
 @Log(title='字典数据', business_type=BusinessType.DELETE)
 async def delete_system_dict_data(request: Request, dict_codes: str, query_db: AsyncSession = Depends(get_db)):
-    delete_dict_data = DeleteDictDataModel(dictCodes=dict_codes)
+    delete_dict_data = DeleteDictDataModel(dict_codes=dict_codes)
     delete_dict_data_result = await DictDataService.delete_dict_data_services(request, query_db, delete_dict_data)
     logger.info(delete_dict_data_result.message)
 

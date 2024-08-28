@@ -33,7 +33,7 @@ async def get_monitor_online_list(
 @onlineController.delete('/{token_ids}', dependencies=[Depends(CheckUserInterfaceAuth('monitor:online:forceLogout'))])
 @Log(title='在线用户', business_type=BusinessType.FORCE)
 async def delete_monitor_online(request: Request, token_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_online = DeleteOnlineModel(tokenIds=token_ids)
+    delete_online = DeleteOnlineModel(token_ids=token_ids)
     delete_online_result = await OnlineService.delete_online_services(request, delete_online)
     logger.info(delete_online_result.message)
 
