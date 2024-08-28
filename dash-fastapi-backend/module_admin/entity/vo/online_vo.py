@@ -1,50 +1,42 @@
-from pydantic import BaseModel
-from typing import Union, Optional, List
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
+from typing import Optional
+from module_admin.annotation.pydantic_annotation import as_query
 
 
 class OnlineModel(BaseModel):
     """
     在线用户对应pydantic模型
     """
-    session_id: Optional[str]
-    user_name: Optional[str]
-    dept_name: Optional[str]
-    ipaddr: Optional[str]
-    login_location: Optional[str]
-    browser: Optional[str]
-    os: Optional[str]
-    login_time: Optional[str]
+
+    model_config = ConfigDict(alias_generator=to_camel)
+
+    token_id: Optional[str] = Field(default=None, description='会话编号')
+    user_name: Optional[str] = Field(default=None, description='部门名称')
+    dept_name: Optional[str] = Field(default=None, description='用户名称')
+    ipaddr: Optional[str] = Field(default=None, description='登录IP地址')
+    login_location: Optional[str] = Field(default=None, description='登录地址')
+    browser: Optional[str] = Field(default=None, description='浏览器类型')
+    os: Optional[str] = Field(default=None, description='操作系统')
+    login_time: Optional[datetime] = Field(default=None, description='登录时间')
 
 
-class OnlinePageObject(OnlineModel):
+@as_query
+class OnlineQueryModel(OnlineModel):
     """
-    在线用户分页查询模型
+    岗位管理不分页查询模型
     """
-    page_num: int
-    page_size: int
 
-
-class OnlinePageObjectResponse(BaseModel):
-    """
-    在线用户列表分页查询返回模型
-    """
-    rows: List[Union[OnlineModel, None]] = []
-    page_num: int
-    page_size: int
-    total: int
-    has_next: bool
-
-
-class CrudOnlineResponse(BaseModel):
-    """
-    操作在线用户响应模型
-    """
-    is_success: bool
-    message: str
+    begin_time: Optional[str] = Field(default=None, description='开始时间')
+    end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
 class DeleteOnlineModel(BaseModel):
     """
     强退在线用户模型
     """
-    session_ids: str
+
+    model_config = ConfigDict(alias_generator=to_camel)
+
+    token_ids: str = Field(description='需要强退的会话编号')
