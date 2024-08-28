@@ -1,11 +1,8 @@
-from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
 class CpuInfo(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     cpu_num: Optional[int] = Field(default=None, description='核心数')
     used: Optional[float] = Field(default=None, description='CPU用户使用率')
     sys: Optional[float] = Field(default=None, description='CPU系统使用率')
@@ -13,8 +10,6 @@ class CpuInfo(BaseModel):
 
 
 class MemoryInfo(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     total: Optional[str] = Field(default=None, description='内存总量')
     used: Optional[str] = Field(default=None, description='已用内存')
     free: Optional[str] = Field(default=None, description='剩余内存')
@@ -22,8 +17,6 @@ class MemoryInfo(BaseModel):
 
 
 class SysInfo(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     computer_ip: Optional[str] = Field(default=None, description='服务器IP')
     computer_name: Optional[str] = Field(default=None, description='服务器名称')
     os_arch: Optional[str] = Field(default=None, description='系统架构')
@@ -32,8 +25,6 @@ class SysInfo(BaseModel):
 
 
 class PyInfo(MemoryInfo):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     name: Optional[str] = Field(default=None, description='Python名称')
     version: Optional[str] = Field(default=None, description='Python版本')
     start_time: Optional[str] = Field(default=None, description='启动时间')
@@ -42,8 +33,6 @@ class PyInfo(MemoryInfo):
 
 
 class SysFiles(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     dir_name: Optional[str] = Field(default=None, description='盘符路径')
     sys_type_name: Optional[str] = Field(default=None, description='盘符类型')
     type_name: Optional[str] = Field(default=None, description='文件类型')
@@ -57,8 +46,6 @@ class ServerMonitorModel(BaseModel):
     """
     服务监控对应pydantic模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     cpu: Optional[CpuInfo] = Field(description='CPU相关信息')
     py: Optional[PyInfo] = Field(description='Python相关信息')

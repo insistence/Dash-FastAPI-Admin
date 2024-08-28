@@ -17,7 +17,7 @@ def as_query(cls: Type[BaseModel]):
         if not model_field.is_required():
             new_parameters.append(
                 inspect.Parameter(
-                    model_field.alias,
+                    field_name,
                     inspect.Parameter.POSITIONAL_ONLY,
                     default=Query(default=model_field.default, description=model_field.description),
                     annotation=model_field.annotation,
@@ -26,7 +26,7 @@ def as_query(cls: Type[BaseModel]):
         else:
             new_parameters.append(
                 inspect.Parameter(
-                    model_field.alias,
+                    field_name,
                     inspect.Parameter.POSITIONAL_ONLY,
                     default=Query(..., description=model_field.description),
                     annotation=model_field.annotation,
@@ -55,7 +55,7 @@ def as_form(cls: Type[BaseModel]):
         if not model_field.is_required():
             new_parameters.append(
                 inspect.Parameter(
-                    model_field.alias,
+                    field_name,
                     inspect.Parameter.POSITIONAL_ONLY,
                     default=Form(default=model_field.default, description=model_field.description),
                     annotation=model_field.annotation,
@@ -64,7 +64,7 @@ def as_form(cls: Type[BaseModel]):
         else:
             new_parameters.append(
                 inspect.Parameter(
-                    model_field.alias,
+                    field_name,
                     inspect.Parameter.POSITIONAL_ONLY,
                     default=Form(..., description=model_field.description),
                     annotation=model_field.annotation,

@@ -1,14 +1,11 @@
 import re
-from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.alias_generators import to_camel
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Union
 from exceptions.exception import ModelValidatorException
 from module_admin.entity.vo.menu_vo import MenuModel
 
 
 class UserLogin(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     user_name: str = Field(description='用户名称')
     password: str = Field(description='用户密码')
     code: Optional[str] = Field(default=None, description='验证码')
@@ -18,8 +15,6 @@ class UserLogin(BaseModel):
 
 
 class UserRegister(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     username: str = Field(description='用户名称')
     password: str = Field(description='用户密码')
     confirm_password: str = Field(description='用户二次确认密码')
@@ -41,8 +36,6 @@ class Token(BaseModel):
 
 
 class CaptchaCode(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     captcha_enabled: bool = Field(description='是否启用验证码')
     register_enabled: bool = Field(description='是否启用注册')
     img: str = Field(description='验证码图片')
@@ -61,8 +54,6 @@ class MenuTreeModel(MenuModel):
 
 
 class MetaModel(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     title: Optional[str] = Field(default=None, description='设置路由在侧边栏和面包屑中展示的名字')
     icon: Optional[str] = Field(default=None, description='设置路由的图标')
     no_cache: Optional[bool] = Field(default=None, description='设置为true，则不会被 <keep-alive>缓存')
@@ -70,8 +61,6 @@ class MetaModel(BaseModel):
 
 
 class RouterModel(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     name: Optional[str] = Field(default=None, description='路由名称')
     path: Optional[str] = Field(default=None, description='路由地址')
     hidden: Optional[bool] = Field(default=None, description='是否隐藏路由，当设置 true 的时候该路由不会再侧边栏出现')

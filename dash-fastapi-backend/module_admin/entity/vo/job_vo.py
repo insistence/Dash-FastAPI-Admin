@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
 from pydantic_validation_decorator import NotBlank, Size
 from typing import Literal, Optional
 from module_admin.annotation.pydantic_annotation import as_form, as_query
@@ -11,7 +10,7 @@ class JobModel(BaseModel):
     定时任务调度表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     job_id: Optional[int] = Field(default=None, description='任务ID')
     job_name: Optional[str] = Field(default=None, description='任务名称')
@@ -52,7 +51,7 @@ class JobLogModel(BaseModel):
     定时任务调度日志表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     job_log_id: Optional[int] = Field(default=None, description='任务日志ID')
     job_name: Optional[str] = Field(default=None, description='任务名称')
@@ -101,8 +100,6 @@ class DeleteJobModel(BaseModel):
     删除定时任务模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     job_ids: str = Field(description='需要删除的定时任务ID')
 
 
@@ -130,7 +127,5 @@ class DeleteJobLogModel(BaseModel):
     """
     删除定时任务日志模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     job_log_ids: str = Field(description='需要删除的定时任务日志ID')

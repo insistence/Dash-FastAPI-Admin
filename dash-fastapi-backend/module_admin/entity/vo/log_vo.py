@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
 from typing import Literal, Optional
 from module_admin.annotation.pydantic_annotation import as_form, as_query
 
@@ -10,7 +9,7 @@ class OperLogModel(BaseModel):
     操作日志表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     oper_id: Optional[int] = Field(default=None, description='日志主键')
     title: Optional[str] = Field(default=None, description='模块标题')
@@ -42,7 +41,7 @@ class LogininforModel(BaseModel):
     登录日志表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     info_id: Optional[int] = Field(default=None, description='访问ID')
     user_name: Optional[str] = Field(default=None, description='用户账号')
@@ -84,8 +83,6 @@ class DeleteOperLogModel(BaseModel):
     删除操作日志模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     oper_ids: str = Field(description='需要删除的日志主键')
 
 
@@ -118,8 +115,6 @@ class DeleteLoginLogModel(BaseModel):
     删除登录日志模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     info_ids: str = Field(description='需要删除的访问ID')
 
 
@@ -127,7 +122,5 @@ class UnlockUser(BaseModel):
     """
     解锁用户模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     user_name: str = Field(description='用户名称')
