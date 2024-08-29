@@ -40,7 +40,7 @@ class ResponseUtil:
         if dict_content is not None:
             result.update(dict_content)
         if model_content is not None:
-            result.update(model_content.model_dump(by_alias=True))
+            result.update(model_content.model_dump())
 
         result.update({'success': True, 'time': datetime.now()})
 
@@ -74,7 +74,7 @@ class ResponseUtil:
         if dict_content is not None:
             result.update(dict_content)
         if model_content is not None:
-            result.update(model_content.model_dump(by_alias=True))
+            result.update(model_content.model_dump())
 
         result.update({'success': False, 'time': datetime.now()})
 
@@ -108,7 +108,7 @@ class ResponseUtil:
         if dict_content is not None:
             result.update(dict_content)
         if model_content is not None:
-            result.update(model_content.model_dump(by_alias=True))
+            result.update(model_content.model_dump())
 
         result.update({'success': False, 'time': datetime.now()})
 
@@ -142,7 +142,7 @@ class ResponseUtil:
         if dict_content is not None:
             result.update(dict_content)
         if model_content is not None:
-            result.update(model_content.model_dump(by_alias=True))
+            result.update(model_content.model_dump())
 
         result.update({'success': False, 'time': datetime.now()})
 
@@ -176,7 +176,7 @@ class ResponseUtil:
         if dict_content is not None:
             result.update(dict_content)
         if model_content is not None:
-            result.update(model_content.model_dump(by_alias=True))
+            result.update(model_content.model_dump())
 
         result.update({'success': False, 'time': datetime.now()})
 
