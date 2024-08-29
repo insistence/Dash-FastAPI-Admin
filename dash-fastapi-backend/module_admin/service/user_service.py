@@ -31,7 +31,7 @@ from module_admin.service.config_service import ConfigService
 from module_admin.service.dept_service import DeptService
 from module_admin.service.post_service import PostService
 from module_admin.service.role_service import RoleService
-from utils.common_util import CamelCaseUtil, export_list2excel, get_excel_template
+from utils.common_util import export_list2excel, get_excel_template, SqlalchemySerializeUtil
 from utils.page_util import PageResponseModel
 from utils.pwd_util import PwdUtil
 
@@ -58,7 +58,7 @@ class UserService:
         if is_page:
             user_list_result = PageResponseModel(
                 **{
-                    **query_result.model_dump(by_alias=True),
+                    **query_result.model_dump(),
                     'rows': [{**row[0], 'dept': row[1]} for row in query_result.rows],
                 }
             )
@@ -92,7 +92,9 @@ class UserService:
         :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 校验结果
         """
-        users = await UserDao.get_user_list(query_db, UserPageQueryModel(userId=user_id), data_scope_sql, is_page=False)
+        users = await UserDao.get_user_list(
+            query_db, UserPageQueryModel(user_id=user_id), data_scope_sql, is_page=False
+        )
         if users:
             return CrudResponseModel(is_success=True, message='校验通过')
         else:
@@ -108,7 +110,7 @@ class UserService:
         :return: 校验结果
         """
         user_id = -1 if page_object.user_id is None else page_object.user_id
-        user = await UserDao.get_user_by_info(query_db, UserModel(userName=page_object.user_name))
+        user = await UserDao.get_user_by_info(query_db, UserModel(user_name=page_object.user_name))
         if user and user.user_id != user_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -152,7 +154,7 @@ class UserService:
         :param page_object: 新增用户对象
         :return: 新增用户校验结果
         """
-        add_user = UserModel(**page_object.model_dump(by_alias=True))
+        add_user = UserModel(**page_object.model_dump())
         if not await cls.check_user_name_unique_services(query_db, page_object):
             raise ServiceException(message=f'新增用户{page_object.user_name}失败，登录账号已存在')
         elif page_object.phonenumber and not await cls.check_phonenumber_unique_services(query_db, page_object):
@@ -165,10 +167,10 @@ class UserService:
                 user_id = add_result.user_id
                 if page_object.role_ids:
                     for role in page_object.role_ids:
-                        await UserDao.add_user_role_dao(query_db, UserRoleModel(userId=user_id, roleId=role))
+                        await UserDao.add_user_role_dao(query_db, UserRoleModel(user_id=user_id, role_id=role))
                 if page_object.post_ids:
                     for post in page_object.post_ids:
-                        await UserDao.add_user_post_dao(query_db, UserPostModel(userId=user_id, postId=post))
+                        await UserDao.add_user_post_dao(query_db, UserPostModel(user_id=user_id, post_id=post))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='新增成功')
             except Exception as e:
@@ -203,17 +205,17 @@ class UserService:
             try:
                 await UserDao.edit_user_dao(query_db, edit_user)
                 if page_object.type != 'status' and page_object.type != 'avatar' and page_object.type != 'pwd':
-                    await UserDao.delete_user_role_dao(query_db, UserRoleModel(userId=page_object.user_id))
-                    await UserDao.delete_user_post_dao(query_db, UserPostModel(userId=page_object.user_id))
+                    await UserDao.delete_user_role_dao(query_db, UserRoleModel(user_id=page_object.user_id))
+                    await UserDao.delete_user_post_dao(query_db, UserPostModel(user_id=page_object.user_id))
                     if page_object.role_ids:
                         for role in page_object.role_ids:
                             await UserDao.add_user_role_dao(
-                                query_db, UserRoleModel(userId=page_object.user_id, roleId=role)
+                                query_db, UserRoleModel(user_id=page_object.user_id, role_id=role)
                             )
                     if page_object.post_ids:
                         for post in page_object.post_ids:
                             await UserDao.add_user_post_dao(
-                                query_db, UserPostModel(userId=page_object.user_id, postId=post)
+                                query_db, UserPostModel(user_id=page_object.user_id, post_id=post)
                             )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='更新成功')
@@ -237,7 +239,7 @@ class UserService:
             try:
                 for user_id in user_id_list:
                     user_id_dict = dict(
-                        userId=user_id, updateBy=page_object.update_by, updateTime=page_object.update_time
+                        user_id=user_id, update_by=page_object.update_by, update_time=page_object.update_time
                     )
                     await UserDao.delete_user_role_dao(query_db, UserRoleModel(**user_id_dict))
                     await UserDao.delete_user_post_dao(query_db, UserPostModel(**user_id_dict))
@@ -270,15 +272,15 @@ class UserService:
 
             return UserDetailModel(
                 data=UserInfoModel(
-                    **CamelCaseUtil.transform_result(query_user.get('user_basic_info')),
-                    postIds=post_ids,
-                    roleIds=role_ids,
-                    dept=CamelCaseUtil.transform_result(query_user.get('user_dept_info')),
-                    role=CamelCaseUtil.transform_result(query_user.get('user_role_info')),
+                    **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+                    post_ids=post_ids,
+                    role_ids=role_ids,
+                    dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
+                    role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
                 ),
-                postIds=post_ids_list,
+                post_ids=post_ids_list,
                 posts=posts,
-                roleIds=role_ids_list,
+                role_ids=role_ids_list,
                 roles=roles,
             )
 
@@ -301,14 +303,14 @@ class UserService:
 
         return UserProfileModel(
             data=UserInfoModel(
-                **CamelCaseUtil.transform_result(query_user.get('user_basic_info')),
-                postIds=post_ids,
-                roleIds=role_ids,
-                dept=CamelCaseUtil.transform_result(query_user.get('user_dept_info')),
-                role=CamelCaseUtil.transform_result(query_user.get('user_role_info')),
+                **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+                post_ids=post_ids,
+                role_ids=role_ids,
+                dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
+                role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
             ),
-            postGroup=post_group,
-            roleGroup=role_group,
+            post_group=post_group,
+            role_group=role_group,
         )
 
     @classmethod
@@ -393,37 +395,37 @@ class UserService:
                 if row['status'] == '停用':
                     row['status'] = '1'
                 add_user = UserModel(
-                    deptId=row['dept_id'],
-                    userName=row['user_name'],
+                    dept_id=row['dept_id'],
+                    user_name=row['user_name'],
                     password=PwdUtil.get_password_hash(
                         await ConfigService.query_config_list_from_cache_services(
                             request.app.state.redis, 'sys.user.initPassword'
                         )
                     ),
-                    nickName=row['nick_name'],
+                    nick_name=row['nick_name'],
                     email=row['email'],
                     phonenumber=str(row['phonenumber']),
                     sex=row['sex'],
                     status=row['status'],
-                    createBy=current_user.user.user_name,
-                    createTime=datetime.now(),
-                    updateBy=current_user.user.user_name,
-                    updateTime=datetime.now(),
+                    create_by=current_user.user.user_name,
+                    create_time=datetime.now(),
+                    update_by=current_user.user.user_name,
+                    update_time=datetime.now(),
                 )
-                user_info = await UserDao.get_user_by_info(query_db, UserModel(userName=row['user_name']))
+                user_info = await UserDao.get_user_by_info(query_db, UserModel(user_name=row['user_name']))
                 if user_info:
                     if update_support:
                         edit_user_model = UserModel(
-                            userId=user_info.user_id,
-                            deptId=row['dept_id'],
-                            userName=row['user_name'],
-                            nickName=row['nick_name'],
+                            user_id=user_info.user_id,
+                            dept_id=row['dept_id'],
+                            user_name=row['user_name'],
+                            nick_name=row['nick_name'],
                             email=row['email'],
                             phonenumber=str(row['phonenumber']),
                             sex=row['sex'],
                             status=row['status'],
-                            updateBy=current_user.user.user_name,
-                            updateTime=datetime.now(),
+                            update_by=current_user.user.user_name,
+                            update_time=datetime.now(),
                         )
                         edit_user_model.validate_fields()
                         await cls.check_user_allowed_services(edit_user_model)
@@ -477,18 +479,18 @@ class UserService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'userId': '用户编号',
-            'userName': '用户名称',
-            'nickName': '用户昵称',
-            'deptName': '部门',
+            'user_id': '用户编号',
+            'user_name': '用户名称',
+            'nick_name': '用户昵称',
+            'dept_name': '部门',
             'email': '邮箱地址',
             'phonenumber': '手机号码',
             'sex': '性别',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
@@ -525,11 +527,11 @@ class UserService:
         post_ids = ','.join([str(row.post_id) for row in query_user.get('user_post_info')])
         role_ids = ','.join([str(row.role_id) for row in query_user.get('user_role_info')])
         user = UserInfoModel(
-            **CamelCaseUtil.transform_result(query_user.get('user_basic_info')),
-            postIds=post_ids,
-            roleIds=role_ids,
-            dept=CamelCaseUtil.transform_result(query_user.get('user_dept_info')),
-            role=CamelCaseUtil.transform_result(query_user.get('user_role_info')),
+            **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+            post_ids=post_ids,
+            role_ids=role_ids,
+            dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
+            role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
         )
         query_role_list = [
             SelectedRoleModel(**row) for row in await RoleService.get_role_select_option_services(query_db)
@@ -554,9 +556,13 @@ class UserService:
         if page_object.user_id and page_object.role_ids:
             role_id_list = page_object.role_ids.split(',')
             try:
-                await UserDao.delete_user_role_by_user_and_role_dao(query_db, UserRoleModel(userId=page_object.user_id))
+                await UserDao.delete_user_role_by_user_and_role_dao(
+                    query_db, UserRoleModel(user_id=page_object.user_id)
+                )
                 for role_id in role_id_list:
-                    await UserDao.add_user_role_dao(query_db, UserRoleModel(userId=page_object.user_id, roleId=role_id))
+                    await UserDao.add_user_role_dao(
+                        query_db, UserRoleModel(user_id=page_object.user_id, role_id=role_id)
+                    )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='分配成功')
             except Exception as e:
@@ -564,7 +570,9 @@ class UserService:
                 raise e
         elif page_object.user_id and not page_object.role_ids:
             try:
-                await UserDao.delete_user_role_by_user_and_role_dao(query_db, UserRoleModel(userId=page_object.user_id))
+                await UserDao.delete_user_role_by_user_and_role_dao(
+                    query_db, UserRoleModel(user_id=page_object.user_id)
+                )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='分配成功')
             except Exception as e:
@@ -575,13 +583,13 @@ class UserService:
             try:
                 for user_id in user_id_list:
                     user_role = await cls.detail_user_role_services(
-                        query_db, UserRoleModel(userId=user_id, roleId=page_object.role_id)
+                        query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
                     )
                     if user_role:
                         continue
                     else:
                         await UserDao.add_user_role_dao(
-                            query_db, UserRoleModel(userId=user_id, roleId=page_object.role_id)
+                            query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
                         )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='新增成功')
@@ -604,7 +612,7 @@ class UserService:
             if page_object.user_id and page_object.role_id:
                 try:
                     await UserDao.delete_user_role_by_user_and_role_dao(
-                        query_db, UserRoleModel(userId=page_object.user_id, roleId=page_object.role_id)
+                        query_db, UserRoleModel(user_id=page_object.user_id, role_id=page_object.role_id)
                     )
                     await query_db.commit()
                     return CrudResponseModel(is_success=True, message='删除成功')
@@ -616,7 +624,7 @@ class UserService:
                 try:
                     for user_id in user_id_list:
                         await UserDao.delete_user_role_by_user_and_role_dao(
-                            query_db, UserRoleModel(userId=user_id, roleId=page_object.role_id)
+                            query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
                         )
                     await query_db.commit()
                     return CrudResponseModel(is_success=True, message='删除成功')

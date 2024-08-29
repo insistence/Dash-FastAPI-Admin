@@ -41,7 +41,7 @@ class ServerService:
         os_arch = platform.machine()
         user_dir = os.path.abspath(os.getcwd())
         sys = SysInfo(
-            computerIp=computer_ip, computerName=computer_name, osArch=os_arch, osName=os_name, userDir=user_dir
+            computer_ip=computer_ip, computer_name=computer_name, os_arch=os_arch, os_name=os_name, user_dir=user_dir
         )
 
         # python解释器信息
@@ -66,8 +66,8 @@ class ServerService:
         py = PyInfo(
             name=python_name,
             version=python_version,
-            startTime=start_time,
-            runTime=run_time,
+            start_time=start_time,
+            run_time=run_time,
             home=python_home,
             total=bytes2human(memory_info.available),
             used=bytes2human(current_process_memory_info.rss),
@@ -81,9 +81,9 @@ class ServerService:
         for i in io:
             o = psutil.disk_usage(i.device)
             disk_data = SysFiles(
-                dirName=i.device,
-                sysTypeName=i.fstype,
-                typeName='本地固定磁盘（' + i.mountpoint.replace('\\', '') + '）',
+                dir_name=i.device,
+                sys_type_name=i.fstype,
+                type_name='本地固定磁盘（' + i.mountpoint.replace('\\', '') + '）',
                 total=bytes2human(o.total),
                 used=bytes2human(o.used),
                 free=bytes2human(o.free),
@@ -91,6 +91,6 @@ class ServerService:
             )
             sys_files.append(disk_data)
 
-        result = ServerMonitorModel(cpu=cpu, mem=mem, sys=sys, py=py, sysFiles=sys_files)
+        result = ServerMonitorModel(cpu=cpu, mem=mem, sys=sys, py=py, sys_files=sys_files)
 
         return result

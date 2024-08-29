@@ -62,7 +62,7 @@ class JobLogService:
             job_log_id_list = page_object.job_log_ids.split(',')
             try:
                 for job_log_id in job_log_id_list:
-                    await JobLogDao.delete_job_log_dao(query_db, JobLogModel(jobLogId=job_log_id))
+                    await JobLogDao.delete_job_log_dao(query_db, JobLogModel(job_log_id=job_log_id))
                 await query_db.commit()
                 result = dict(is_success=True, message='删除成功')
             except Exception as e:
@@ -101,31 +101,31 @@ class JobLogService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'jobLogId': '任务日志编码',
-            'jobName': '任务名称',
-            'jobGroup': '任务组名',
-            'jobExecutor': '任务执行器',
-            'invokeTarget': '调用目标字符串',
-            'jobArgs': '位置参数',
-            'jobKwargs': '关键字参数',
-            'jobTrigger': '任务触发器',
-            'jobMessage': '日志信息',
+            'job_log_id': '任务日志编码',
+            'job_name': '任务名称',
+            'job_group': '任务组名',
+            'job_executor': '任务执行器',
+            'invoke_target': '调用目标字符串',
+            'job_args': '位置参数',
+            'job_kwargs': '关键字参数',
+            'job_trigger': '任务触发器',
+            'job_message': '日志信息',
             'status': '执行状态',
-            'exceptionInfo': '异常信息',
-            'createTime': '创建时间',
+            'exception_info': '异常信息',
+            'create_time': '创建时间',
         }
 
         data = job_log_list
         job_group_list = await DictDataService.query_dict_data_list_from_cache_services(
             request.app.state.redis, dict_type='sys_job_group'
         )
-        job_group_option = [dict(label=item.get('dictLabel'), value=item.get('dictValue')) for item in job_group_list]
+        job_group_option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in job_group_list]
         job_group_option_dict = {item.get('value'): item for item in job_group_option}
         job_executor_list = await DictDataService.query_dict_data_list_from_cache_services(
             request.app.state.redis, dict_type='sys_job_executor'
         )
         job_executor_option = [
-            dict(label=item.get('dictLabel'), value=item.get('dictValue')) for item in job_executor_list
+            dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in job_executor_list
         ]
         job_executor_option_dict = {item.get('value'): item for item in job_executor_option}
 
@@ -134,10 +134,10 @@ class JobLogService:
                 item['status'] = '正常'
             else:
                 item['status'] = '暂停'
-            if str(item.get('jobGroup')) in job_group_option_dict.keys():
-                item['jobGroup'] = job_group_option_dict.get(str(item.get('jobGroup'))).get('label')
-            if str(item.get('jobExecutor')) in job_executor_option_dict.keys():
-                item['jobExecutor'] = job_executor_option_dict.get(str(item.get('jobExecutor'))).get('label')
+            if str(item.get('job_group')) in job_group_option_dict.keys():
+                item['job_group'] = job_group_option_dict.get(str(item.get('job_group'))).get('label')
+            if str(item.get('job_executor')) in job_executor_option_dict.keys():
+                item['job_executor'] = job_executor_option_dict.get(str(item.get('job_executor'))).get('label')
         new_data = [
             {mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data
         ]

@@ -40,9 +40,9 @@ class CommonService:
             return CrudResponseModel(
                 is_success=True,
                 result=UploadResponseModel(
-                    fileName=f'{UploadConfig.UPLOAD_PREFIX}/{relative_path}/{filename}',
-                    newFileName=filename,
-                    originalFilename=file.filename,
+                    file_name=f'{UploadConfig.UPLOAD_PREFIX}/{relative_path}/{filename}',
+                    new_fileName=filename,
+                    original_filename=file.filename,
                     url=f'{request.base_url}{UploadConfig.UPLOAD_PREFIX[1:]}/{relative_path}/{filename}',
                 ),
                 message='上传成功',

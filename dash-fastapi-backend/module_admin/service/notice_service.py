@@ -4,7 +4,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.notice_dao import NoticeDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.notice_vo import DeleteNoticeModel, NoticeModel, NoticePageQueryModel
-from utils.common_util import CamelCaseUtil
+from utils.common_util import SqlalchemySerializeUtil
 
 
 class NoticeService:
@@ -101,7 +101,7 @@ class NoticeService:
             notice_id_list = page_object.notice_ids.split(',')
             try:
                 for notice_id in notice_id_list:
-                    await NoticeDao.delete_notice_dao(query_db, NoticeModel(noticeId=notice_id))
+                    await NoticeDao.delete_notice_dao(query_db, NoticeModel(notice_id=notice_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -121,7 +121,7 @@ class NoticeService:
         """
         notice = await NoticeDao.get_notice_detail_by_id(query_db, notice_id=notice_id)
         if notice:
-            result = NoticeModel(**CamelCaseUtil.transform_result(notice))
+            result = NoticeModel(**SqlalchemySerializeUtil.serialize_result(notice))
         else:
             result = NoticeModel(**dict())
 

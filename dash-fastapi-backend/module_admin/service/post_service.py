@@ -5,7 +5,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.post_dao import PostDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.post_vo import DeletePostModel, PostModel, PostPageQueryModel
-from utils.common_util import CamelCaseUtil, export_list2excel
+from utils.common_util import export_list2excel, SqlalchemySerializeUtil
 
 
 class PostService:
@@ -39,7 +39,7 @@ class PostService:
         :return: 校验结果
         """
         post_id = -1 if page_object.post_id is None else page_object.post_id
-        post = await PostDao.get_post_detail_by_info(query_db, PostModel(postName=page_object.post_name))
+        post = await PostDao.get_post_detail_by_info(query_db, PostModel(post_name=page_object.post_name))
         if post and post.post_id != post_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -54,7 +54,7 @@ class PostService:
         :return: 校验结果
         """
         post_id = -1 if page_object.post_id is None else page_object.post_id
-        post = await PostDao.get_post_detail_by_info(query_db, PostModel(postCode=page_object.post_code))
+        post = await PostDao.get_post_detail_by_info(query_db, PostModel(post_code=page_object.post_code))
         if post and post.post_id != post_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -124,7 +124,7 @@ class PostService:
                     post = await cls.post_detail_services(query_db, int(post_id))
                     if (await PostDao.count_user_post_dao(query_db, int(post_id))) > 0:
                         raise ServiceException(message=f'{post.post_name}已分配，不能删除')
-                    await PostDao.delete_post_dao(query_db, PostModel(postId=post_id))
+                    await PostDao.delete_post_dao(query_db, PostModel(post_id=post_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -144,7 +144,7 @@ class PostService:
         """
         post = await PostDao.get_post_detail_by_id(query_db, post_id=post_id)
         if post:
-            result = PostModel(**CamelCaseUtil.transform_result(post))
+            result = PostModel(**SqlalchemySerializeUtil.serialize_result(post))
         else:
             result = PostModel(**dict())
 
@@ -160,15 +160,15 @@ class PostService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'postId': '岗位编号',
-            'postCode': '岗位编码',
-            'postName': '岗位名称',
-            'postSort': '显示顺序',
+            'post_id': '岗位编号',
+            'post_code': '岗位编码',
+            'post_name': '岗位名称',
+            'post_sort': '显示顺序',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 

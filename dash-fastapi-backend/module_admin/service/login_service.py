@@ -19,7 +19,7 @@ from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.login_vo import MenuTreeModel, MetaModel, RouterModel, SmsCode, UserLogin, UserRegister
 from module_admin.entity.vo.user_vo import AddUserModel, CurrentUserModel, ResetUserModel, TokenData, UserInfoModel
 from module_admin.service.user_service import UserService
-from utils.common_util import CamelCaseUtil
+from utils.common_util import SqlalchemySerializeUtil
 from utils.log_util import logger
 from utils.message_util import message_service
 from utils.pwd_util import PwdUtil
@@ -247,11 +247,11 @@ class LoginService:
                 permissions=permissions,
                 roles=roles,
                 user=UserInfoModel(
-                    **CamelCaseUtil.transform_result(query_user.get('user_basic_info')),
+                    **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
                     postIds=post_ids,
                     roleIds=role_ids,
-                    dept=CamelCaseUtil.transform_result(query_user.get('user_dept_info')),
-                    role=CamelCaseUtil.transform_result(query_user.get('user_role_info')),
+                    dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
+                    role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
                 ),
             )
             return current_user
@@ -279,7 +279,7 @@ class LoginService:
         )
         menus = cls.__generate_menus(0, user_router_menu)
         user_router = cls.__generate_user_router_menu(menus)
-        return [router.model_dump(exclude_unset=True, by_alias=True) for router in user_router]
+        return [router.model_dump(exclude_unset=True) for router in user_router]
 
     @classmethod
     def __generate_menus(cls, pid: int, permission_list: List[SysMenu]):
@@ -294,7 +294,7 @@ class LoginService:
         for permission in permission_list:
             if permission.parent_id == pid:
                 children = cls.__generate_menus(permission.menu_id, permission_list)
-                menu_list_data = MenuTreeModel(**CamelCaseUtil.transform_result(permission))
+                menu_list_data = MenuTreeModel(**SqlalchemySerializeUtil.serialize_result(permission))
                 if children:
                     menu_list_data.children = children
                 menu_list.append(menu_list_data)
@@ -320,7 +320,7 @@ class LoginService:
                 meta=MetaModel(
                     title=permission.menu_name,
                     icon=permission.icon,
-                    noCache=True if permission.is_cache == 1 else False,
+                    no_cache=True if permission.is_cache == 1 else False,
                     link=permission.path if RouterUtil.is_http(permission.path) else None,
                 ),
             )
@@ -339,7 +339,7 @@ class LoginService:
                     meta=MetaModel(
                         title=permission.menu_name,
                         icon=permission.icon,
-                        noCache=True if permission.is_cache == 1 else False,
+                        no_cache=True if permission.is_cache == 1 else False,
                         link=permission.path if RouterUtil.is_http(permission.path) else None,
                     ),
                     query=permission.query,
@@ -401,8 +401,8 @@ class LoginService:
                     elif user_register.code != str(captcha_value):
                         raise ServiceException(message='验证码错误')
                 add_user = AddUserModel(
-                    userName=user_register.username,
-                    nickName=user_register.username,
+                    user_name=user_register.username,
+                    nick_name=user_register.username,
                     password=PwdUtil.get_password_hash(user_register.password),
                 )
                 result = await UserService.add_user_services(query_db, add_user)

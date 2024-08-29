@@ -8,7 +8,7 @@ from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.menu_vo import DeleteMenuModel, MenuQueryModel, MenuModel
 from module_admin.entity.vo.role_vo import RoleMenuQueryModel
 from module_admin.entity.vo.user_vo import CurrentUserModel
-from utils.common_util import CamelCaseUtil
+from utils.common_util import SqlalchemySerializeUtil
 from utils.string_util import StringUtil
 
 
@@ -52,7 +52,7 @@ class MenuService:
         role = await RoleDao.get_role_detail_by_id(query_db, role_id)
         role_menu_list = await RoleDao.get_role_menu_dao(query_db, role)
         checked_keys = [row.menu_id for row in role_menu_list]
-        result = RoleMenuQueryModel(menus=menu_tree_result, checkedKeys=checked_keys)
+        result = RoleMenuQueryModel(menus=menu_tree_result, checked_keys=checked_keys)
 
         return result
 
@@ -72,7 +72,7 @@ class MenuService:
             query_db, page_object, current_user.user.user_id, current_user.user.role
         )
 
-        return CamelCaseUtil.transform_result(menu_list_result)
+        return SqlalchemySerializeUtil.serialize_result(menu_list_result)
 
     @classmethod
     async def check_menu_name_unique_services(cls, query_db: AsyncSession, page_object: MenuModel):
@@ -84,7 +84,7 @@ class MenuService:
         :return: 校验结果
         """
         menu_id = -1 if page_object.menu_id is None else page_object.menu_id
-        menu = await MenuDao.get_menu_detail_by_info(query_db, MenuModel(menuName=page_object.menu_name))
+        menu = await MenuDao.get_menu_detail_by_info(query_db, MenuModel(menu_name=page_object.menu_name))
         if menu and menu.menu_id != menu_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -157,7 +157,7 @@ class MenuService:
                         raise ServiceWarning(message='存在子菜单,不允许删除')
                     elif (await MenuDao.check_menu_exist_role_dao(query_db, int(menu_id))) > 0:
                         raise ServiceWarning(message='菜单已分配,不允许删除')
-                    await MenuDao.delete_menu_dao(query_db, MenuModel(menuId=menu_id))
+                    await MenuDao.delete_menu_dao(query_db, MenuModel(menu_id=menu_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -177,7 +177,7 @@ class MenuService:
         """
         menu = await MenuDao.get_menu_detail_by_id(query_db, menu_id=menu_id)
         if menu:
-            result = MenuModel(**CamelCaseUtil.transform_result(menu))
+            result = MenuModel(**SqlalchemySerializeUtil.serialize_result(menu))
         else:
             result = MenuModel(**dict())
 
@@ -192,7 +192,7 @@ class MenuService:
         :return: 菜单树形嵌套数据
         """
         permission_list = [
-            dict(id=item.menu_id, label=item.menu_name, parentId=item.parent_id) for item in permission_list
+            dict(id=item.menu_id, label=item.menu_name, parent_id=item.parent_id) for item in permission_list
         ]
         # 转成id为key的字典
         mapping: dict = dict(zip([i['id'] for i in permission_list], permission_list))
@@ -202,7 +202,7 @@ class MenuService:
 
         for d in permission_list:
             # 如果找不到父级项，则是根节点
-            parent: dict = mapping.get(d['parentId'])
+            parent: dict = mapping.get(d['parent_id'])
             if parent is None:
                 container.append(d)
             else:

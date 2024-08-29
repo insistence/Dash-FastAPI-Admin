@@ -15,7 +15,7 @@ from module_admin.entity.vo.role_vo import (
 from module_admin.entity.vo.user_vo import UserInfoModel, UserRolePageQueryModel
 from module_admin.dao.role_dao import RoleDao
 from module_admin.dao.user_dao import UserDao
-from utils.common_util import CamelCaseUtil, export_list2excel
+from utils.common_util import export_list2excel, SqlalchemySerializeUtil
 from utils.page_util import PageResponseModel
 
 
@@ -34,7 +34,7 @@ class RoleService:
         """
         role_list_result = await RoleDao.get_role_select_option_dao(query_db)
 
-        return CamelCaseUtil.transform_result(role_list_result)
+        return SqlalchemySerializeUtil.serialize_result(role_list_result)
 
     @classmethod
     async def get_role_dept_tree_services(cls, query_db: AsyncSession, role_id: int):
@@ -48,7 +48,7 @@ class RoleService:
         role = await cls.role_detail_services(query_db, role_id)
         role_dept_list = await RoleDao.get_role_dept_dao(query_db, role)
         checked_keys = [row.dept_id for row in role_dept_list]
-        result = RoleDeptQueryModel(checkedKeys=checked_keys)
+        result = RoleDeptQueryModel(checked_keys=checked_keys)
 
         return result
 
@@ -96,7 +96,7 @@ class RoleService:
         if role_id_list:
             for role_id in role_id_list:
                 roles = await RoleDao.get_role_list(
-                    query_db, RolePageQueryModel(roleId=int(role_id)), data_scope_sql, is_page=False
+                    query_db, RolePageQueryModel(role_id=int(role_id)), data_scope_sql, is_page=False
                 )
                 if roles:
                     continue
@@ -113,7 +113,7 @@ class RoleService:
         :return: 校验结果
         """
         role_id = -1 if page_object.role_id is None else page_object.role_id
-        role = await RoleDao.get_role_by_info(query_db, RoleModel(roleName=page_object.role_name))
+        role = await RoleDao.get_role_by_info(query_db, RoleModel(role_name=page_object.role_name))
         if role and role.role_id != role_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -128,7 +128,7 @@ class RoleService:
         :return: 校验结果
         """
         role_id = -1 if page_object.role_id is None else page_object.role_id
-        role = await RoleDao.get_role_by_info(query_db, RoleModel(roleKey=page_object.role_key))
+        role = await RoleDao.get_role_by_info(query_db, RoleModel(role_key=page_object.role_key))
         if role and role.role_id != role_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -142,7 +142,7 @@ class RoleService:
         :param page_object: 新增角色对象
         :return: 新增角色校验结果
         """
-        add_role = RoleModel(**page_object.model_dump(by_alias=True))
+        add_role = RoleModel(**page_object.model_dump())
         if not await cls.check_role_name_unique_services(query_db, page_object):
             raise ServiceException(message=f'新增角色{page_object.post_name}失败，角色名称已存在')
         elif not await cls.check_role_key_unique_services(query_db, page_object):
@@ -153,7 +153,7 @@ class RoleService:
                 role_id = add_result.role_id
                 if page_object.menu_ids:
                     for menu in page_object.menu_ids:
-                        await RoleDao.add_role_menu_dao(query_db, RoleMenuModel(roleId=role_id, menuId=menu))
+                        await RoleDao.add_role_menu_dao(query_db, RoleMenuModel(role_id=role_id, menu_id=menu))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='新增成功')
             except Exception as e:
@@ -184,11 +184,11 @@ class RoleService:
             try:
                 await RoleDao.edit_role_dao(query_db, edit_role)
                 if page_object.type != 'status':
-                    await RoleDao.delete_role_menu_dao(query_db, RoleMenuModel(roleId=page_object.role_id))
+                    await RoleDao.delete_role_menu_dao(query_db, RoleMenuModel(role_id=page_object.role_id))
                     if page_object.menu_ids:
                         for menu in page_object.menu_ids:
                             await RoleDao.add_role_menu_dao(
-                                query_db, RoleMenuModel(roleId=page_object.role_id, menuId=menu)
+                                query_db, RoleMenuModel(role_id=page_object.role_id, menu_id=menu)
                             )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='更新成功')
@@ -212,11 +212,11 @@ class RoleService:
         if role_info.role_id:
             try:
                 await RoleDao.edit_role_dao(query_db, edit_role)
-                await RoleDao.delete_role_dept_dao(query_db, RoleDeptModel(roleId=page_object.role_id))
+                await RoleDao.delete_role_dept_dao(query_db, RoleDeptModel(role_id=page_object.role_id))
                 if page_object.dept_ids and page_object.data_scope == '2':
                     for dept in page_object.dept_ids:
                         await RoleDao.add_role_dept_dao(
-                            query_db, RoleDeptModel(roleId=page_object.role_id, deptId=dept)
+                            query_db, RoleDeptModel(role_id=page_object.role_id, dept_id=dept)
                         )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='分配成功')
@@ -243,7 +243,7 @@ class RoleService:
                     if (await RoleDao.count_user_role_dao(query_db, int(role_id))) > 0:
                         raise ServiceException(message=f'角色{role.role_name}已分配,不能删除')
                     role_id_dict = dict(
-                        roleId=role_id, updateBy=page_object.update_by, updateTime=page_object.update_time
+                        role_id=role_id, update_by=page_object.update_by, update_time=page_object.update_time
                     )
                     await RoleDao.delete_role_menu_dao(query_db, RoleMenuModel(**role_id_dict))
                     await RoleDao.delete_role_dept_dao(query_db, RoleDeptModel(**role_id_dict))
@@ -267,7 +267,7 @@ class RoleService:
         """
         role = await RoleDao.get_role_detail_by_id(query_db, role_id=role_id)
         if role:
-            result = RoleModel(**CamelCaseUtil.transform_result(role))
+            result = RoleModel(**SqlalchemySerializeUtil.serialize_result(role))
         else:
             result = RoleModel(**dict())
 
@@ -283,15 +283,15 @@ class RoleService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'roleId': '角色编号',
-            'roleName': '角色名称',
-            'roleKey': '权限字符',
-            'roleSort': '显示顺序',
+            'role_id': '角色编号',
+            'role_name': '角色名称',
+            'role_key': '权限字符',
+            'role_sort': '显示顺序',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
@@ -327,7 +327,7 @@ class RoleService:
         )
         allocated_list = PageResponseModel(
             **{
-                **query_user_list.model_dump(by_alias=True),
+                **query_user_list.model_dump(),
                 'rows': [UserInfoModel(**row) for row in query_user_list.rows],
             }
         )
@@ -352,7 +352,7 @@ class RoleService:
         )
         unallocated_list = PageResponseModel(
             **{
-                **query_user_list.model_dump(by_alias=True),
+                **query_user_list.model_dump(),
                 'rows': [UserInfoModel(**row) for row in query_user_list.rows],
             }
         )

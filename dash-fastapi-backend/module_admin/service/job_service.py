@@ -8,7 +8,7 @@ from module_admin.dao.job_dao import JobDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.job_vo import DeleteJobModel, EditJobModel, JobModel, JobPageQueryModel
 from module_admin.service.dict_service import DictDataService
-from utils.common_util import CamelCaseUtil, export_list2excel
+from utils.common_util import export_list2excel, SqlalchemySerializeUtil
 from utils.cron_util import CronUtil
 from utils.string_util import StringUtil
 
@@ -175,7 +175,7 @@ class JobService:
             job_id_list = page_object.job_ids.split(',')
             try:
                 for job_id in job_id_list:
-                    await JobDao.delete_job_dao(query_db, JobModel(jobId=job_id))
+                    await JobDao.delete_job_dao(query_db, JobModel(job_id=job_id))
                     query_job = SchedulerUtil.get_scheduler_job(job_id=job_id)
                     if query_job:
                         SchedulerUtil.remove_scheduler_job(job_id=job_id)
@@ -198,7 +198,7 @@ class JobService:
         """
         job = await JobDao.get_job_detail_by_id(query_db, job_id=job_id)
         if job:
-            result = JobModel(**CamelCaseUtil.transform_result(job))
+            result = JobModel(**SqlalchemySerializeUtil.serialize_result(job))
         else:
             result = JobModel(**dict())
 
@@ -215,21 +215,21 @@ class JobService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'jobId': '任务编码',
-            'jobName': '任务名称',
-            'jobGroup': '任务组名',
-            'jobExecutor': '任务执行器',
-            'invokeTarget': '调用目标字符串',
-            'jobArgs': '位置参数',
-            'jobKwargs': '关键字参数',
-            'cronExpression': 'cron执行表达式',
-            'misfirePolicy': '计划执行错误策略',
+            'job_id': '任务编码',
+            'job_name': '任务名称',
+            'job_group': '任务组名',
+            'job_executor': '任务执行器',
+            'invoke_target': '调用目标字符串',
+            'job_args': '位置参数',
+            'job_kwargs': '关键字参数',
+            'cron_expression': 'cron执行表达式',
+            'misfire_policy': '计划执行错误策略',
             'concurrent': '是否并发执行',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
@@ -237,13 +237,13 @@ class JobService:
         job_group_list = await DictDataService.query_dict_data_list_from_cache_services(
             request.app.state.redis, dict_type='sys_job_group'
         )
-        job_group_option = [dict(label=item.get('dictLabel'), value=item.get('dictValue')) for item in job_group_list]
+        job_group_option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in job_group_list]
         job_group_option_dict = {item.get('value'): item for item in job_group_option}
         job_executor_list = await DictDataService.query_dict_data_list_from_cache_services(
             request.app.state.redis, dict_type='sys_job_executor'
         )
         job_executor_option = [
-            dict(label=item.get('dictLabel'), value=item.get('dictValue')) for item in job_executor_list
+            dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in job_executor_list
         ]
         job_executor_option_dict = {item.get('value'): item for item in job_executor_option}
 
@@ -252,16 +252,16 @@ class JobService:
                 item['status'] = '正常'
             else:
                 item['status'] = '暂停'
-            if str(item.get('jobGroup')) in job_group_option_dict.keys():
-                item['jobGroup'] = job_group_option_dict.get(str(item.get('jobGroup'))).get('label')
-            if str(item.get('jobExecutor')) in job_executor_option_dict.keys():
-                item['jobExecutor'] = job_executor_option_dict.get(str(item.get('jobExecutor'))).get('label')
-            if item.get('misfirePolicy') == '1':
-                item['misfirePolicy'] = '立即执行'
-            elif item.get('misfirePolicy') == '2':
-                item['misfirePolicy'] = '执行一次'
+            if str(item.get('job_group')) in job_group_option_dict.keys():
+                item['job_group'] = job_group_option_dict.get(str(item.get('job_group'))).get('label')
+            if str(item.get('job_executor')) in job_executor_option_dict.keys():
+                item['job_executor'] = job_executor_option_dict.get(str(item.get('job_executor'))).get('label')
+            if item.get('misfire_policy') == '1':
+                item['misfire_policy'] = '立即执行'
+            elif item.get('misfire_policy') == '2':
+                item['misfire_policy'] = '执行一次'
             else:
-                item['misfirePolicy'] = '放弃执行'
+                item['misfire_policy'] = '放弃执行'
             if item.get('concurrent') == '0':
                 item['concurrent'] = '允许'
             else:

@@ -15,7 +15,7 @@ from module_admin.entity.vo.dict_vo import (
     DictTypeModel,
     DictTypePageQueryModel,
 )
-from utils.common_util import CamelCaseUtil, export_list2excel
+from utils.common_util import export_list2excel, SqlalchemySerializeUtil
 
 
 class DictTypeService:
@@ -50,7 +50,7 @@ class DictTypeService:
         """
         dict_id = -1 if page_object.dict_id is None else page_object.dict_id
         dict_type = await DictTypeDao.get_dict_type_detail_by_info(
-            query_db, DictTypeModel(dictType=page_object.dict_type)
+            query_db, DictTypeModel(dict_type=page_object.dict_type)
         )
         if dict_type and dict_type.dict_id != dict_id:
             return CommonConstant.NOT_UNIQUE
@@ -97,20 +97,20 @@ class DictTypeService:
                 raise ServiceException(message=f'修改字典{page_object.dict_name}失败，字典类型已存在')
             else:
                 try:
-                    query_dict_data = DictDataPageQueryModel(dictType=dict_type_info.dict_type)
+                    query_dict_data = DictDataPageQueryModel(dict_type=dict_type_info.dict_type)
                     dict_data_list = await DictDataDao.get_dict_data_list(query_db, query_dict_data, is_page=False)
                     if dict_type_info.dict_type != page_object.dict_type:
                         for dict_data in dict_data_list:
                             edit_dict_data = DictDataModel(
-                                dictCode=dict_data.dict_code,
-                                dictType=page_object.dict_type,
-                                updateBy=page_object.update_by,
+                                dict_code=dict_data.dict_code,
+                                dict_type=page_object.dict_type,
+                                update_by=page_object.update_by,
                             ).model_dump(exclude_unset=True)
                             await DictDataDao.edit_dict_data_dao(query_db, edit_dict_data)
                     await DictTypeDao.edit_dict_type_dao(query_db, edit_dict_type)
                     await query_db.commit()
                     if dict_type_info.dict_type != page_object.dict_type:
-                        dict_data = [CamelCaseUtil.transform_result(row) for row in dict_data_list if row]
+                        dict_data = [SqlalchemySerializeUtil.serialize_result(row) for row in dict_data_list if row]
                         await request.app.state.redis.set(
                             f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
                             json.dumps(dict_data, ensure_ascii=False, default=str),
@@ -142,7 +142,7 @@ class DictTypeService:
                     dict_type_into = await cls.dict_type_detail_services(query_db, int(dict_id))
                     if (await DictDataDao.count_dict_data_dao(query_db, dict_type_into.dict_type)) > 0:
                         raise ServiceException(message=f'{dict_type_into.dict_name}已分配，不能删除')
-                    await DictTypeDao.delete_dict_type_dao(query_db, DictTypeModel(dictId=int(dict_id)))
+                    await DictTypeDao.delete_dict_type_dao(query_db, DictTypeModel(dict_id=int(dict_id)))
                     delete_dict_type_list.append(f'{RedisInitKeyConfig.SYS_DICT.key}:{dict_type_into.dict_type}')
                 await query_db.commit()
                 if delete_dict_type_list:
@@ -165,7 +165,7 @@ class DictTypeService:
         """
         dict_type = await DictTypeDao.get_dict_type_detail_by_id(query_db, dict_id=dict_id)
         if dict_type:
-            result = DictTypeModel(**CamelCaseUtil.transform_result(dict_type))
+            result = DictTypeModel(**SqlalchemySerializeUtil.serialize_result(dict_type))
         else:
             result = DictTypeModel(**dict())
 
@@ -181,14 +181,14 @@ class DictTypeService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'dictId': '字典编号',
-            'dictName': '字典名称',
-            'dictType': '字典类型',
+            'dict_id': '字典编号',
+            'dict_name': '字典名称',
+            'dict_type': '字典类型',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
@@ -273,7 +273,7 @@ class DictDataService:
         for dict_type_obj in [item for item in dict_type_all if item.status == '0']:
             dict_type = dict_type_obj.dict_type
             dict_data_list = await DictDataDao.query_dict_data_list(query_db, dict_type)
-            dict_data = [CamelCaseUtil.transform_result(row) for row in dict_data_list if row]
+            dict_data = [SqlalchemySerializeUtil.serialize_result(row) for row in dict_data_list if row]
             await redis.set(
                 f'{RedisInitKeyConfig.SYS_DICT.key}:{dict_type}',
                 json.dumps(dict_data, ensure_ascii=False, default=str),
@@ -293,7 +293,7 @@ class DictDataService:
         if dict_data_list_result:
             result = json.loads(dict_data_list_result)
 
-        return CamelCaseUtil.transform_result(result)
+        return SqlalchemySerializeUtil.serialize_result(result)
 
     @classmethod
     async def check_dict_data_unique_services(cls, query_db: AsyncSession, page_object: DictDataModel):
@@ -331,7 +331,9 @@ class DictDataService:
                 dict_data_list = await cls.query_dict_data_list_services(query_db, page_object.dict_type)
                 await request.app.state.redis.set(
                     f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
-                    json.dumps(CamelCaseUtil.transform_result(dict_data_list), ensure_ascii=False, default=str),
+                    json.dumps(
+                        SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                    ),
                 )
                 return CrudResponseModel(is_success=True, message='新增成功')
             except Exception as e:
@@ -362,7 +364,9 @@ class DictDataService:
                     dict_data_list = await cls.query_dict_data_list_services(query_db, page_object.dict_type)
                     await request.app.state.redis.set(
                         f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
-                        json.dumps(CamelCaseUtil.transform_result(dict_data_list), ensure_ascii=False, default=str),
+                        json.dumps(
+                            SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                        ),
                     )
                     return CrudResponseModel(is_success=True, message='更新成功')
                 except Exception as e:
@@ -389,14 +393,16 @@ class DictDataService:
                 delete_dict_type_list = []
                 for dict_code in dict_code_list:
                     dict_data = await cls.dict_data_detail_services(query_db, int(dict_code))
-                    await DictDataDao.delete_dict_data_dao(query_db, DictDataModel(dictCode=dict_code))
+                    await DictDataDao.delete_dict_data_dao(query_db, DictDataModel(dict_code=dict_code))
                     delete_dict_type_list.append(dict_data.dict_type)
                 await query_db.commit()
                 for dict_type in list(set(delete_dict_type_list)):
                     dict_data_list = await cls.query_dict_data_list_services(query_db, dict_type)
                     await request.app.state.redis.set(
                         f'{RedisInitKeyConfig.SYS_DICT.key}:{dict_type}',
-                        json.dumps(CamelCaseUtil.transform_result(dict_data_list), ensure_ascii=False, default=str),
+                        json.dumps(
+                            SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                        ),
                     )
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -416,7 +422,7 @@ class DictDataService:
         """
         dict_data = await DictDataDao.get_dict_data_detail_by_id(query_db, dict_code=dict_code)
         if dict_data:
-            result = DictDataModel(**CamelCaseUtil.transform_result(dict_data))
+            result = DictDataModel(**SqlalchemySerializeUtil.serialize_result(dict_data))
         else:
             result = DictDataModel(**dict())
 
@@ -432,19 +438,19 @@ class DictDataService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'dictCode': '字典编码',
-            'dictSort': '字典标签',
-            'dictLabel': '字典键值',
-            'dictValue': '字典排序',
-            'dictType': '字典类型',
-            'cssClass': '样式属性',
-            'listClass': '表格回显样式',
-            'isDefault': '是否默认',
+            'dict_code': '字典编码',
+            'dict_sort': '字典标签',
+            'dict_label': '字典键值',
+            'dict_value': '字典排序',
+            'dict_type': '字典类型',
+            'css_class': '样式属性',
+            'list_class': '表格回显样式',
+            'is_default': '是否默认',
             'status': '状态',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
@@ -455,10 +461,10 @@ class DictDataService:
                 item['status'] = '正常'
             else:
                 item['status'] = '停用'
-            if item.get('isDefault') == 'Y':
-                item['isDefault'] = '是'
+            if item.get('is_default') == 'Y':
+                item['is_default'] = '是'
             else:
-                item['isDefault'] = '否'
+                item['is_default'] = '否'
         new_data = [
             {mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data
         ]

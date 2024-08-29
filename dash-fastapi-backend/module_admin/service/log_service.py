@@ -68,7 +68,7 @@ class OperationLogService:
             oper_id_list = page_object.oper_ids.split(',')
             try:
                 for oper_id in oper_id_list:
-                    await OperationLogDao.delete_operation_log_dao(query_db, OperLogModel(operId=oper_id))
+                    await OperationLogDao.delete_operation_log_dao(query_db, OperLogModel(oper_id=oper_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -104,22 +104,22 @@ class OperationLogService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'operId': '日志编号',
+            'oper_id': '日志编号',
             'title': '系统模块',
-            'businessType': '操作类型',
+            'business_type': '操作类型',
             'method': '方法名称',
-            'requestMethod': '请求方式',
-            'operName': '操作人员',
-            'deptName': '部门名称',
-            'operUrl': '请求URL',
-            'operIp': '操作地址',
-            'operLocation': '操作地点',
-            'operParam': '请求参数',
-            'jsonResult': '返回参数',
+            'request_method': '请求方式',
+            'oper_name': '操作人员',
+            'dept_name': '部门名称',
+            'oper_url': '请求URL',
+            'oper_ip': '操作地址',
+            'oper_location': '操作地点',
+            'oper_param': '请求参数',
+            'json_result': '返回参数',
             'status': '操作状态',
             'error_msg': '错误消息',
-            'operTime': '操作日期',
-            'costTime': '消耗时间（毫秒）',
+            'oper_time': '操作日期',
+            'cost_time': '消耗时间（毫秒）',
         }
 
         data = operation_log_list
@@ -127,7 +127,7 @@ class OperationLogService:
             request.app.state.redis, dict_type='sys_oper_type'
         )
         operation_type_option = [
-            dict(label=item.get('dictLabel'), value=item.get('dictValue')) for item in operation_type_list
+            dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in operation_type_list
         ]
         operation_type_option_dict = {item.get('value'): item for item in operation_type_option}
 
@@ -136,8 +136,8 @@ class OperationLogService:
                 item['status'] = '成功'
             else:
                 item['status'] = '失败'
-            if str(item.get('businessType')) in operation_type_option_dict.keys():
-                item['businessType'] = operation_type_option_dict.get(str(item.get('businessType'))).get('label')
+            if str(item.get('business_type')) in operation_type_option_dict.keys():
+                item['business_type'] = operation_type_option_dict.get(str(item.get('business_type'))).get('label')
 
         new_data = [
             {mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data
@@ -198,7 +198,7 @@ class LoginLogService:
             info_id_list = page_object.info_ids.split(',')
             try:
                 for info_id in info_id_list:
-                    await LoginLogDao.delete_login_log_dao(query_db, LogininforModel(infoId=info_id))
+                    await LoginLogDao.delete_login_log_dao(query_db, LogininforModel(info_id=info_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -242,15 +242,15 @@ class LoginLogService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'infoId': '访问编号',
-            'userName': '用户名称',
+            'info_id': '访问编号',
+            'user_name': '用户名称',
             'ipaddr': '登录地址',
-            'loginLocation': '登录地点',
+            'login_location': '登录地点',
             'browser': '浏览器',
             'os': '操作系统',
             'status': '登录状态',
             'msg': '操作信息',
-            'loginTime': '登录日期',
+            'login_time': '登录日期',
         }
 
         data = login_log_list

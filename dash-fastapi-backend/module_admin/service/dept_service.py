@@ -4,7 +4,7 @@ from exceptions.exception import ServiceException, ServiceWarning
 from module_admin.dao.dept_dao import DeptDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.dept_vo import DeleteDeptModel, DeptModel
-from utils.common_util import CamelCaseUtil
+from utils.common_util import SqlalchemySerializeUtil
 
 
 class DeptService:
@@ -41,7 +41,7 @@ class DeptService:
         """
         dept_list_result = await DeptDao.get_dept_info_for_edit_option(query_db, page_object, data_scope_sql)
 
-        return CamelCaseUtil.transform_result(dept_list_result)
+        return SqlalchemySerializeUtil.serialize_result(dept_list_result)
 
     @classmethod
     async def get_dept_list_services(cls, query_db: AsyncSession, page_object: DeptModel, data_scope_sql: str):
@@ -55,7 +55,7 @@ class DeptService:
         """
         dept_list_result = await DeptDao.get_dept_list(query_db, page_object, data_scope_sql)
 
-        return CamelCaseUtil.transform_result(dept_list_result)
+        return SqlalchemySerializeUtil.serialize_result(dept_list_result)
 
     @classmethod
     async def check_dept_data_scope_services(cls, query_db: AsyncSession, dept_id: int, data_scope_sql: str):
@@ -67,7 +67,7 @@ class DeptService:
         :param data_scope_sql: 数据权限对应的查询sql语句
         :return: 校验结果
         """
-        depts = await DeptDao.get_dept_list(query_db, DeptModel(deptId=dept_id), data_scope_sql)
+        depts = await DeptDao.get_dept_list(query_db, DeptModel(dept_id=dept_id), data_scope_sql)
         if depts:
             return CrudResponseModel(is_success=True, message='校验通过')
         else:
@@ -84,7 +84,7 @@ class DeptService:
         """
         dept_id = -1 if page_object.dept_id is None else page_object.dept_id
         dept = await DeptDao.get_dept_detail_by_info(
-            query_db, DeptModel(deptName=page_object.dept_name, parentId=page_object.parent_id)
+            query_db, DeptModel(dept_name=page_object.dept_name, parent_id=page_object.parent_id)
         )
         if dept and dept.dept_id != dept_id:
             return CommonConstant.NOT_UNIQUE
@@ -171,7 +171,7 @@ class DeptService:
                     elif (await DeptDao.count_dept_user_dao(query_db, int(dept_id))) > 0:
                         raise ServiceWarning(message='部门存在用户,不允许删除')
 
-                    await DeptDao.delete_dept_dao(query_db, DeptModel(deptId=dept_id))
+                    await DeptDao.delete_dept_dao(query_db, DeptModel(dept_id=dept_id))
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='删除成功')
             except Exception as e:
@@ -191,7 +191,7 @@ class DeptService:
         """
         dept = await DeptDao.get_dept_detail_by_id(query_db, dept_id=dept_id)
         if dept:
-            result = DeptModel(**CamelCaseUtil.transform_result(dept))
+            result = DeptModel(**SqlalchemySerializeUtil.serialize_result(dept))
         else:
             result = DeptModel(**dict())
 
@@ -206,7 +206,7 @@ class DeptService:
         :return: 部门树形嵌套数据
         """
         permission_list = [
-            dict(id=item.dept_id, label=item.dept_name, parentId=item.parent_id) for item in permission_list
+            dict(id=item.dept_id, label=item.dept_name, parent_id=item.parent_id) for item in permission_list
         ]
         # 转成id为key的字典
         mapping: dict = dict(zip([i['id'] for i in permission_list], permission_list))
@@ -216,7 +216,7 @@ class DeptService:
 
         for d in permission_list:
             # 如果找不到父级项，则是根节点
-            parent: dict = mapping.get(d['parentId'])
+            parent: dict = mapping.get(d['parent_id'])
             if parent is None:
                 container.append(d)
             else:

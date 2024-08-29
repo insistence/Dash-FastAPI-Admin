@@ -7,7 +7,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.config_dao import ConfigDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.config_vo import ConfigModel, ConfigPageQueryModel, DeleteConfigModel
-from utils.common_util import CamelCaseUtil, export_list2excel
+from utils.common_util import export_list2excel, SqlalchemySerializeUtil
 
 
 class ConfigService:
@@ -75,7 +75,7 @@ class ConfigService:
         :return: 校验结果
         """
         config_id = -1 if page_object.config_id is None else page_object.config_id
-        config = await ConfigDao.get_config_detail_by_info(query_db, ConfigModel(configKey=page_object.config_key))
+        config = await ConfigDao.get_config_detail_by_info(query_db, ConfigModel(config_key=page_object.config_key))
         if config and config.config_id != config_id:
             return CommonConstant.NOT_UNIQUE
         return CommonConstant.UNIQUE
@@ -156,7 +156,7 @@ class ConfigService:
                     if config_info.config_type == CommonConstant.YES:
                         raise ServiceException(message=f'内置参数{config_info.config_key}不能删除')
                     else:
-                        await ConfigDao.delete_config_dao(query_db, ConfigModel(configId=int(config_id)))
+                        await ConfigDao.delete_config_dao(query_db, ConfigModel(config_id=int(config_id)))
                         delete_config_key_list.append(f'{RedisInitKeyConfig.SYS_CONFIG.key}:{config_info.config_key}')
                 await query_db.commit()
                 if delete_config_key_list:
@@ -179,7 +179,7 @@ class ConfigService:
         """
         config = await ConfigDao.get_config_detail_by_id(query_db, config_id=config_id)
         if config:
-            result = ConfigModel(**CamelCaseUtil.transform_result(config))
+            result = ConfigModel(**SqlalchemySerializeUtil.serialize_result(config))
         else:
             result = ConfigModel(**dict())
 
@@ -195,25 +195,25 @@ class ConfigService:
         """
         # 创建一个映射字典，将英文键映射到中文键
         mapping_dict = {
-            'configId': '参数主键',
-            'configName': '参数名称',
-            'configKey': '参数键名',
-            'configValue': '参数键值',
-            'configType': '系统内置',
-            'createBy': '创建者',
-            'createTime': '创建时间',
-            'updateBy': '更新者',
-            'updateTime': '更新时间',
+            'config_id': '参数主键',
+            'config_name': '参数名称',
+            'config_key': '参数键名',
+            'config_value': '参数键值',
+            'config_type': '系统内置',
+            'create_by': '创建者',
+            'create_time': '创建时间',
+            'update_by': '更新者',
+            'update_time': '更新时间',
             'remark': '备注',
         }
 
         data = config_list
 
         for item in data:
-            if item.get('configType') == 'Y':
-                item['configType'] = '是'
+            if item.get('config_type') == 'Y':
+                item['config_type'] = '是'
             else:
-                item['configType'] = '否'
+                item['config_type'] = '否'
         new_data = [
             {mapping_dict.get(key): value for key, value in item.items() if mapping_dict.get(key)} for item in data
         ]
