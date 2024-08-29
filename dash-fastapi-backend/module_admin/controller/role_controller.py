@@ -158,7 +158,7 @@ async def query_detail_system_role(
     role_detail_result = await RoleService.role_detail_services(query_db, role_id)
     logger.info(f'获取role_id为{role_id}的信息成功')
 
-    return ResponseUtil.success(data=role_detail_result.model_dump(by_alias=True))
+    return ResponseUtil.success(data=role_detail_result.model_dump())
 
 
 @roleController.post('/export', dependencies=[Depends(CheckUserInterfaceAuth('system:role:export'))])
