@@ -8,6 +8,7 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 from sqlalchemy.engine.row import Row
 from typing import List
+from config.database import Base
 from config.env import CachePathConfig
 
 
@@ -36,6 +37,44 @@ def worship():
 //             佛祖保佑       永不宕机      永无BUG                 //
 ////////////////////////////////////////////////////////////////////
     """)
+
+
+class SqlalchemySerializeUtil:
+    """
+    sqlalchemy查询结果序列化工具类
+    """
+
+    @classmethod
+    def __to_dict(cls, obj: Base):
+        """
+        将sqlalchemy模型对象转换为字典
+
+        :param obj: sqlalchemy模型对象
+        :return: 字典结果
+        """
+        base_dict = obj.__dict__
+        base_dict.pop('_sa_instance_state', None)
+
+        return base_dict
+
+    @classmethod
+    def serialize_result(cls, result):
+        """
+        将sqlalchemy查询结果序列化
+
+        :param result: sqlalchemy查询结果
+        :return: 序列化结果
+        """
+        if isinstance(result, Base):
+            return cls.__to_dict(result)
+        elif isinstance(result, list):
+            return [cls.serialize_result(row) for row in result]
+        elif isinstance(result, Row):
+            if all([isinstance(row, Base) for row in result]):
+                return [cls.__to_dict(row) for row in result]
+            else:
+                return result._asdict()
+        return result
 
 
 class CamelCaseUtil:
