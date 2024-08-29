@@ -1,18 +1,15 @@
 import math
 from pydantic import BaseModel, ConfigDict
-from pydantic.alias_generators import to_camel
 from sqlalchemy import func, select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
-from utils.common_util import CamelCaseUtil
+from utils.common_util import SqlalchemySerializeUtil
 
 
 class PageResponseModel(BaseModel):
     """
     列表分页查询返回模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     rows: List = []
     page_num: Optional[int] = None
@@ -45,7 +42,7 @@ class PageUtil:
         has_next = True if math.ceil(len(data_list) / page_size) > page_num else False
 
         result = PageResponseModel(
-            rows=paginated_data, pageNum=page_num, pageSize=page_size, total=len(data_list), hasNext=has_next
+            rows=paginated_data, page_num=page_num, page_size=page_size, total=len(data_list), has_next=has_next
         )
 
         return result
@@ -73,11 +70,11 @@ class PageUtil:
                     paginated_data.append(row)
             has_next = math.ceil(total / page_size) > page_num
             result = PageResponseModel(
-                rows=CamelCaseUtil.transform_result(paginated_data),
-                pageNum=page_num,
-                pageSize=page_size,
+                rows=SqlalchemySerializeUtil.serialize_result(paginated_data),
+                page_num=page_num,
+                page_size=page_size,
                 total=total,
-                hasNext=has_next,
+                has_next=has_next,
             )
         else:
             query_result = await db.execute(query)
@@ -87,7 +84,7 @@ class PageUtil:
                     no_paginated_data.append(row[0])
                 else:
                     no_paginated_data.append(row)
-            result = CamelCaseUtil.transform_result(no_paginated_data)
+            result = SqlalchemySerializeUtil.serialize_result(no_paginated_data)
 
         return result
 
@@ -110,7 +107,7 @@ def get_page_obj(data_list: List, page_num: int, page_size: int):
     has_next = True if math.ceil(len(data_list) / page_size) > page_num else False
 
     result = PageResponseModel(
-        rows=paginated_data, pageNum=page_num, pageSize=page_size, total=len(data_list), hasNext=has_next
+        rows=paginated_data, page_num=page_num, page_size=page_size, total=len(data_list), has_next=has_next
     )
 
     return result
