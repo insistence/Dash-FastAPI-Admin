@@ -31,7 +31,7 @@ from module_admin.service.config_service import ConfigService
 from module_admin.service.dept_service import DeptService
 from module_admin.service.post_service import PostService
 from module_admin.service.role_service import RoleService
-from utils.common_util import export_list2excel, get_excel_template, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, get_excel_template, SqlalchemyUtil
 from utils.page_util import PageResponseModel
 from utils.pwd_util import PwdUtil
 
@@ -272,11 +272,11 @@ class UserService:
 
             return UserDetailModel(
                 data=UserInfoModel(
-                    **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+                    **SqlalchemyUtil.serialize_result(query_user.get('user_basic_info')),
                     post_ids=post_ids,
                     role_ids=role_ids,
-                    dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
-                    role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
+                    dept=SqlalchemyUtil.serialize_result(query_user.get('user_dept_info')),
+                    role=SqlalchemyUtil.serialize_result(query_user.get('user_role_info')),
                 ),
                 post_ids=post_ids_list,
                 posts=posts,
@@ -303,11 +303,11 @@ class UserService:
 
         return UserProfileModel(
             data=UserInfoModel(
-                **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+                **SqlalchemyUtil.serialize_result(query_user.get('user_basic_info')),
                 post_ids=post_ids,
                 role_ids=role_ids,
-                dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
-                role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
+                dept=SqlalchemyUtil.serialize_result(query_user.get('user_dept_info')),
+                role=SqlalchemyUtil.serialize_result(query_user.get('user_role_info')),
             ),
             post_group=post_group,
             role_group=role_group,
@@ -527,11 +527,11 @@ class UserService:
         post_ids = ','.join([str(row.post_id) for row in query_user.get('user_post_info')])
         role_ids = ','.join([str(row.role_id) for row in query_user.get('user_role_info')])
         user = UserInfoModel(
-            **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+            **SqlalchemyUtil.serialize_result(query_user.get('user_basic_info')),
             post_ids=post_ids,
             role_ids=role_ids,
-            dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
-            role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
+            dept=SqlalchemyUtil.serialize_result(query_user.get('user_dept_info')),
+            role=SqlalchemyUtil.serialize_result(query_user.get('user_role_info')),
         )
         query_role_list = [
             SelectedRoleModel(**row) for row in await RoleService.get_role_select_option_services(query_db)

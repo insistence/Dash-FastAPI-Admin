@@ -8,7 +8,7 @@ from module_admin.dao.job_dao import JobDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.job_vo import DeleteJobModel, EditJobModel, JobModel, JobPageQueryModel
 from module_admin.service.dict_service import DictDataService
-from utils.common_util import export_list2excel, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, SqlalchemyUtil
 from utils.cron_util import CronUtil
 from utils.string_util import StringUtil
 
@@ -198,7 +198,7 @@ class JobService:
         """
         job = await JobDao.get_job_detail_by_id(query_db, job_id=job_id)
         if job:
-            result = JobModel(**SqlalchemySerializeUtil.serialize_result(job))
+            result = JobModel(**SqlalchemyUtil.serialize_result(job))
         else:
             result = JobModel(**dict())
 

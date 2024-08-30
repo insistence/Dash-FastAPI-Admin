@@ -8,7 +8,7 @@ from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.menu_vo import DeleteMenuModel, MenuQueryModel, MenuModel
 from module_admin.entity.vo.role_vo import RoleMenuQueryModel
 from module_admin.entity.vo.user_vo import CurrentUserModel
-from utils.common_util import SqlalchemySerializeUtil
+from utils.common_util import SqlalchemyUtil
 from utils.string_util import StringUtil
 
 
@@ -72,7 +72,7 @@ class MenuService:
             query_db, page_object, current_user.user.user_id, current_user.user.role
         )
 
-        return SqlalchemySerializeUtil.serialize_result(menu_list_result)
+        return SqlalchemyUtil.serialize_result(menu_list_result)
 
     @classmethod
     async def check_menu_name_unique_services(cls, query_db: AsyncSession, page_object: MenuModel):
@@ -177,7 +177,7 @@ class MenuService:
         """
         menu = await MenuDao.get_menu_detail_by_id(query_db, menu_id=menu_id)
         if menu:
-            result = MenuModel(**SqlalchemySerializeUtil.serialize_result(menu))
+            result = MenuModel(**SqlalchemyUtil.serialize_result(menu))
         else:
             result = MenuModel(**dict())
 

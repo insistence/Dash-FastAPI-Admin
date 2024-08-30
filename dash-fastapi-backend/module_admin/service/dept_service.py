@@ -4,7 +4,7 @@ from exceptions.exception import ServiceException, ServiceWarning
 from module_admin.dao.dept_dao import DeptDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.dept_vo import DeleteDeptModel, DeptModel
-from utils.common_util import SqlalchemySerializeUtil
+from utils.common_util import SqlalchemyUtil
 
 
 class DeptService:
@@ -41,7 +41,7 @@ class DeptService:
         """
         dept_list_result = await DeptDao.get_dept_info_for_edit_option(query_db, page_object, data_scope_sql)
 
-        return SqlalchemySerializeUtil.serialize_result(dept_list_result)
+        return SqlalchemyUtil.serialize_result(dept_list_result)
 
     @classmethod
     async def get_dept_list_services(cls, query_db: AsyncSession, page_object: DeptModel, data_scope_sql: str):
@@ -55,7 +55,7 @@ class DeptService:
         """
         dept_list_result = await DeptDao.get_dept_list(query_db, page_object, data_scope_sql)
 
-        return SqlalchemySerializeUtil.serialize_result(dept_list_result)
+        return SqlalchemyUtil.serialize_result(dept_list_result)
 
     @classmethod
     async def check_dept_data_scope_services(cls, query_db: AsyncSession, dept_id: int, data_scope_sql: str):
@@ -191,7 +191,7 @@ class DeptService:
         """
         dept = await DeptDao.get_dept_detail_by_id(query_db, dept_id=dept_id)
         if dept:
-            result = DeptModel(**SqlalchemySerializeUtil.serialize_result(dept))
+            result = DeptModel(**SqlalchemyUtil.serialize_result(dept))
         else:
             result = DeptModel(**dict())
 

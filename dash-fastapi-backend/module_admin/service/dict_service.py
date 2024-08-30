@@ -15,7 +15,7 @@ from module_admin.entity.vo.dict_vo import (
     DictTypeModel,
     DictTypePageQueryModel,
 )
-from utils.common_util import export_list2excel, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, SqlalchemyUtil
 
 
 class DictTypeService:
@@ -110,7 +110,7 @@ class DictTypeService:
                     await DictTypeDao.edit_dict_type_dao(query_db, edit_dict_type)
                     await query_db.commit()
                     if dict_type_info.dict_type != page_object.dict_type:
-                        dict_data = [SqlalchemySerializeUtil.serialize_result(row) for row in dict_data_list if row]
+                        dict_data = [SqlalchemyUtil.serialize_result(row) for row in dict_data_list if row]
                         await request.app.state.redis.set(
                             f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
                             json.dumps(dict_data, ensure_ascii=False, default=str),
@@ -165,7 +165,7 @@ class DictTypeService:
         """
         dict_type = await DictTypeDao.get_dict_type_detail_by_id(query_db, dict_id=dict_id)
         if dict_type:
-            result = DictTypeModel(**SqlalchemySerializeUtil.serialize_result(dict_type))
+            result = DictTypeModel(**SqlalchemyUtil.serialize_result(dict_type))
         else:
             result = DictTypeModel(**dict())
 
@@ -273,7 +273,7 @@ class DictDataService:
         for dict_type_obj in [item for item in dict_type_all if item.status == '0']:
             dict_type = dict_type_obj.dict_type
             dict_data_list = await DictDataDao.query_dict_data_list(query_db, dict_type)
-            dict_data = [SqlalchemySerializeUtil.serialize_result(row) for row in dict_data_list if row]
+            dict_data = [SqlalchemyUtil.serialize_result(row) for row in dict_data_list if row]
             await redis.set(
                 f'{RedisInitKeyConfig.SYS_DICT.key}:{dict_type}',
                 json.dumps(dict_data, ensure_ascii=False, default=str),
@@ -293,7 +293,7 @@ class DictDataService:
         if dict_data_list_result:
             result = json.loads(dict_data_list_result)
 
-        return SqlalchemySerializeUtil.serialize_result(result)
+        return SqlalchemyUtil.serialize_result(result)
 
     @classmethod
     async def check_dict_data_unique_services(cls, query_db: AsyncSession, page_object: DictDataModel):
@@ -332,7 +332,7 @@ class DictDataService:
                 await request.app.state.redis.set(
                     f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
                     json.dumps(
-                        SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                        SqlalchemyUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
                     ),
                 )
                 return CrudResponseModel(is_success=True, message='新增成功')
@@ -365,7 +365,7 @@ class DictDataService:
                     await request.app.state.redis.set(
                         f'{RedisInitKeyConfig.SYS_DICT.key}:{page_object.dict_type}',
                         json.dumps(
-                            SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                            SqlalchemyUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
                         ),
                     )
                     return CrudResponseModel(is_success=True, message='更新成功')
@@ -401,7 +401,7 @@ class DictDataService:
                     await request.app.state.redis.set(
                         f'{RedisInitKeyConfig.SYS_DICT.key}:{dict_type}',
                         json.dumps(
-                            SqlalchemySerializeUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
+                            SqlalchemyUtil.serialize_result(dict_data_list), ensure_ascii=False, default=str
                         ),
                     )
                 return CrudResponseModel(is_success=True, message='删除成功')
@@ -422,7 +422,7 @@ class DictDataService:
         """
         dict_data = await DictDataDao.get_dict_data_detail_by_id(query_db, dict_code=dict_code)
         if dict_data:
-            result = DictDataModel(**SqlalchemySerializeUtil.serialize_result(dict_data))
+            result = DictDataModel(**SqlalchemyUtil.serialize_result(dict_data))
         else:
             result = DictDataModel(**dict())
 

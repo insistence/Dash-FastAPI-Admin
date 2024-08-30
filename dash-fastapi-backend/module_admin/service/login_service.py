@@ -19,7 +19,7 @@ from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.login_vo import MenuTreeModel, MetaModel, RouterModel, SmsCode, UserLogin, UserRegister
 from module_admin.entity.vo.user_vo import AddUserModel, CurrentUserModel, ResetUserModel, TokenData, UserInfoModel
 from module_admin.service.user_service import UserService
-from utils.common_util import SqlalchemySerializeUtil
+from utils.common_util import SqlalchemyUtil
 from utils.log_util import logger
 from utils.message_util import message_service
 from utils.pwd_util import PwdUtil
@@ -247,11 +247,11 @@ class LoginService:
                 permissions=permissions,
                 roles=roles,
                 user=UserInfoModel(
-                    **SqlalchemySerializeUtil.serialize_result(query_user.get('user_basic_info')),
+                    **SqlalchemyUtil.serialize_result(query_user.get('user_basic_info')),
                     postIds=post_ids,
                     roleIds=role_ids,
-                    dept=SqlalchemySerializeUtil.serialize_result(query_user.get('user_dept_info')),
-                    role=SqlalchemySerializeUtil.serialize_result(query_user.get('user_role_info')),
+                    dept=SqlalchemyUtil.serialize_result(query_user.get('user_dept_info')),
+                    role=SqlalchemyUtil.serialize_result(query_user.get('user_role_info')),
                 ),
             )
             return current_user
@@ -294,7 +294,7 @@ class LoginService:
         for permission in permission_list:
             if permission.parent_id == pid:
                 children = cls.__generate_menus(permission.menu_id, permission_list)
-                menu_list_data = MenuTreeModel(**SqlalchemySerializeUtil.serialize_result(permission))
+                menu_list_data = MenuTreeModel(**SqlalchemyUtil.serialize_result(permission))
                 if children:
                     menu_list_data.children = children
                 menu_list.append(menu_list_data)

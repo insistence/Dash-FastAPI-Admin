@@ -7,7 +7,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.config_dao import ConfigDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.config_vo import ConfigModel, ConfigPageQueryModel, DeleteConfigModel
-from utils.common_util import export_list2excel, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, SqlalchemyUtil
 
 
 class ConfigService:
@@ -48,8 +48,8 @@ class ConfigService:
         config_all = await ConfigDao.get_config_list(query_db, ConfigPageQueryModel(**dict()), is_page=False)
         for config_obj in config_all:
             await redis.set(
-                f"{RedisInitKeyConfig.SYS_CONFIG.key}:{config_obj.get('configKey')}",
-                config_obj.get('configValue'),
+                f"{RedisInitKeyConfig.SYS_CONFIG.key}:{config_obj.get('config_key')}",
+                config_obj.get('config_value'),
             )
 
     @classmethod
@@ -179,7 +179,7 @@ class ConfigService:
         """
         config = await ConfigDao.get_config_detail_by_id(query_db, config_id=config_id)
         if config:
-            result = ConfigModel(**SqlalchemySerializeUtil.serialize_result(config))
+            result = ConfigModel(**SqlalchemyUtil.serialize_result(config))
         else:
             result = ConfigModel(**dict())
 

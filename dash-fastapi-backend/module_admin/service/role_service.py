@@ -15,7 +15,7 @@ from module_admin.entity.vo.role_vo import (
 from module_admin.entity.vo.user_vo import UserInfoModel, UserRolePageQueryModel
 from module_admin.dao.role_dao import RoleDao
 from module_admin.dao.user_dao import UserDao
-from utils.common_util import export_list2excel, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, SqlalchemyUtil
 from utils.page_util import PageResponseModel
 
 
@@ -34,7 +34,7 @@ class RoleService:
         """
         role_list_result = await RoleDao.get_role_select_option_dao(query_db)
 
-        return SqlalchemySerializeUtil.serialize_result(role_list_result)
+        return SqlalchemyUtil.serialize_result(role_list_result)
 
     @classmethod
     async def get_role_dept_tree_services(cls, query_db: AsyncSession, role_id: int):
@@ -267,7 +267,7 @@ class RoleService:
         """
         role = await RoleDao.get_role_detail_by_id(query_db, role_id=role_id)
         if role:
-            result = RoleModel(**SqlalchemySerializeUtil.serialize_result(role))
+            result = RoleModel(**SqlalchemyUtil.serialize_result(role))
         else:
             result = RoleModel(**dict())
 

@@ -4,7 +4,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.notice_dao import NoticeDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.notice_vo import DeleteNoticeModel, NoticeModel, NoticePageQueryModel
-from utils.common_util import SqlalchemySerializeUtil
+from utils.common_util import SqlalchemyUtil
 
 
 class NoticeService:
@@ -121,7 +121,7 @@ class NoticeService:
         """
         notice = await NoticeDao.get_notice_detail_by_id(query_db, notice_id=notice_id)
         if notice:
-            result = NoticeModel(**SqlalchemySerializeUtil.serialize_result(notice))
+            result = NoticeModel(**SqlalchemyUtil.serialize_result(notice))
         else:
             result = NoticeModel(**dict())
 

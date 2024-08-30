@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select, Select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
-from utils.common_util import SqlalchemySerializeUtil
+from utils.common_util import SqlalchemyUtil
 
 
 class PageResponseModel(BaseModel):
@@ -70,7 +70,7 @@ class PageUtil:
                     paginated_data.append(row)
             has_next = math.ceil(total / page_size) > page_num
             result = PageResponseModel(
-                rows=SqlalchemySerializeUtil.serialize_result(paginated_data),
+                rows=SqlalchemyUtil.serialize_result(paginated_data),
                 page_num=page_num,
                 page_size=page_size,
                 total=total,
@@ -84,7 +84,7 @@ class PageUtil:
                     no_paginated_data.append(row[0])
                 else:
                     no_paginated_data.append(row)
-            result = SqlalchemySerializeUtil.serialize_result(no_paginated_data)
+            result = SqlalchemyUtil.serialize_result(no_paginated_data)
 
         return result
 

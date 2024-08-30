@@ -5,7 +5,7 @@ from exceptions.exception import ServiceException
 from module_admin.dao.post_dao import PostDao
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.post_vo import DeletePostModel, PostModel, PostPageQueryModel
-from utils.common_util import export_list2excel, SqlalchemySerializeUtil
+from utils.common_util import export_list2excel, SqlalchemyUtil
 
 
 class PostService:
@@ -144,7 +144,7 @@ class PostService:
         """
         post = await PostDao.get_post_detail_by_id(query_db, post_id=post_id)
         if post:
-            result = PostModel(**SqlalchemySerializeUtil.serialize_result(post))
+            result = PostModel(**SqlalchemyUtil.serialize_result(post))
         else:
             result = PostModel(**dict())
 
