@@ -16,6 +16,7 @@ from module_admin.service.login_service import LoginService
 from config.enums import BusinessType
 from config.env import AppConfig
 from exceptions.exception import LoginException, ServiceException, ServiceWarning
+from utils.log_util import logger
 from utils.response_util import ResponseUtil
 
 
@@ -116,13 +117,14 @@ class Log:
             try:
                 # 调用原始函数
                 result = await func(*args, **kwargs)
-            except LoginException as e:
+            except (LoginException, ServiceWarning) as e:
+                logger.warning(e.message)
                 result = ResponseUtil.failure(data=e.data, msg=e.message)
             except ServiceException as e:
+                logger.exception(e)
                 result = ResponseUtil.error(data=e.data, msg=e.message)
-            except ServiceWarning as e:
-                result = ResponseUtil.failure(data=e.data, msg=e.message)
             except Exception as e:
+                logger.exception(e)
                 result = ResponseUtil.error(msg=str(e))
             # 获取请求耗时
             cost_time = float(time.time() - start_time) * 100
@@ -164,8 +166,8 @@ class Log:
                 else:
                     user = kwargs.get('form_data')
                     user_name = user.username
-                    login_log['loginTime'] = oper_time
-                    login_log['userName'] = user_name
+                    login_log['login_time'] = oper_time
+                    login_log['user_name'] = user_name
                     login_log['status'] = str(status)
                     login_log['msg'] = result_dict.get('msg')
 
@@ -176,21 +178,21 @@ class Log:
                 dept_name = current_user.user.dept.dept_name if current_user.user.dept else None
                 operation_log = OperLogModel(
                     title=self.title,
-                    businessType=self.business_type,
+                    business_type=self.business_type,
                     method=func_path,
-                    requestMethod=request_method,
-                    operatorType=operator_type,
-                    operName=oper_name,
-                    deptName=dept_name,
-                    operUrl=oper_url,
-                    operIp=oper_ip,
-                    operLocation=oper_location,
-                    operParam=oper_param,
-                    jsonResult=json_result,
+                    request_method=request_method,
+                    operator_type=operator_type,
+                    oper_name=oper_name,
+                    dept_name=dept_name,
+                    oper_url=oper_url,
+                    oper_ip=oper_ip,
+                    oper_location=oper_location,
+                    oper_param=oper_param,
+                    json_result=json_result,
                     status=status,
-                    errorMsg=error_msg,
-                    operTime=oper_time,
-                    costTime=int(cost_time),
+                    error_msg=error_msg,
+                    oper_time=oper_time,
+                    cost_time=int(cost_time),
                 )
                 await OperationLogService.add_operation_log_services(query_db, operation_log)
 
