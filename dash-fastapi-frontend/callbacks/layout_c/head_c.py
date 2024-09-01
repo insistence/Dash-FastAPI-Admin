@@ -5,7 +5,7 @@ from flask import session
 from dash.dependencies import Input, Output, State
 
 from server import app
-from api.login import logout_api
+from api.login import LoginApi
 
 
 # 页首右侧个人中心选项卡回调
@@ -52,7 +52,7 @@ app.clientside_callback(
 )
 def logout_confirm(okCounts):
     if okCounts:
-        result = logout_api()
+        result = LoginApi.logout()
         if result['code'] == 200:
             session.clear()
 

@@ -8,7 +8,7 @@ def get_config_list_api(page_obj: dict):
 
 def query_config_list_api(config_key: str):
 
-    return api_request(method='get', url=f'/common/config/query/{config_key}', is_headers=False)
+    return api_request(method='get', url=f'/common/config/query/{config_key}', headers={'is_token': False})
 
 
 def add_config_api(page_obj: dict):

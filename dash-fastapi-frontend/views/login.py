@@ -6,57 +6,68 @@ from api.config import query_config_list_api
 
 
 def render_content():
-    captcha_enabled_info = query_config_list_api(config_key='sys.account.captchaEnabled')
-    forget_enabled_info = query_config_list_api(config_key='sys.account.forgetUser')
+    # captcha_enabled_info = query_config_list_api(
+    #     config_key="sys.account.captchaEnabled"
+    # )
+    # forget_enabled_info = query_config_list_api(config_key="sys.account.forgetUser")
     captcha_hidden = False
     forget_show = True
-    if captcha_enabled_info.get('code') == 200:
-        captcha_hidden = False if captcha_enabled_info.get('data') == 'true' else True
-    if forget_enabled_info.get('code') == 200:
-        forget_show = False if forget_enabled_info.get('data') == 'false' else True
+    # if captcha_enabled_info.get("code") == 200:
+    #     captcha_hidden = False if captcha_enabled_info.get("data") == "true" else True
+    # if forget_enabled_info.get("code") == 200:
+    #     forget_show = False if forget_enabled_info.get("data") == "false" else True
 
     return html.Div(
         [
-            dcc.Store(id='captcha_image-session_id-container'),
+            dcc.Store(id="captcha_image-session_id-container"),
             html.Div(
                 [
                     html.Div(
                         [
-                            fac.AntdText('HELLO', style={'color': 'rgba(255,255,255,0.8)'})
+                            fac.AntdText(
+                                "HELLO",
+                                style={
+                                    "color": "rgba(255,255,255,0.8)",
+                                    "fontSize": "60px",
+                                    "fontWeight": "500",
+                                },
+                            )
                         ],
-                        style={
-                            'fontSize': '60px',
-                            'fontWeight': '500'
-                        }
                     ),
                     html.Div(
                         [
-                            fac.AntdText('WELCOME', style={'color': 'rgba(255,255,255,0.8)'}),
+                            fac.AntdText(
+                                "WELCOME",
+                                style={
+                                    "color": "rgba(255,255,255,0.8)",
+                                    "fontSize": "60px",
+                                    "fontWeight": "500",
+                                },
+                            ),
                         ],
-                        style={
-                            'fontSize': '60px',
-                            'fontWeight': '500'
-                        }
                     ),
                     html.Div(
                         [
-                            fac.AntdText('欢迎使用通用后台管理系统', style={'color': 'rgba(255,255,255,0.8)'}),
+                            fac.AntdText(
+                                "欢迎使用通用后台管理系统",
+                                style={
+                                    "color": "rgba(255,255,255,0.8)",
+                                    "fontSize": "20px",
+                                    "fontWeight": "600",
+                                    "marginTop": "25px",
+                                },
+                            ),
                         ],
-                        style={
-                            'fontSize': '18px',
-                            'fontWeight': '600',
-                            'marginTop': '20px'
-                        }
                     ),
                 ],
                 style={
-                    'position': 'fixed',
-                    'top': '20%',
-                    'left': '26%',
-                    'width': '430px',
-                    'padding': '0px 30px',
-                    'transform': 'translateX(-50%)'
-                }
+                    "position": "fixed",
+                    "top": "20%",
+                    "left": "26%",
+                    "width": "430px",
+                    "padding": "0px 30px",
+                    "transform": "translateX(-50%)",
+                },
             ),
             fac.AntdCard(
                 [
@@ -64,27 +75,23 @@ def render_content():
                         [
                             fac.AntdFormItem(
                                 fac.AntdInput(
-                                    placeholder='请输入用户名',
-                                    id='login-username',
-                                    size='large',
-                                    prefix=fac.AntdIcon(
-                                        icon='antd-user'
-                                    ),
+                                    placeholder="请输入用户名",
+                                    id="login-username",
+                                    size="large",
+                                    prefix=fac.AntdIcon(icon="antd-user"),
                                 ),
-                                id='login-username-form-item'
+                                id="login-username-form-item",
                             ),
                             fac.AntdFormItem(
                                 fac.AntdInput(
-                                    placeholder='请输入密码',
-                                    id='login-password',
-                                    mode='password',
+                                    placeholder="请输入密码",
+                                    id="login-password",
+                                    mode="password",
                                     passwordUseMd5=True,
-                                    size='large',
-                                    prefix=fac.AntdIcon(
-                                        icon='antd-lock'
-                                    ),
+                                    size="large",
+                                    prefix=fac.AntdIcon(icon="antd-lock"),
                                 ),
-                                id='login-password-form-item'
+                                id="login-password-form-item",
                             ),
                             html.Div(
                                 [
@@ -92,120 +99,111 @@ def render_content():
                                         [
                                             fac.AntdFormItem(
                                                 fac.AntdInput(
-                                                    placeholder='请输入验证码',
-                                                    id='login-captcha',
-                                                    size='large',
+                                                    placeholder="请输入验证码",
+                                                    id="login-captcha",
+                                                    size="large",
                                                     prefix=fac.AntdIcon(
-                                                        icon='antd-check-circle'
+                                                        icon="antd-check-circle"
                                                     ),
-                                                    style={
-                                                        'width': '210px'
-                                                    }
+                                                    style={"width": "210px"},
                                                 ),
-                                                id='login-captcha-form-item'
+                                                id="login-captcha-form-item",
                                             ),
                                             fac.AntdFormItem(
                                                 html.Div(
                                                     [
                                                         fac.AntdImage(
-                                                            id='login-captcha-image',
-                                                            src='',
+                                                            id="login-captcha-image",
+                                                            src="",
                                                             height=37,
                                                             width=100,
-                                                            preview=False
+                                                            preview=False,
                                                         )
                                                     ],
-                                                    id='login-captcha-image-container',
+                                                    id="login-captcha-image-container",
                                                     n_clicks=1,
-                                                    style={
-                                                        'border': '1px solid #ccc'
-                                                    }
+                                                    style={"border": "1px solid #ccc"},
                                                 )
-                                            )
+                                            ),
                                         ],
-                                        align='end',
-                                        size=10
+                                        align="end",
+                                        size=10,
                                     ),
                                 ],
-                                id='captcha-row-container',
-                                hidden=captcha_hidden
+                                id="captcha-row-container",
+                                hidden=captcha_hidden,
                             ),
                             fac.AntdSpace(
                                 [
-                                    html.Div(id='test'),
+                                    html.Div(id="test"),
                                     fac.AntdButton(
-                                        '忘记密码',
-                                        id='forget-password-link',
-                                        type='link',
-                                        href='/forget',
-                                        target='_self'
-                                    )
+                                        "忘记密码",
+                                        id="forget-password-link",
+                                        type="link",
+                                        href="/forget",
+                                        target="_self",
+                                    ),
                                 ],
-                                align='center',
-                                size=240
-                            ) if forget_show else [],
+                                align="center",
+                                size=240,
+                            )
+                            if forget_show
+                            else [],
                             fac.AntdFormItem(
                                 fac.AntdButton(
-                                    '登录',
-                                    id='login-submit',
-                                    type='primary',
-                                    loadingChildren='登录中',
+                                    "登录",
+                                    id="login-submit",
+                                    type="primary",
+                                    loadingChildren="登录中",
                                     autoSpin=True,
                                     block=True,
-                                    size='large',
+                                    size="large",
                                 ),
-                                style={
-                                    'marginTop': '20px'
-                                }
-                            )
+                                style={"marginTop": "20px"},
+                            ),
                         ],
-                        layout='vertical',
-                        style={
-                            'width': '100%'
-                        }
+                        layout="vertical",
+                        style={"width": "100%"},
                     ),
                 ],
-                id='login-form-container',
-                title='登录',
+                id="login-form-container",
+                title="登录",
                 hoverable=True,
                 style={
-                    'position': 'fixed',
-                    'top': '16%',
-                    'left': '70%',
-                    'width': '430px',
-                    'padding': '0px 30px',
-                    'transform': 'translateX(-50%)'
-                }
+                    "position": "fixed",
+                    "top": "16%",
+                    "left": "70%",
+                    "width": "430px",
+                    "padding": "0px 30px",
+                    "transform": "translateX(-50%)",
+                },
             ),
             fac.AntdFooter(
                 html.Div(
                     fac.AntdText(
-                        '版权所有©2023 Dash-FastAPI-Admin',
-                        style={
-                            'margin': '0'
-                        }
+                        "版权所有©2023 Dash-FastAPI-Admin", style={"margin": "0"}
                     ),
                     style={
-                        'display': 'flex',
-                        'height': '100%',
-                        'justifyContent': 'center',
-                        'alignItems': 'center'
-                    }
+                        "display": "flex",
+                        "height": "100%",
+                        "justifyContent": "center",
+                        "alignItems": "center",
+                    },
                 ),
                 style={
-                    'backgroundColor': 'rgb(255 255 255 / 0%)',
-                    'height': '40px',
-                    'position': 'fixed',
-                    'bottom': 0,
-                    'left': '50%',
-                    'width': '500px',
-                    'padding': '20px 50px',
-                    'transform': 'translateX(-50%)'
-                }
+                    "backgroundColor": "rgb(255 255 255 / 0%)",
+                    "height": "40px",
+                    "position": "fixed",
+                    "bottom": 0,
+                    "left": "50%",
+                    "width": "500px",
+                    "padding": 0,
+                    "transform": "translateX(-50%)",
+                },
             ),
         ],
-        id='container',
+        id="container",
         style={
-            'height': '100vh',
-        }
+            "height": "100vh",
+        },
     )

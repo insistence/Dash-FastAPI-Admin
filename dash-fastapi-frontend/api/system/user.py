@@ -1,0 +1,201 @@
+from utils.request import api_request
+
+
+class UserApi:
+    """
+    用户管理模块相关接口
+    """
+
+    @classmethod
+    def list_user(cls, query: dict):
+        """
+        查询用户列表接口
+
+        :param query: 查询用户参数
+        :return:
+        """
+        return api_request(
+            url='/system/user/list',
+            method='get',
+            params=query,
+        )
+
+    @classmethod
+    def get_user(cls, user_id: str):
+        """
+        查询用户详情接口
+
+        :param user_id: 用户id
+        :return:
+        """
+        return api_request(
+            url=f'/system/user/{user_id}',
+            method='get',
+        )
+
+    @classmethod
+    def add_user(cls, json: dict):
+        """
+        新增用户接口
+
+        :param json: 新增用户参数
+        :return:
+        """
+        return api_request(
+            url='/system/user',
+            method='post',
+            json=json,
+        )
+
+    @classmethod
+    def update_user(cls, json: dict):
+        """
+        修改用户接口
+
+        :param json: 修改用户参数
+        :return:
+        """
+        return api_request(
+            url='/system/user',
+            method='put',
+            json=json,
+        )
+
+    @classmethod
+    def del_user(cls, user_id: str):
+        """
+        删除用户接口
+
+        :param user_id: 用户id
+        :return:
+        """
+        return api_request(
+            url=f'/system/user/{user_id}',
+            method='delete',
+        )
+
+    @classmethod
+    def export_user(cls, data: dict):
+        """
+        导出用户接口
+
+        :param data: 导出用户参数
+        :return:
+        """
+        return api_request(
+            url='/system/user/export',
+            method='post',
+            data=data,
+            stream=True,
+        )
+
+    @classmethod
+    def reset_user_pwd(cls, user_id: str, password: str):
+        """
+        用户密码重置接口
+
+        :param user_id: 用户id
+        :param password: 用户密码
+        :return:
+        """
+        return api_request(
+            url='/system/user/resetPwd',
+            method='put',
+            json=dict(user_id=user_id, password=password),
+        )
+
+    @classmethod
+    def change_user_status(cls, user_id: str, status: str):
+        """
+        用户状态修改接口
+
+        :param user_id: 用户id
+        :param password: 用户状态
+        :return:
+        """
+        return api_request(
+            url='/system/user/changeStatus',
+            method='put',
+            json=dict(user_id=user_id, status=status),
+        )
+
+    @classmethod
+    def get_user_profile(cls):
+        """
+        查询用户个人信息接口
+
+        :return:
+        """
+        return api_request(
+            url='/system/user/profile',
+            method='get',
+        )
+
+    @classmethod
+    def update_user_profile(cls, json: dict):
+        """
+        修改用户个人信息接口
+
+        :param json: 修改用户个人信息参数
+        :return:
+        """
+        return api_request(
+            url='/system/user/profile',
+            method='put',
+            json=json,
+        )
+
+    @classmethod
+    def update_user_pwd(cls, old_password: str, new_password: str):
+        """
+        用户个人密码重置接口
+
+        :param old_password: 用户旧密码
+        :param new_password: 用户新密码
+        :return:
+        """
+        return api_request(
+            url='/system/user/profile/updatePwd',
+            method='put',
+            json=dict(old_password=old_password, new_password=new_password),
+        )
+
+    @classmethod
+    def upload_avatar(cls, data: dict):
+        """
+        用户头像上传接口
+
+        :param data: 用户头像参数
+        :return:
+        """
+        return api_request(
+            url='/system/user/profile/avatar',
+            method='post',
+            data=data,
+        )
+
+    @classmethod
+    def update_auth_role(cls, json: dict):
+        """
+        保存授权角色接口
+
+        :param json: 授权角色参数
+        :return:
+        """
+        return api_request(
+            url='/system/user/authRole',
+            method='put',
+            json=json,
+        )
+
+    @classmethod
+    def dept_tree_select(cls):
+        """
+        查询部门下拉树结构接口
+
+        :return:
+        """
+        return api_request(
+            url='/system/user/deptTree',
+            method='get',
+        )

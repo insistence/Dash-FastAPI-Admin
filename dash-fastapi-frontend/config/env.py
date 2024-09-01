@@ -1,6 +1,6 @@
 import os
 import argparse
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from functools import lru_cache
 from dotenv import load_dotenv
 
@@ -18,8 +18,8 @@ class AppSettings(BaseSettings):
     app_host: str = '0.0.0.0'
     app_port: int = 8088
     app_debug: bool = True
-    app_compress_algorithm = 'br'
-    app_compress_br_level = 11
+    app_compress_algorithm: str = 'br'
+    app_compress_br_level: int = 11
 
 
 class GetConfig:

@@ -7,13 +7,17 @@ import time
 
 from server import app
 from utils.common import validate_data_not_empty
-from api.login import login_api, get_captcha_image_api
+from api.login import LoginApi
 
 
 @app.callback(
     output=dict(
-        username_form_status=Output('login-username-form-item', 'validateStatus'),
-        password_form_status=Output('login-password-form-item', 'validateStatus'),
+        username_form_status=Output(
+            'login-username-form-item', 'validateStatus'
+        ),
+        password_form_status=Output(
+            'login-password-form-item', 'validateStatus'
+        ),
         captcha_form_status=Output('login-captcha-form-item', 'validateStatus'),
         username_form_help=Output('login-username-form-item', 'help'),
         password_form_help=Output('login-password-form-item', 'help'),
@@ -21,34 +25,51 @@ from api.login import login_api, get_captcha_image_api
         image_click=Output('login-captcha-image-container', 'n_clicks'),
         submit_loading=Output('login-submit', 'loading'),
         token=Output('token-container', 'data'),
-        redirect_container=Output('redirect-container', 'children', allow_duplicate=True),
-        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+        redirect_container=Output(
+            'redirect-container', 'children', allow_duplicate=True
+        ),
+        global_message_container=Output(
+            'global-message-container', 'children', allow_duplicate=True
+        ),
     ),
-    inputs=dict(
-        nClicks=Input('login-submit', 'nClicks')
-    ),
+    inputs=dict(nClicks=Input('login-submit', 'nClicks')),
     state=dict(
         username=State('login-username', 'value'),
         password=State('login-password', 'value'),
         input_captcha=State('login-captcha', 'value'),
         session_id=State('captcha_image-session_id-container', 'data'),
         image_click=State('login-captcha-image-container', 'n_clicks'),
-        captcha_hidden=State('captcha-row-container', 'hidden')
+        captcha_hidden=State('captcha-row-container', 'hidden'),
     ),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
-def login_auth(nClicks, username, password, input_captcha, session_id, image_click, captcha_hidden):
+def login_auth(
+    nClicks,
+    username,
+    password,
+    input_captcha,
+    session_id,
+    image_click,
+    captcha_hidden,
+):
     if nClicks:
         if captcha_hidden:
             input_captcha = 'hidden'
         # 校验全部输入值是否不为空
-        if all(validate_data_not_empty(item) for item in [username, password, input_captcha]):
-
+        if all(
+            validate_data_not_empty(item)
+            for item in [username, password, input_captcha]
+        ):
             try:
-                user_params = dict(username=username, password=password, captcha=input_captcha, session_id=session_id)
-                userinfo_result = login_api(user_params)
+                user_params = dict(
+                    username=username,
+                    password=password,
+                    code=input_captcha,
+                    uuid=session_id,
+                )
+                userinfo_result = LoginApi.login(user_params)
                 if userinfo_result['code'] == 200:
-                    token = userinfo_result['data']['access_token']
+                    token = userinfo_result['token']
                     session['Authorization'] = token
                     return dict(
                         username_form_status=None,
@@ -60,12 +81,15 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         image_click=dash.no_update,
                         submit_loading=False,
                         token=token,
-                        redirect_container=dcc.Location(pathname='/', id='login-redirect'),
-                        global_message_container=fuc.FefferyFancyMessage('登录成功', type='success')
+                        redirect_container=dcc.Location(
+                            pathname='/', id='login-redirect'
+                        ),
+                        global_message_container=fuc.FefferyFancyMessage(
+                            '登录成功', type='success'
+                        ),
                     )
 
                 else:
-
                     return dict(
                         username_form_status=None,
                         password_form_status=None,
@@ -77,7 +101,9 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                         submit_loading=False,
                         token=None,
                         redirect_container=None,
-                        global_message_container=fuc.FefferyFancyMessage(userinfo_result.get('message'), type='error')
+                        global_message_container=fuc.FefferyFancyMessage(
+                            userinfo_result.get('msg'), type='error'
+                        ),
                     )
             except Exception as e:
                 print(e)
@@ -92,21 +118,35 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
                     submit_loading=False,
                     token=None,
                     redirect_container=None,
-                    global_message_container=fuc.FefferyFancyMessage('接口异常', type='error')
+                    global_message_container=fuc.FefferyFancyMessage(
+                        '接口异常', type='error'
+                    ),
                 )
 
         return dict(
-            username_form_status=None if validate_data_not_empty(username) else 'error',
-            password_form_status=None if validate_data_not_empty(password) else 'error',
-            captcha_form_status=None if validate_data_not_empty(input_captcha) else 'error',
-            username_form_help=None if validate_data_not_empty(username) else '请输入用户名！',
-            password_form_help=None if validate_data_not_empty(password) else '请输入密码！',
-            captcha_form_help=None if validate_data_not_empty(input_captcha) else '请输入验证码！',
+            username_form_status=None
+            if validate_data_not_empty(username)
+            else 'error',
+            password_form_status=None
+            if validate_data_not_empty(password)
+            else 'error',
+            captcha_form_status=None
+            if validate_data_not_empty(input_captcha)
+            else 'error',
+            username_form_help=None
+            if validate_data_not_empty(username)
+            else '请输入用户名！',
+            password_form_help=None
+            if validate_data_not_empty(password)
+            else '请输入密码！',
+            captcha_form_help=None
+            if validate_data_not_empty(input_captcha)
+            else '请输入验证码！',
             image_click=dash.no_update,
             submit_loading=False,
             token=None,
             redirect_container=None,
-            global_message_container=None
+            global_message_container=None,
         )
 
     return dict(
@@ -120,42 +160,50 @@ def login_auth(nClicks, username, password, input_captcha, session_id, image_cli
         submit_loading=dash.no_update,
         token=dash.no_update,
         redirect_container=dash.no_update,
-        global_message_container=dash.no_update
+        global_message_container=dash.no_update,
     )
 
 
 @app.callback(
-    [Output('login-captcha-image', 'src'),
-     Output('captcha_image-session_id-container', 'data'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
+    [
+        Output('login-captcha-image', 'src'),
+        Output('captcha_image-session_id-container', 'data'),
+        Output('api-check-token', 'data', allow_duplicate=True),
+        Output('global-message-container', 'children', allow_duplicate=True),
+    ],
     Input('login-captcha-image-container', 'n_clicks'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def change_login_captcha_image(captcha_click):
     if captcha_click:
         try:
-            captcha_image_info = get_captcha_image_api()
+            captcha_image_info = LoginApi.get_code_img()
             if captcha_image_info.get('code') == 200:
-                captcha_image = captcha_image_info.get('data').get('image')
-                session_id = captcha_image_info.get('data').get('session_id')
+                captcha_image = (
+                    f"data:image/gif;base64,{captcha_image_info.get('img')}"
+                )
+                session_id = captcha_image_info.get('uuid')
 
                 return [
                     captcha_image,
                     session_id,
                     dash.no_update,
-                    dash.no_update
+                    dash.no_update,
                 ]
             else:
                 return [
                     dash.no_update,
                     dash.no_update,
                     {'timestamp': time.time()},
-                    dash.no_update
+                    dash.no_update,
                 ]
         except Exception as e:
-
-            return [dash.no_update, dash.no_update, {'timestamp': time.time()}, fuc.FefferyFancyMessage('接口异常', type='error')]
+            return [
+                dash.no_update,
+                dash.no_update,
+                {'timestamp': time.time()},
+                fuc.FefferyFancyMessage('接口异常', type='error'),
+            ]
 
     return [dash.no_update] * 4
 
@@ -163,12 +211,14 @@ def change_login_captcha_image(captcha_click):
 @app.callback(
     Output('container', 'style'),
     Input('url-container', 'pathname'),
-    State('container', 'style')
+    State('container', 'style'),
 )
 def random_bg(pathname, old_style):
     return {
         **old_style,
-        'backgroundImage': 'url({})'.format(dash.get_asset_url('imgs/login-background.jpg')),
+        'backgroundImage': 'url({})'.format(
+            dash.get_asset_url('imgs/login-background.jpg')
+        ),
         'backgroundRepeat': 'no-repeat',
-        'backgroundSize': 'cover'
+        'backgroundSize': 'cover',
     }
