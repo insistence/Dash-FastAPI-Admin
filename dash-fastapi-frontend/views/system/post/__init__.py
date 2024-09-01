@@ -2,23 +2,24 @@ from dash import dcc, html
 import feffery_antd_components as fac
 
 import callbacks.system_c.post_c
-from api.post import get_post_list_api
+from api.system.post import PostApi
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
 
     post_params = dict(page_num=1, page_size=10)
-    table_info = get_post_list_api(post_params)
+    table_info = PostApi.list_post(post_params)
     table_data = []
     page_num = 1
     page_size = 10
     total = 0
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['status'] == '0':
                 item['status'] = dict(tag='正常', color='blue')
@@ -26,16 +27,12 @@ def render(*args, **kwargs):
                 item['status'] = dict(tag='停用', color='volcano')
             item['key'] = str(item['post_id'])
             item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                } if 'system:post:edit' in button_perms else {},
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'system:post:remove' in button_perms else {},
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:post:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:post:remove')
+                else {},
             ]
 
     return [
@@ -72,9 +69,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 210
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='岗位编码'
+                                                                label='岗位编码',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdInput(
@@ -84,9 +81,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 210
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='岗位名称'
+                                                                label='岗位名称',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdSelect(
@@ -95,18 +92,18 @@ def render(*args, **kwargs):
                                                                     options=[
                                                                         {
                                                                             'label': '正常',
-                                                                            'value': '0'
+                                                                            'value': '0',
                                                                         },
                                                                         {
                                                                             'label': '停用',
-                                                                            'value': '1'
-                                                                        }
+                                                                            'value': '1',
+                                                                        },
                                                                     ],
                                                                     style={
                                                                         'width': 200
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='岗位状态'
+                                                                label='岗位状态',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdButton(
@@ -115,7 +112,7 @@ def render(*args, **kwargs):
                                                                     type='primary',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-search'
-                                                                    )
+                                                                    ),
                                                                 )
                                                             ),
                                                             fac.AntdFormItem(
@@ -124,20 +121,20 @@ def render(*args, **kwargs):
                                                                     id='post-reset',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-sync'
-                                                                    )
+                                                                    ),
                                                                 )
-                                                            )
+                                                            ),
                                                         ],
                                                         style={
                                                             'paddingBottom': '10px'
-                                                        }
+                                                        },
                                                     ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='post-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -156,14 +153,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'post-operation-button',
-                                                    'index': 'add'
+                                                    'index': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:post:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:post:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -173,15 +174,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'post-operation-button',
-                                                    'index': 'edit'
+                                                    'index': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
-                                            ) if 'system:post:edit' in button_perms else [],
+                                                    'border-color': '#d0f5e0',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:post:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -191,15 +196,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'post-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'system:post:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:post:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -211,15 +220,19 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'system:post:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:post:export'
+                                            )
+                                            else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px',
-                                        }
+                                        },
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -233,10 +246,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='post-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='post-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -248,24 +261,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='post-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -323,7 +334,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -332,28 +343,32 @@ def render(*args, **kwargs):
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑岗位表单modal
         fac.AntdModal(
             [
@@ -363,126 +378,105 @@ def render(*args, **kwargs):
                             fac.AntdInput(
                                 id={
                                     'type': 'post-form-value',
-                                    'index': 'post_name'
+                                    'index': 'post_name',
                                 },
                                 placeholder='请输入岗位名称',
                                 allowClear=True,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='岗位名称',
                             required=True,
                             id={
                                 'type': 'post-form-label',
                                 'index': 'post_name',
-                                'required': True
-                            }
+                                'required': True,
+                            },
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
                                 id={
                                     'type': 'post-form-value',
-                                    'index': 'post_code'
+                                    'index': 'post_code',
                                 },
                                 placeholder='请输入岗位编码',
                                 allowClear=True,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='岗位编码',
                             required=True,
                             id={
                                 'type': 'post-form-label',
                                 'index': 'post_code',
-                                'required': True
-                            }
+                                'required': True,
+                            },
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
                                 id={
                                     'type': 'post-form-value',
-                                    'index': 'post_sort'
+                                    'index': 'post_sort',
                                 },
                                 defaultValue=0,
                                 min=0,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='岗位顺序',
                             required=True,
                             id={
                                 'type': 'post-form-label',
                                 'index': 'post_sort',
-                                'required': True
-                            }
+                                'required': True,
+                            },
                         ),
                         fac.AntdFormItem(
                             fac.AntdRadioGroup(
                                 id={
                                     'type': 'post-form-value',
-                                    'index': 'status'
+                                    'index': 'status',
                                 },
                                 options=[
-                                    {
-                                        'label': '正常',
-                                        'value': '0'
-                                    },
-                                    {
-                                        'label': '停用',
-                                        'value': '1'
-                                    },
+                                    {'label': '正常', 'value': '0'},
+                                    {'label': '停用', 'value': '1'},
                                 ],
                                 defaultValue='0',
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='岗位状态',
                             id={
                                 'type': 'post-form-label',
                                 'index': 'status',
-                                'required': False
-                            }
+                                'required': False,
+                            },
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
                                 id={
                                     'type': 'post-form-value',
-                                    'index': 'remark'
+                                    'index': 'remark',
                                 },
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='备注',
                             id={
                                 'type': 'post-form-label',
                                 'index': 'remark',
-                                'required': False
-                            }
+                                'required': False,
+                            },
                         ),
                     ],
-                    labelCol={
-                        'span': 6
-                    },
-                    wrapperCol={
-                        'span': 18
-                    }
+                    labelCol={'span': 6},
+                    wrapperCol={'span': 18},
                 )
             ],
             id='post-modal',
             mask=False,
             width=580,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除岗位二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='post-delete-text'),
@@ -490,6 +484,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]
