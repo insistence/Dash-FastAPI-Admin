@@ -29,7 +29,7 @@ class DeptApi:
         :return:
         """
         return api_request(
-            url=f'/system/dept/listexclude/{dept_id}',
+            url=f'/system/dept/list/exclude/{dept_id}',
             method='get',
         )
 
