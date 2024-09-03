@@ -20,11 +20,11 @@ def find_node_values(data, key):
 
 def find_key_by_href(data, href):
     """
-        递归查找所有包含目标键的字典，并返回该键对应的值组成的列表。
-        :param data: 待查找的树形list
-        :param href: 目标pathname
-        :return: 目标值对应的key
-        """
+    递归查找所有包含目标键的字典，并返回该键对应的值组成的列表。
+    :param data: 待查找的树形list
+    :param href: 目标pathname
+    :return: 目标值对应的key
+    """
     for item in data:
         if 'children' in item:
             result = find_key_by_href(item['children'], href)
@@ -128,7 +128,9 @@ def deal_user_menu_info(pid: int, permission_list: list):
     menu_list = []
     for permission in permission_list:
         if permission['parent_id'] == pid:
-            children = deal_user_menu_info(permission['menu_id'], permission_list)
+            children = deal_user_menu_info(
+                permission['menu_id'], permission_list
+            )
             antd_menu_list_data = {}
             if children and permission['menu_type'] == 'M':
                 antd_menu_list_data['component'] = 'SubMenu'
@@ -136,7 +138,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'key': str(permission['menu_id']),
                     'title': permission['menu_name'],
                     'icon': permission['icon'],
-                    'modules': permission['component']
+                    'modules': permission['component'],
                 }
                 antd_menu_list_data['children'] = children
             elif permission['menu_type'] == 'C':
@@ -146,7 +148,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'title': permission['menu_name'],
                     'icon': permission['icon'],
                     'href': permission['path'],
-                    'modules': permission['component']
+                    'modules': permission['component'],
                 }
                 antd_menu_list_data['button'] = children
             elif permission['menu_type'] == 'F':
@@ -154,7 +156,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                 antd_menu_list_data['props'] = {
                     'key': str(permission['menu_id']),
                     'title': permission['menu_name'],
-                    'icon': permission['icon']
+                    'icon': permission['icon'],
                 }
             elif permission['is_frame'] == 0:
                 antd_menu_list_data['component'] = 'Item'
@@ -164,7 +166,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'icon': permission['icon'],
                     'href': permission['path'],
                     'target': '_blank',
-                    'modules': 'link'
+                    'modules': 'link',
                 }
             else:
                 antd_menu_list_data['component'] = 'Item'
@@ -173,7 +175,7 @@ def deal_user_menu_info(pid: int, permission_list: list):
                     'title': permission['menu_name'],
                     'icon': permission['icon'],
                     'href': permission['path'],
-                    'modules': permission['component']
+                    'modules': permission['component'],
                 }
             menu_list.append(antd_menu_list_data)
 
@@ -206,7 +208,9 @@ def get_dept_tree(pid: int, permission_list: list):
     return dept_list
 
 
-def list_to_tree(permission_list: list, sub_id_str: str, parent_id_str: str) -> list:
+def list_to_tree(
+    permission_list: list, sub_id_str: str, parent_id_str: str
+) -> list:
     """
     工具方法：根据列表信息生成树形嵌套数据
     :param permission_list: 列表信息
@@ -215,7 +219,9 @@ def list_to_tree(permission_list: list, sub_id_str: str, parent_id_str: str) -> 
     :return: 树形嵌套数据
     """
     # 转成id为key的字典
-    mapping: dict = dict(zip([i[sub_id_str] for i in permission_list], permission_list))
+    mapping: dict = dict(
+        zip([i[sub_id_str] for i in permission_list], permission_list)
+    )
 
     # 树容器
     container: list = []
@@ -235,6 +241,54 @@ def list_to_tree(permission_list: list, sub_id_str: str, parent_id_str: str) -> 
     return container
 
 
+def list_to_tree_select(
+    permission_list: list,
+    title_str: str,
+    key_str: str,
+    value_str: str,
+    parent_id_str: str,
+) -> list:
+    """
+    工具方法：根据列表信息生成树选择器嵌套数据
+    :param permission_list: 列表信息
+    :param title_str: title字符串
+    :param key_str: key字符串
+    :param value_str: value字符串
+    :param parent_id_str: parent_id字符串
+    :return: 树形嵌套数据
+    """
+    permission_list = [
+        dict(
+            title=item[title_str],
+            key=str(item[key_str]),
+            value=str(item[value_str]),
+            parent_id=str(item[parent_id_str]),
+        )
+        for item in permission_list
+    ]
+    # 转成id为key的字典
+    mapping: dict = dict(
+        zip([i['key'] for i in permission_list], permission_list)
+    )
+
+    # 树容器
+    container: list = []
+
+    for d in permission_list:
+        # 如果找不到父级项，则是根节点
+        parent: dict = mapping.get(d['parent_id'])
+        if parent is None:
+            container.append(d)
+        else:
+            children: list = parent.get('children')
+            if not children:
+                children = []
+            children.append(d)
+            parent.update({'children': children})
+
+    return container
+
+
 def get_search_panel_data(menu_list: list):
     search_data = []
     for item in menu_list:
@@ -242,7 +296,7 @@ def get_search_panel_data(menu_list: list):
             item_dict = dict(
                 id=str(item.get('menu_id')),
                 title=item.get('menu_name'),
-                handler='() => window.open("%s", "_self")' % item.get('path')
+                handler='() => window.open("%s", "_self")' % item.get('path'),
             )
             search_data.append(item_dict)
 

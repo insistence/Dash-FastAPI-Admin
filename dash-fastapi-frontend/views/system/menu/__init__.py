@@ -1,18 +1,19 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 
-from api.menu import get_menu_list_api
+from api.system.menu import MenuApi
+from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree
 from views.system.menu.components.icon_category import render_icon
-import callbacks.system_c.menu_c.menu_c
+import callbacks.system_c.menu_c.menu_c  # noqa: F401
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
     table_data_new = []
-    table_info = get_menu_list_api({})
+    table_info = MenuApi.list_menu({})
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
+        table_data = table_info['data']
         for item in table_data:
             item['key'] = str(item['menu_id'])
             item['icon'] = [
@@ -20,41 +21,29 @@ def render(*args, **kwargs):
                     'type': 'link',
                     'icon': item['icon'],
                     'disabled': True,
-                    'style': {
-                        'color': 'rgba(0, 0, 0, 0.8)'
-                    }
+                    'style': {'color': 'rgba(0, 0, 0, 0.8)'},
                 },
             ]
             if item['status'] == '1':
                 item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    } if 'system:menu:edit' in button_perms else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    } if 'system:menu:remove' in button_perms else {},
+                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                    if PermissionManager.check_perms('system:menu:edit')
+                    else {},
+                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                    if PermissionManager.check_perms('system:menu:remove')
+                    else {},
                 ]
             else:
                 item['operation'] = [
-                    {
-                        'content': '修改',
-                        'type': 'link',
-                        'icon': 'antd-edit'
-                    } if 'system:menu:edit' in button_perms else {},
-                    {
-                        'content': '新增',
-                        'type': 'link',
-                        'icon': 'antd-plus'
-                    } if 'system:menu:add' in button_perms else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete'
-                    } if 'system:menu:remove' in button_perms else {},
+                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                    if PermissionManager.check_perms('system:menu:edit')
+                    else {},
+                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                    if PermissionManager.check_perms('system:menu:add')
+                    else {},
+                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                    if PermissionManager.check_perms('system:menu:remove')
+                    else {},
                 ]
             if item['status'] == '0':
                 item['status'] = dict(tag='正常', color='blue')
@@ -98,9 +87,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='菜单名称'
+                                                                label='菜单名称',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdSelect(
@@ -109,18 +98,18 @@ def render(*args, **kwargs):
                                                                     options=[
                                                                         {
                                                                             'label': '正常',
-                                                                            'value': '0'
+                                                                            'value': '0',
                                                                         },
                                                                         {
                                                                             'label': '停用',
-                                                                            'value': '1'
-                                                                        }
+                                                                            'value': '1',
+                                                                        },
                                                                     ],
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='菜单状态'
+                                                                label='菜单状态',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdButton(
@@ -129,7 +118,7 @@ def render(*args, **kwargs):
                                                                     type='primary',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-search'
-                                                                    )
+                                                                    ),
                                                                 )
                                                             ),
                                                             fac.AntdFormItem(
@@ -138,20 +127,20 @@ def render(*args, **kwargs):
                                                                     id='menu-reset',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-sync'
-                                                                    )
+                                                                    ),
                                                                 )
-                                                            )
+                                                            ),
                                                         ],
                                                         style={
                                                             'paddingBottom': '10px'
-                                                        }
+                                                        },
                                                     ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='menu-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     )
                                 )
                             ]
@@ -170,14 +159,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'menu-operation-button',
-                                                    'index': 'add'
+                                                    'index': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:menu:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:menu:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -189,15 +182,13 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#909399',
                                                     'background': '#f4f4f5',
-                                                    'border-color': '#d3d4d6'
-                                                }
+                                                    'border-color': '#d3d4d6',
+                                                },
                                             ),
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -211,10 +202,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='menu-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='menu-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -226,24 +217,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='menu-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -259,7 +248,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
-                                                    'hidden': True
+                                                    'hidden': True,
                                                 },
                                                 {
                                                     'dataIndex': 'menu_name',
@@ -320,7 +309,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             bordered=True,
                                             pagination={
@@ -329,21 +318,20 @@ def render(*args, **kwargs):
                                             style={
                                                 'width': '100%',
                                                 'padding-right': '10px',
-                                                'padding-bottom': '20px'
-                                            }
+                                                'padding-bottom': '20px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑菜单表单modal
         fac.AntdModal(
             [
@@ -358,9 +346,7 @@ def render(*args, **kwargs):
                                         treeData=[],
                                         defaultValue='0',
                                         treeNodeFilterProp='title',
-                                        style={
-                                            'width': 495
-                                        }
+                                        style={'width': 495},
                                     ),
                                     label='上级菜单',
                                     required=True,
@@ -368,12 +354,10 @@ def render(*args, **kwargs):
                                     labelCol={
                                         'span': 4,
                                     },
-                                    wrapperCol={
-                                        'span': 20
-                                    }
+                                    wrapperCol={'span': 20},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -381,23 +365,12 @@ def render(*args, **kwargs):
                                     fac.AntdRadioGroup(
                                         id='menu-menu_type',
                                         options=[
-                                            {
-                                                'label': '目录',
-                                                'value': 'M'
-                                            },
-                                            {
-                                                'label': '菜单',
-                                                'value': 'C'
-                                            },
-                                            {
-                                                'label': '按钮',
-                                                'value': 'F'
-                                            },
+                                            {'label': '目录', 'value': 'M'},
+                                            {'label': '菜单', 'value': 'C'},
+                                            {'label': '按钮', 'value': 'F'},
                                         ],
                                         defaultValue='M',
-                                        style={
-                                            'width': 495
-                                        }
+                                        style={'width': 495},
                                     ),
                                     label='菜单类型',
                                     required=True,
@@ -405,12 +378,10 @@ def render(*args, **kwargs):
                                     labelCol={
                                         'span': 4,
                                     },
-                                    wrapperCol={
-                                        'span': 20
-                                    }
+                                    wrapperCol={'span': 20},
                                 )
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -420,25 +391,21 @@ def render(*args, **kwargs):
                                             id='menu-icon',
                                             placeholder='点击此处选择图标',
                                             readOnly=True,
-                                            style={
-                                                'width': 495
-                                            }
+                                            style={'width': 495},
                                         ),
                                         content=render_icon(),
                                         trigger='click',
-                                        placement='bottom'
+                                        placement='bottom',
                                     ),
                                     label='菜单图标',
                                     id='menu-icon-form-item',
                                     labelCol={
                                         'span': 4,
                                     },
-                                    wrapperCol={
-                                        'span': 20
-                                    }
+                                    wrapperCol={'span': 20},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -447,9 +414,7 @@ def render(*args, **kwargs):
                                         id='menu-menu_name',
                                         placeholder='请输入菜单名称',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='菜单名称',
                                     required=True,
@@ -457,17 +422,13 @@ def render(*args, **kwargs):
                                     labelCol={
                                         'span': 8,
                                     },
-                                    wrapperCol={
-                                        'span': 16
-                                    }
+                                    wrapperCol={'span': 16},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInputNumber(
                                         id='menu-order_num',
                                         min=0,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='显示排序',
                                     required=True,
@@ -475,12 +436,10 @@ def render(*args, **kwargs):
                                     labelCol={
                                         'span': 8,
                                     },
-                                    wrapperCol={
-                                        'span': 16
-                                    }
+                                    wrapperCol={'span': 16},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         html.Div(id='content-by-menu-type'),
                     ]
@@ -490,9 +449,8 @@ def render(*args, **kwargs):
             mask=False,
             width=680,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除菜单二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='menu-delete-text'),
@@ -500,6 +458,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]
