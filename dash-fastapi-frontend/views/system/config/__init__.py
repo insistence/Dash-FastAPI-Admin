@@ -1,24 +1,25 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 
-import callbacks.system_c.config_c
-from api.config import get_config_list_api
+import callbacks.system_c.config_c  # noqa: F401
+from api.system.config import ConfigApi
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
 
     config_params = dict(page_num=1, page_size=10)
-    table_info = get_config_list_api(config_params)
+    table_info = ConfigApi.list_config(config_params)
     table_data = []
     page_num = 1
     page_size = 10
     total = 0
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['config_type'] == 'Y':
                 item['config_type'] = dict(tag='是', color='blue')
@@ -26,16 +27,12 @@ def render(*args, **kwargs):
                 item['config_type'] = dict(tag='否', color='volcano')
             item['key'] = str(item['config_id'])
             item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                } if 'system:config:edit' in button_perms else {},
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'system:config:remove' in button_perms else {},
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:config:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:config:remove')
+                else {},
             ]
 
     return [
@@ -70,10 +67,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 235
-                                                            }
+                                                            },
                                                         ),
                                                         label='参数名称',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -83,10 +82,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 235
-                                                            }
+                                                            },
                                                         ),
                                                         label='参数键名',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -95,29 +96,33 @@ def render(*args, **kwargs):
                                                             options=[
                                                                 {
                                                                     'label': '是',
-                                                                    'value': 'Y'
+                                                                    'value': 'Y',
                                                                 },
                                                                 {
                                                                     'label': '否',
-                                                                    'value': 'N'
-                                                                }
+                                                                    'value': 'N',
+                                                                },
                                                             ],
                                                             style={
                                                                 'width': 235
-                                                            }
+                                                            },
                                                         ),
                                                         label='系统内置',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='config-create_time-range',
                                                             style={
                                                                 'width': 235
-                                                            }
+                                                            },
                                                         ),
                                                         label='创建时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -126,9 +131,11 @@ def render(*args, **kwargs):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -136,16 +143,18 @@ def render(*args, **kwargs):
                                                             id='config-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='config-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -164,14 +173,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'config-operation-button',
-                                                    'index': 'add'
+                                                    'index': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:config:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:config:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -181,15 +194,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'config-operation-button',
-                                                    'index': 'edit'
+                                                    'index': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
-                                            ) if 'system:config:edit' in button_perms else [],
+                                                    'border-color': '#d0f5e0',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:config:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -199,15 +216,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'config-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'system:config:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:config:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -219,9 +240,13 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'system:config:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:config:export'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -234,15 +259,17 @@ def render(*args, **kwargs):
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
                                                     'border-color': '#ffdbdb',
-                                                    'marginRight': '10px'
-                                                }
-                                            ) if 'system:config:edit' in button_perms else [],
+                                                    'marginRight': '10px',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:config:remove'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -256,10 +283,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='config-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='config-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -271,24 +298,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='config-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -353,7 +378,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -362,28 +387,32 @@ def render(*args, **kwargs):
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑参数配置表单modal
         fac.AntdModal(
             [
@@ -396,23 +425,21 @@ def render(*args, **kwargs):
                                         fac.AntdInput(
                                             id={
                                                 'type': 'config-form-value',
-                                                'index': 'config_name'
+                                                'index': 'config_name',
                                             },
                                             placeholder='请输入参数名称',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='参数名称',
                                         required=True,
                                         id={
                                             'type': 'config-form-label',
                                             'index': 'config_name',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -423,23 +450,21 @@ def render(*args, **kwargs):
                                         fac.AntdInput(
                                             id={
                                                 'type': 'config-form-value',
-                                                'index': 'config_key'
+                                                'index': 'config_key',
                                             },
                                             placeholder='请输入参数键名',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='参数键名',
                                         required=True,
                                         id={
                                             'type': 'config-form-label',
                                             'index': 'config_key',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -450,23 +475,21 @@ def render(*args, **kwargs):
                                         fac.AntdInput(
                                             id={
                                                 'type': 'config-form-value',
-                                                'index': 'config_value'
+                                                'index': 'config_value',
                                             },
                                             placeholder='请输入参数键值',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='参数键值',
                                         required=True,
                                         id={
                                             'type': 'config-form-label',
                                             'index': 'config_value',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -477,31 +500,23 @@ def render(*args, **kwargs):
                                         fac.AntdRadioGroup(
                                             id={
                                                 'type': 'config-form-value',
-                                                'index': 'config_type'
+                                                'index': 'config_type',
                                             },
                                             options=[
-                                                {
-                                                    'label': '是',
-                                                    'value': 'Y'
-                                                },
-                                                {
-                                                    'label': '否',
-                                                    'value': 'N'
-                                                },
+                                                {'label': '是', 'value': 'Y'},
+                                                {'label': '否', 'value': 'N'},
                                             ],
                                             defaultValue='0',
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='系统内置',
                                         id={
                                             'type': 'config-form-label',
                                             'index': 'config_type',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -512,42 +527,35 @@ def render(*args, **kwargs):
                                         fac.AntdInput(
                                             id={
                                                 'type': 'config-form-value',
-                                                'index': 'remark'
+                                                'index': 'remark',
                                             },
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='备注',
                                         id={
                                             'type': 'config-form-label',
                                             'index': 'remark',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
                     ],
-                    labelCol={
-                        'span': 6
-                    },
-                    wrapperCol={
-                        'span': 18
-                    }
+                    labelCol={'span': 6},
+                    wrapperCol={'span': 18},
                 )
             ],
             id='config-modal',
             mask=False,
             width=580,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除参数配置二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='config-delete-text'),
@@ -555,6 +563,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
-        )
+            centered=True,
+        ),
     ]
