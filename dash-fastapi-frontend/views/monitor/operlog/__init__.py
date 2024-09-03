@@ -1,10 +1,10 @@
 from dash import dcc, html
 import feffery_antd_components as fac
-import json
 
-import callbacks.monitor_c.operlog_c
-from api.log import get_operation_log_list_api
-from api.dict import query_dict_data_list_api
+import callbacks.monitor_c.operlog_c  # noqa: F401
+from api.monitor.operlog import OperlogApi
+from api.system.dict.data import DictDataApi
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
@@ -12,26 +12,34 @@ def render(*args, **kwargs):
 
     option = []
     option_table = []
-    info = query_dict_data_list_api(dict_type='sys_oper_type')
+    info = DictDataApi.get_dicts(dict_type='sys_oper_type')
     if info.get('code') == 200:
         data = info.get('data')
-        option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
+        option = [
+            dict(label=item.get('dict_label'), value=item.get('dict_value'))
+            for item in data
+        ]
         option_table = [
-            dict(label=item.get('dict_label'), value=item.get('dict_value'), css_class=item.get('css_class')) for item
-            in data]
+            dict(
+                label=item.get('dict_label'),
+                value=item.get('dict_value'),
+                css_class=item.get('css_class'),
+            )
+            for item in data
+        ]
     option_dict = {item.get('value'): item for item in option_table}
 
     operation_log_params = dict(page_num=1, page_size=10)
-    table_info = get_operation_log_list_api(operation_log_params)
+    table_info = OperlogApi.list_operlog(operation_log_params)
     table_data = []
     page_num = 1
     page_size = 10
     total = 0
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['status'] == 0:
                 item['status'] = dict(tag='成功', color='blue')
@@ -39,17 +47,17 @@ def render(*args, **kwargs):
                 item['status'] = dict(tag='失败', color='volcano')
             if str(item.get('business_type')) in option_dict.keys():
                 item['business_type'] = dict(
-                    tag=option_dict.get(str(item.get('business_type'))).get('label'),
-                    color=json.loads(option_dict.get(str(item.get('business_type'))).get('css_class')).get('color')
+                    tag=option_dict.get(str(item.get('business_type'))).get(
+                        'label'
+                    ),
+                    color='blue',
                 )
             item['key'] = str(item['oper_id'])
             item['cost_time'] = f"{item['cost_time']}毫秒"
             item['operation'] = [
-                {
-                    'content': '详情',
-                    'type': 'link',
-                    'icon': 'antd-eye'
-                } if 'monitor:operlog:query' in button_perms else {},
+                {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
+                if PermissionManager.check_perms('monitor:operlog:query')
+                else {},
             ]
 
     return [
@@ -81,10 +89,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='系统模块',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -94,10 +104,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='操作人员',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -106,10 +118,12 @@ def render(*args, **kwargs):
                                                             options=option,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='类型',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -118,29 +132,33 @@ def render(*args, **kwargs):
                                                             options=[
                                                                 {
                                                                     'label': '成功',
-                                                                    'value': 0
+                                                                    'value': 0,
                                                                 },
                                                                 {
                                                                     'label': '失败',
-                                                                    'value': 1
-                                                                }
+                                                                    'value': 1,
+                                                                },
                                                             ],
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='状态',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='operation_log-oper_time-range',
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='操作时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -149,9 +167,11 @@ def render(*args, **kwargs):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -159,16 +179,18 @@ def render(*args, **kwargs):
                                                             id='operation_log-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='operation_log-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -187,15 +209,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'operation_log-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:operlog:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:operlog:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -205,14 +231,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'operation_log-operation-button',
-                                                    'index': 'clear'
+                                                    'index': 'clear',
                                                 },
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:operlog:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:operlog:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -224,15 +254,17 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'monitor:operlog:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:operlog:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -246,10 +278,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='operation_log-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='operation_log-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -261,24 +293,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='operation_log-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -357,41 +387,48 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
                                             sortOptions={
-                                                'sortDataIndexes': ['oper_name', 'oper_time'],
-                                                'multiple': False
+                                                'sortDataIndexes': [
+                                                    'oper_name',
+                                                    'oper_time',
+                                                ],
+                                                'multiple': False,
                                             },
                                             pagination={
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 操作日志明细modal
         fac.AntdModal(
             [
@@ -404,49 +441,41 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'title'
+                                                'index': 'title',
                                             }
                                         ),
                                         label='操作模块',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'title'
+                                            'index': 'title',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'oper_url'
+                                                'index': 'oper_url',
                                             }
                                         ),
                                         label='请求地址',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'oper_url'
+                                            'index': 'oper_url',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -455,49 +484,41 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'login_info'
+                                                'index': 'login_info',
                                             }
                                         ),
                                         label='登录信息',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'login_info'
+                                            'index': 'login_info',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'request_method'
+                                                'index': 'request_method',
                                             }
                                         ),
                                         label='请求方式',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'request_method'
+                                            'index': 'request_method',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -506,23 +527,19 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'method'
+                                                'index': 'method',
                                             }
                                         ),
                                         label='操作方法',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'method'
+                                            'index': 'method',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
@@ -533,23 +550,19 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'oper_param'
+                                                'index': 'oper_param',
                                             }
                                         ),
                                         label='请求参数',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'oper_param'
+                                            'index': 'oper_param',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
@@ -560,23 +573,19 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'json_result'
+                                                'index': 'json_result',
                                             }
                                         ),
                                         label='返回参数',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'json_result'
+                                            'index': 'json_result',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
@@ -587,83 +596,65 @@ def render(*args, **kwargs):
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'status'
+                                                'index': 'status',
                                             }
                                         ),
                                         label='操作状态',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'status'
+                                            'index': 'status',
                                         },
-                                        labelCol={
-                                            'span': 12
-                                        },
-                                        wrapperCol={
-                                            'span': 12
-                                        }
+                                        labelCol={'span': 12},
+                                        wrapperCol={'span': 12},
                                     ),
-                                    span=8
+                                    span=8,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'cost_time'
+                                                'index': 'cost_time',
                                             }
                                         ),
                                         label='消耗时间',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'cost_time'
+                                            'index': 'cost_time',
                                         },
-                                        labelCol={
-                                            'span': 12
-                                        },
-                                        wrapperCol={
-                                            'span': 12
-                                        }
+                                        labelCol={'span': 12},
+                                        wrapperCol={'span': 12},
                                     ),
-                                    span=6
+                                    span=6,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'operation_log-form-value',
-                                                'index': 'oper_time'
+                                                'index': 'oper_time',
                                             }
                                         ),
                                         label='操作时间',
                                         required=True,
                                         id={
                                             'type': 'operation_log-form-label',
-                                            'index': 'oper_time'
+                                            'index': 'oper_time',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=10
+                                    span=10,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                     ],
-                    labelCol={
-                        'span': 8
-                    },
-                    wrapperCol={
-                        'span': 16
-                    },
-                    style={
-                        'marginRight': '15px'
-                    }
+                    labelCol={'span': 8},
+                    wrapperCol={'span': 16},
+                    style={'marginRight': '15px'},
                 )
             ],
             id='operation_log-modal',
@@ -671,7 +662,6 @@ def render(*args, **kwargs):
             width=850,
             renderFooter=False,
         ),
-
         # 删除操作日志二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='operation_log-delete-text'),
@@ -679,6 +669,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]
