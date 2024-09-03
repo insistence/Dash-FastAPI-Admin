@@ -7,8 +7,9 @@ import uuid
 
 import callbacks.system_c.notice_c
 from config.global_config import ApiBaseUrlConfig
-from api.notice import get_notice_list_api
-from api.dict import query_dict_data_list_api
+from api.system.notice import NoticeApi
+from api.system.dict.data import DictDataApi
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
@@ -16,26 +17,34 @@ def render(*args, **kwargs):
 
     option = []
     option_table = []
-    info = query_dict_data_list_api(dict_type='sys_notice_type')
+    info = DictDataApi.get_dicts(dict_type='sys_notice_type')
     if info.get('code') == 200:
         data = info.get('data')
-        option = [dict(label=item.get('dict_label'), value=item.get('dict_value')) for item in data]
+        option = [
+            dict(label=item.get('dict_label'), value=item.get('dict_value'))
+            for item in data
+        ]
         option_table = [
-            dict(label=item.get('dict_label'), value=item.get('dict_value'), css_class=item.get('css_class')) for item
-            in data]
+            dict(
+                label=item.get('dict_label'),
+                value=item.get('dict_value'),
+                css_class=item.get('css_class'),
+            )
+            for item in data
+        ]
     option_dict = {item.get('value'): item for item in option_table}
 
     notice_params = dict(page_num=1, page_size=10)
-    table_info = get_notice_list_api(notice_params)
+    table_info = NoticeApi.list_notice(notice_params)
     table_data = []
     page_num = 1
     page_size = 10
     total = 0
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['status'] == '0':
                 item['status'] = dict(tag='正常', color='blue')
@@ -43,21 +52,19 @@ def render(*args, **kwargs):
                 item['status'] = dict(tag='关闭', color='volcano')
             if str(item.get('notice_type')) in option_dict.keys():
                 item['notice_type'] = dict(
-                    tag=option_dict.get(str(item.get('notice_type'))).get('label'),
-                    color=json.loads(option_dict.get(str(item.get('notice_type'))).get('css_class')).get('color')
+                    tag=option_dict.get(str(item.get('notice_type'))).get(
+                        'label'
+                    ),
+                    color='blue',
                 )
             item['key'] = str(item['notice_id'])
             item['operation'] = [
-                {
-                    'content': '修改',
-                    'type': 'link',
-                    'icon': 'antd-edit'
-                } if 'system:notice:edit' in button_perms else {},
-                {
-                    'content': '删除',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'system:notice:remove' in button_perms else {},
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:notice:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:notice:remove')
+                else {},
             ]
 
     return [
@@ -88,10 +95,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='公告标题',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -101,10 +110,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='操作人员',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -113,20 +124,24 @@ def render(*args, **kwargs):
                                                             options=option,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='类型',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='notice-create_time-range',
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='创建时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -135,9 +150,11 @@ def render(*args, **kwargs):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -145,16 +162,18 @@ def render(*args, **kwargs):
                                                             id='notice-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='notice-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -173,14 +192,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'notice-operation-button',
-                                                    'index': 'add'
+                                                    'index': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:notice:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:notice:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -190,15 +213,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'notice-operation-button',
-                                                    'index': 'edit'
+                                                    'index': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
-                                            ) if 'system:notice:edit' in button_perms else [],
+                                                    'border-color': '#d0f5e0',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:notice:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -208,21 +235,23 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'notice-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'system:notice:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:notice:remove'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -236,10 +265,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='notice-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='notice-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -251,24 +280,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='notice-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -326,7 +353,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -335,28 +362,32 @@ def render(*args, **kwargs):
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑通知公告modal
         fac.AntdModal(
             [
@@ -368,45 +399,33 @@ def render(*args, **kwargs):
                                     fac.AntdFormItem(
                                         fac.AntdInput(
                                             id='notice-notice_title',
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
                                         id='notice-notice_title-form-item',
                                         required=True,
                                         label='公告标题',
-                                        labelCol={
-                                            'span': 6
-                                        },
-                                        wrapperCol={
-                                            'span': 18
-                                        }
+                                        labelCol={'span': 6},
+                                        wrapperCol={'span': 18},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdSelect(
                                             id='notice-notice_type',
                                             options=option,
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
                                         id='notice-notice_type-form-item',
                                         required=True,
                                         label='公告类型',
-                                        labelCol={
-                                            'span': 6
-                                        },
-                                        wrapperCol={
-                                            'span': 18
-                                        }
+                                        labelCol={'span': 6},
+                                        wrapperCol={'span': 18},
                                     ),
-                                    span=12
-                                )
+                                    span=12,
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -415,32 +434,20 @@ def render(*args, **kwargs):
                                         fac.AntdRadioGroup(
                                             id='notice-status',
                                             options=[
-                                                {
-                                                    'label': '正常',
-                                                    'value': '0'
-                                                },
-                                                {
-                                                    'label': '关闭',
-                                                    'value': '1'
-                                                }
+                                                {'label': '正常', 'value': '0'},
+                                                {'label': '关闭', 'value': '1'},
                                             ],
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
                                         id='notice-status-form-item',
                                         label='状态',
-                                        labelCol={
-                                            'span': 3
-                                        },
-                                        wrapperCol={
-                                            'span': 21
-                                        }
+                                        labelCol={'span': 3},
+                                        wrapperCol={'span': 21},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -458,69 +465,72 @@ def render(*args, **kwargs):
                                                 'maxNumberOfFiles': 10,
                                                 'meta': {
                                                     'baseUrl': ApiBaseUrlConfig.BaseUrl,
-                                                    'uploadId': str(uuid.uuid4()),
-                                                    'taskPath': 'notice'
+                                                    'uploadId': str(
+                                                        uuid.uuid4()
+                                                    ),
+                                                    'taskPath': 'notice',
                                                 },
                                                 'metaWithUrl': True,
                                                 'headers': {
-                                                    'Authorization': 'Bearer ' + session.get('Authorization')
+                                                    'Authorization': 'Bearer '
+                                                    + session.get(
+                                                        'Authorization'
+                                                    )
                                                 },
                                                 'withCredentials': True,
                                                 'timeout': 5 * 1000,
-                                                'base64LimitSize': 500 * 1024
+                                                'base64LimitSize': 500 * 1024,
                                             },
                                             uploadVideo={
                                                 'server': f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor',
                                                 'fieldName': 'file',
-                                                'maxFileSize': 100 * 1024 * 1024,
+                                                'maxFileSize': 100
+                                                * 1024
+                                                * 1024,
                                                 'maxNumberOfFiles': 3,
                                                 'meta': {
                                                     'baseUrl': ApiBaseUrlConfig.BaseUrl,
-                                                    'uploadId': str(uuid.uuid4()),
-                                                    'taskPath': 'notice'
+                                                    'uploadId': str(
+                                                        uuid.uuid4()
+                                                    ),
+                                                    'taskPath': 'notice',
                                                 },
                                                 'metaWithUrl': True,
                                                 'headers': {
-                                                    'Authorization': 'Bearer ' + session.get('Authorization')
+                                                    'Authorization': 'Bearer '
+                                                    + session.get(
+                                                        'Authorization'
+                                                    )
                                                 },
                                                 'withCredentials': True,
-                                                'timeout': 15 * 1000
+                                                'timeout': 15 * 1000,
                                             },
                                             editorStyle={
                                                 'height': 300,
-                                                'width': '100%'
+                                                'width': '100%',
                                             },
-                                            style={
-                                                'marginBottom': 15
-                                            }
+                                            style={'marginBottom': 15},
                                         ),
                                         id='notice-notice_content-form-item',
                                         label='内容',
-                                        labelCol={
-                                            'span': 3
-                                        },
-                                        wrapperCol={
-                                            'span': 21
-                                        }
+                                        labelCol={'span': 3},
+                                        wrapperCol={'span': 21},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
-                            gutter=5
-                        )
+                            gutter=5,
+                        ),
                     ],
-                    style={
-                        'marginRight': '30px'
-                    }
+                    style={'marginRight': '30px'},
                 )
             ],
             id='notice-modal',
             mask=False,
             width=900,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除通知公告二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='notice-delete-text'),
@@ -528,6 +538,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]
