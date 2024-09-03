@@ -1,24 +1,25 @@
 from dash import dcc, html
 import feffery_antd_components as fac
 
-import callbacks.monitor_c.logininfor_c
-from api.log import get_login_log_list_api
+import callbacks.monitor_c.logininfor_c  # noqa: F401
+from api.monitor.logininfor import LogininforApi
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
 
     login_log_params = dict(page_num=1, page_size=10)
-    table_info = get_login_log_list_api(login_log_params)
+    table_info = LogininforApi.list_logininfor(login_log_params)
     table_data = []
     page_num = 1
     page_size = 10
     total = 0
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['status'] == '0':
                 item['status'] = dict(tag='成功', color='blue')
@@ -55,10 +56,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='登录地址',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -68,10 +71,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='用户名称',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -80,29 +85,33 @@ def render(*args, **kwargs):
                                                             options=[
                                                                 {
                                                                     'label': '成功',
-                                                                    'value': 0
+                                                                    'value': 0,
                                                                 },
                                                                 {
                                                                     'label': '失败',
-                                                                    'value': 1
-                                                                }
+                                                                    'value': 1,
+                                                                },
                                                             ],
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='状态',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='login_log-login_time-range',
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='登录时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -111,9 +120,11 @@ def render(*args, **kwargs):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -121,16 +132,18 @@ def render(*args, **kwargs):
                                                             id='login_log-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='login_log-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -149,15 +162,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'login_log-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:logininfor:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:logininfor:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -167,14 +184,18 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'login_log-operation-button',
-                                                    'index': 'clear'
+                                                    'index': 'clear',
                                                 },
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:logininfor:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:logininfor:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -187,9 +208,13 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#74bcff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#d1e9ff'
-                                                }
-                                            ) if 'monitor:logininfor:unlock' in button_perms else [],
+                                                    'border-color': '#d1e9ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:logininfor:unlock'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -201,15 +226,17 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'monitor:logininfor:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:logininfor:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -223,10 +250,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='login_log-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='login_log-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -238,24 +265,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='login_log-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -333,35 +358,42 @@ def render(*args, **kwargs):
                                             rowSelectionWidth=50,
                                             bordered=True,
                                             sortOptions={
-                                                'sortDataIndexes': ['user_name', 'login_time'],
-                                                'multiple': False
+                                                'sortDataIndexes': [
+                                                    'user_name',
+                                                    'login_time',
+                                                ],
+                                                'multiple': False,
                                             },
                                             pagination={
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 删除操作日志二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='login_log-delete-text'),
@@ -369,6 +401,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]
