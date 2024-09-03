@@ -4,30 +4,26 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import feffery_antd_components as fac
 from jsonpath_ng import parse
-from flask import json, session
-from collections import OrderedDict
 
 from server import app
 import views  # noqa: F401
 from utils.cache_util import CacheManager
-from utils.tree_tool import (
-    find_title_by_key,
-    find_modules_by_key,
-    find_href_by_key,
-    find_parents,
-)
+from utils.tree_tool import find_href_by_key
 
 
 @app.callback(
     [
         Output('tabs-container', 'items', allow_duplicate=True),
         Output('tabs-container', 'activeKey', allow_duplicate=True),
+        Output('header-breadcrumb', 'items'),
     ],
     [
         Input('index-side-menu', 'currentKey'),
         Input('tabs-container', 'tabCloseCounts'),
     ],
     [
+        State('index-side-menu', 'currentItem'),
+        State('index-side-menu', 'currentItemPath'),
         State('tabs-container', 'latestDeletePane'),
         State('tabs-container', 'items'),
         State('tabs-container', 'activeKey'),
@@ -37,6 +33,8 @@ from utils.tree_tool import (
 def handle_tab_switch_and_create(
     currentKey,
     tabCloseCounts,
+    currentItem,
+    currentItemPath,
     latestDeletePane,
     origin_items,
     activeKey,
@@ -59,21 +57,33 @@ def handle_tab_switch_and_create(
     new_items = dash.Patch()
 
     if trigger_id == 'index-side-menu':
+        breadcrumb_items = [
+            {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
+        ]
+        if currentKey == '首页':
+            pass
+        elif currentKey == '个人资料':
+            breadcrumb_items.append({'title': '个人资料'})
+        else:
+            breadcrumb_items = breadcrumb_items + [
+                {'title': item.get('props').get('title')}
+                for item in currentItemPath
+            ]
         # 判断当前新选中的菜单栏项对应标签页是否已创建
         if currentKey in [item['key'] for item in origin_items]:
-            return [dash.no_update, currentKey]
+            return [dash.no_update, currentKey, breadcrumb_items]
 
         if currentKey == '个人资料':
             menu_title = '个人资料'
             menu_modules = 'system.user.profile'
+            breadcrumb_items = [
+                {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
+                {'title': menu_title},
+            ]
         else:
-            menu_title = find_title_by_key(
-                CacheManager.get('menu_info'), currentKey
-            )
+            menu_title = currentItem.get('props').get('title')
             # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
-            menu_modules = find_modules_by_key(
-                CacheManager.get('menu_info'), currentKey
-            )
+            menu_modules = currentItem.get('props').get('modules')
 
         for index, item in enumerate(origin_items):
             if {
@@ -144,7 +154,7 @@ def handle_tab_switch_and_create(
                 }
             )
 
-        return [new_items, currentKey]
+        return [new_items, currentKey, breadcrumb_items]
 
     elif trigger_id == 'tabs-container':
         # 如果删除的是当前标签页则回到最后新增的标签页，否则保持当前标签页不变
@@ -209,6 +219,7 @@ def handle_tab_switch_and_create(
             new_origin_items[-1]['key']
             if activeKey == latestDeletePane
             else activeKey,
+            dash.no_update,
         ]
 
     raise PreventUpdate
@@ -396,59 +407,25 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
     raise PreventUpdate
 
 
-# 页首面包屑和hash回调
+# 标签页点击回调
 @app.callback(
-    [
-        Output('header-breadcrumb', 'items'),
-        Output('dcc-url', 'pathname', allow_duplicate=True),
-    ],
+    Output('dcc-url', 'pathname', allow_duplicate=True),
     Input('tabs-container', 'activeKey'),
     prevent_initial_call=True,
 )
-def get_current_breadcrumbs(active_key):
+def get_current_href(active_key):
     if active_key:
         if active_key == '首页':
-            return [
-                [
-                    {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
-                ],
-                '/',
-            ]
+            return '/'
 
         elif active_key == '个人资料':
-            return [
-                [
-                    {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
-                    {
-                        'title': '个人资料',
-                    },
-                ],
-                '/user/profile',
-            ]
+            return '/user/profile'
 
         else:
-            result = find_parents(CacheManager.get('menu_info'), active_key)
-            # 去除result的重复项
-            parent_info = list(
-                OrderedDict(
-                    (json.dumps(d, ensure_ascii=False), d) for d in result
-                ).values()
+            current_href = find_href_by_key(
+                CacheManager.get('menu_info'), active_key
             )
-            if parent_info:
-                current_href = find_href_by_key(
-                    CacheManager.get('menu_info'), active_key
-                )
 
-                return [
-                    [
-                        {
-                            'title': '首页',
-                            'icon': 'antd-dashboard',
-                            'href': '/',
-                        },
-                    ]
-                    + parent_info,
-                    current_href,
-                ]
+            return current_href
 
     raise PreventUpdate
