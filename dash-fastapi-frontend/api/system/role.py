@@ -76,7 +76,7 @@ class RoleApi:
         )
 
     @classmethod
-    def change_user_status(cls, role_id: str, status: str):
+    def change_role_status(cls, role_id: str, status: str):
         """
         角色状态修改接口
 
