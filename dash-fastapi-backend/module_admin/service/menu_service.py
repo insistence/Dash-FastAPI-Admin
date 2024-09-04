@@ -192,10 +192,11 @@ class MenuService:
         :return: 菜单树形嵌套数据
         """
         permission_list = [
-            dict(id=item.menu_id, label=item.menu_name, parent_id=item.parent_id) for item in permission_list
+            dict(key=str(item.menu_id), title=item.menu_name, value=str(item.menu_id), parent_id=str(item.parent_id))
+            for item in permission_list
         ]
         # 转成id为key的字典
-        mapping: dict = dict(zip([i['id'] for i in permission_list], permission_list))
+        mapping: dict = dict(zip([i['key'] for i in permission_list], permission_list))
 
         # 树容器
         container: list = []
