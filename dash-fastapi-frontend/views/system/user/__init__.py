@@ -2,20 +2,19 @@ from dash import dcc, html
 import feffery_antd_components as fac
 from flask import session
 
-from . import profile, allocate_role
-from api.user import get_user_list_api
-from api.dept import get_dept_tree_api
+from . import allocate_role
+from api.system.user import UserApi
+from utils.permission_util import PermissionManager
 from config.global_config import ApiBaseUrlConfig
 
-import callbacks.system_c.user_c.user_c
+import callbacks.system_c.user_c.user_c  # noqa: F401
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    dept_params = dict(dept_name='')
     user_params = dict(page_num=1, page_size=10)
-    tree_info = get_dept_tree_api(dept_params)
-    table_info = get_user_list_api(user_params)
+    tree_info = UserApi.dept_tree_select()
+    table_info = UserApi.list_user(user_params)
     tree_data = []
     table_data = []
     page_num = 1
@@ -24,36 +23,36 @@ def render(*args, **kwargs):
     if tree_info['code'] == 200:
         tree_data = tree_info['data']
     if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
+        table_data = table_info['rows']
+        page_num = table_info['page_num']
+        page_size = table_info['page_size']
+        total = table_info['total']
         for item in table_data:
             if item['status'] == '0':
-                item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
+                item['status'] = dict(
+                    checked=True, disabled=item['user_id'] == 1
+                )
             else:
-                item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
+                item['status'] = dict(
+                    checked=False, disabled=item['user_id'] == 1
+                )
             item['key'] = str(item['user_id'])
             if item['user_id'] == 1:
                 item['operation'] = []
             else:
                 item['operation'] = [
-                    {
-                        'title': '修改',
-                        'icon': 'antd-edit'
-                    } if 'system:user:edit' in button_perms else None,
-                    {
-                        'title': '删除',
-                        'icon': 'antd-delete'
-                    } if 'system:user:remove' in button_perms else None,
-                    {
-                        'title': '重置密码',
-                        'icon': 'antd-key'
-                    } if 'system:user:resetPwd' in button_perms else None,
-                    {
-                        'title': '分配角色',
-                        'icon': 'antd-check-circle'
-                    } if 'system:user:edit' in button_perms else None
+                    {'title': '修改', 'icon': 'antd-edit'}
+                    if PermissionManager.check_perms('system:user:edit')
+                    else None,
+                    {'title': '删除', 'icon': 'antd-delete'}
+                    if PermissionManager.check_perms('system:user:remove')
+                    else None,
+                    {'title': '重置密码', 'icon': 'antd-key'}
+                    if PermissionManager.check_perms('system:user:resetPwd')
+                    else None,
+                    {'title': '分配角色', 'icon': 'antd-check-circle'}
+                    if PermissionManager.check_perms('system:user:edit')
+                    else None,
                 ]
 
     return [
@@ -77,24 +76,18 @@ def render(*args, **kwargs):
                             placeholder='请输入部门名称',
                             autoComplete='off',
                             allowClear=True,
-                            prefix=fac.AntdIcon(
-                                icon='antd-search'
-                            ),
-                            style={
-                                'width': '85%'
-                            }
+                            prefix=fac.AntdIcon(icon='antd-search'),
+                            style={'width': '85%'},
                         ),
                         fac.AntdTree(
                             id='dept-tree',
                             treeData=tree_data,
                             defaultExpandAll=True,
                             showLine=False,
-                            style={
-                                'margin-top': '10px'
-                            }
-                        )
+                            style={'margin-top': '10px'},
+                        ),
                     ],
-                    span=4
+                    span=4,
                 ),
                 fac.AntdCol(
                     [
@@ -115,9 +108,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='用户名称'
+                                                                label='用户名称',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdInput(
@@ -127,9 +120,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='手机号码'
+                                                                label='手机号码',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdSelect(
@@ -138,23 +131,23 @@ def render(*args, **kwargs):
                                                                     options=[
                                                                         {
                                                                             'label': '正常',
-                                                                            'value': '0'
+                                                                            'value': '0',
                                                                         },
                                                                         {
                                                                             'label': '停用',
-                                                                            'value': '1'
-                                                                        }
+                                                                            'value': '1',
+                                                                        },
                                                                     ],
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='用户状态'
+                                                                label='用户状态',
                                                             ),
                                                         ],
                                                         style={
                                                             'paddingBottom': '10px'
-                                                        }
+                                                        },
                                                     ),
                                                     fac.AntdSpace(
                                                         [
@@ -163,9 +156,9 @@ def render(*args, **kwargs):
                                                                     id='user-create_time-range',
                                                                     style={
                                                                         'width': 240
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='创建时间'
+                                                                label='创建时间',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdButton(
@@ -174,7 +167,7 @@ def render(*args, **kwargs):
                                                                     type='primary',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-search'
-                                                                    )
+                                                                    ),
                                                                 )
                                                             ),
                                                             fac.AntdFormItem(
@@ -183,20 +176,20 @@ def render(*args, **kwargs):
                                                                     id='user-reset',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-sync'
-                                                                    )
+                                                                    ),
                                                                 )
-                                                            )
+                                                            ),
                                                         ],
                                                         style={
                                                             'paddingBottom': '10px'
-                                                        }
+                                                        },
                                                     ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='user-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -217,9 +210,13 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:user:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:user:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -229,15 +226,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'user-operation-button',
-                                                    'index': 'edit'
+                                                    'index': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
-                                            ) if 'system:user:edit' in button_perms else [],
+                                                    'border-color': '#d0f5e0',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:user:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -247,15 +248,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'user-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'system:user:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:user:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -267,9 +272,13 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#909399',
                                                     'background': '#f4f4f5',
-                                                    'border-color': '#d3d4d6'
-                                                }
-                                            ) if 'system:user:export' in button_perms else [],
+                                                    'border-color': '#d3d4d6',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:user:import'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -281,15 +290,17 @@ def render(*args, **kwargs):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'system:user:import' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:user:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -303,10 +314,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='user-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='user-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -318,24 +329,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='user-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -408,9 +417,9 @@ def render(*args, **kwargs):
                                                         'renderType': 'dropdown',
                                                         'dropdownProps': {
                                                             'title': '更多'
-                                                        }
+                                                        },
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -419,28 +428,32 @@ def render(*args, **kwargs):
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'paddingRight': '10px'
-                                            }
+                                                'paddingRight': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=20
-                )
+                    span=20,
+                ),
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增用户表单modal
         fac.AntdModal(
             [
@@ -452,47 +465,41 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'nick_name'
+                                            'index': 'nick_name',
                                         },
                                         placeholder='请输入用户昵称',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户昵称',
                                     required=True,
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'nick_name',
-                                        'required': True
-                                    }
+                                        'required': True,
+                                    },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdTreeSelect(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'dept_id'
+                                            'index': 'dept_id',
                                         },
                                         placeholder='请选择归属部门',
                                         treeData=[],
                                         treeNodeFilterProp='title',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='归属部门',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'dept_id',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
+                                    labelCol={'offset': 1},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -500,48 +507,40 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'phonenumber'
+                                            'index': 'phonenumber',
                                         },
                                         placeholder='请输入手机号码',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='手机号码',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'phonenumber',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
+                                    labelCol={'offset': 1},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'email'
+                                            'index': 'email',
                                         },
                                         placeholder='请输入邮箱',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='邮箱',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'email',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 5
-                                    },
+                                    labelCol={'offset': 5},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -549,45 +548,41 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'user_name'
+                                            'index': 'user_name',
                                         },
                                         placeholder='请输入用户名称',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户名称',
                                     required=True,
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'user_name',
-                                        'required': True
-                                    }
+                                        'required': True,
+                                    },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'password'
+                                            'index': 'password',
                                         },
                                         placeholder='请输入密码',
                                         mode='password',
                                         passwordUseMd5=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户密码',
                                     required=True,
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'password',
-                                        'required': True
-                                    }
+                                        'required': True,
+                                    },
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -595,70 +590,47 @@ def render(*args, **kwargs):
                                     fac.AntdSelect(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'sex'
+                                            'index': 'sex',
                                         },
                                         placeholder='请选择性别',
                                         options=[
-                                            {
-                                                'label': '男',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '女',
-                                                'value': '1'
-                                            },
-                                            {
-                                                'label': '未知',
-                                                'value': '2'
-                                            },
+                                            {'label': '男', 'value': '0'},
+                                            {'label': '女', 'value': '1'},
+                                            {'label': '未知', 'value': '2'},
                                         ],
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户性别',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'sex',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
+                                    labelCol={'offset': 1},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdRadioGroup(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'status'
+                                            'index': 'status',
                                         },
                                         options=[
-                                            {
-                                                'label': '正常',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '停用',
-                                                'value': '1'
-                                            },
+                                            {'label': '正常', 'value': '0'},
+                                            {'label': '停用', 'value': '1'},
                                         ],
                                         defaultValue='0',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户状态',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'status',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 2
-                                    },
-                                )
+                                    labelCol={'offset': 2},
+                                ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -669,15 +641,11 @@ def render(*args, **kwargs):
                                         options=[],
                                         mode='multiple',
                                         optionFilterProp='label',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='岗位',
                                     id='user-add-post-form-item',
-                                    labelCol={
-                                        'offset': 4
-                                    },
+                                    labelCol={'offset': 4},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdSelect(
@@ -686,18 +654,14 @@ def render(*args, **kwargs):
                                         options=[],
                                         mode='multiple',
                                         optionFilterProp='label',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='角色',
                                     id='user-add-role-form-item',
-                                    labelCol={
-                                        'offset': 8
-                                    },
+                                    labelCol={'offset': 8},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -705,27 +669,23 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_add-form-value',
-                                            'index': 'remark'
+                                            'index': 'remark',
                                         },
                                         placeholder='请输入内容',
                                         allowClear=True,
                                         mode='text-area',
-                                        style={
-                                            'width': 490
-                                        }
+                                        style={'width': 490},
                                     ),
                                     label='备注',
                                     id={
                                         'type': 'user_add-form-label',
                                         'index': 'remark',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 2
-                                    },
+                                    labelCol={'offset': 2},
                                 ),
                             ]
-                        )
+                        ),
                     ]
                 )
             ],
@@ -734,9 +694,8 @@ def render(*args, **kwargs):
             mask=False,
             width=650,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 编辑用户表单modal
         fac.AntdModal(
             [
@@ -748,44 +707,40 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'nick_name'
+                                            'index': 'nick_name',
                                         },
                                         placeholder='请输入用户昵称',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户昵称',
                                     required=True,
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'nick_name',
-                                        'required': True
-                                    }
+                                        'required': True,
+                                    },
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdTreeSelect(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'dept_id'
+                                            'index': 'dept_id',
                                         },
                                         placeholder='请选择归属部门',
                                         treeData=[],
                                         treeNodeFilterProp='title',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='归属部门',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'dept_id',
-                                        'required': False
-                                    }
+                                        'required': False,
+                                    },
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -793,48 +748,40 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'phonenumber'
+                                            'index': 'phonenumber',
                                         },
                                         placeholder='请输入手机号码',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='手机号码',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'phonenumber',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
+                                    labelCol={'offset': 1},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'email'
+                                            'index': 'email',
                                         },
                                         placeholder='请输入邮箱',
                                         allowClear=True,
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='邮箱',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'email',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 4
-                                    },
+                                    labelCol={'offset': 4},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -842,69 +789,46 @@ def render(*args, **kwargs):
                                     fac.AntdSelect(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'sex'
+                                            'index': 'sex',
                                         },
                                         placeholder='请选择性别',
                                         options=[
-                                            {
-                                                'label': '男',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '女',
-                                                'value': '1'
-                                            },
-                                            {
-                                                'label': '未知',
-                                                'value': '2'
-                                            },
+                                            {'label': '男', 'value': '0'},
+                                            {'label': '女', 'value': '1'},
+                                            {'label': '未知', 'value': '2'},
                                         ],
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户性别',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'sex',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
+                                    labelCol={'offset': 1},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdRadioGroup(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'status'
+                                            'index': 'status',
                                         },
                                         options=[
-                                            {
-                                                'label': '正常',
-                                                'value': '0'
-                                            },
-                                            {
-                                                'label': '停用',
-                                                'value': '1'
-                                            },
+                                            {'label': '正常', 'value': '0'},
+                                            {'label': '停用', 'value': '1'},
                                         ],
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='用户状态',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'status',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 1
-                                    },
-                                )
+                                    labelCol={'offset': 1},
+                                ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -915,15 +839,11 @@ def render(*args, **kwargs):
                                         options=[],
                                         mode='multiple',
                                         optionFilterProp='label',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='岗位',
                                     id='user-edit-post-form-item',
-                                    labelCol={
-                                        'offset': 4
-                                    },
+                                    labelCol={'offset': 4},
                                 ),
                                 fac.AntdFormItem(
                                     fac.AntdSelect(
@@ -932,18 +852,14 @@ def render(*args, **kwargs):
                                         options=[],
                                         mode='multiple',
                                         optionFilterProp='label',
-                                        style={
-                                            'width': 200
-                                        }
+                                        style={'width': 200},
                                     ),
                                     label='角色',
                                     id='user-edit-role-form-item',
-                                    labelCol={
-                                        'offset': 7
-                                    },
+                                    labelCol={'offset': 7},
                                 ),
                             ],
-                            size="middle"
+                            size='middle',
                         ),
                         fac.AntdSpace(
                             [
@@ -951,27 +867,23 @@ def render(*args, **kwargs):
                                     fac.AntdInput(
                                         id={
                                             'type': 'user_edit-form-value',
-                                            'index': 'remark'
+                                            'index': 'remark',
                                         },
                                         placeholder='请输入内容',
                                         allowClear=True,
                                         mode='text-area',
-                                        style={
-                                            'width': 485
-                                        }
+                                        style={'width': 485},
                                     ),
                                     label='备注',
                                     id={
                                         'type': 'user_edit-form-label',
                                         'index': 'remark',
-                                        'required': False
+                                        'required': False,
                                     },
-                                    labelCol={
-                                        'offset': 2
-                                    },
+                                    labelCol={'offset': 2},
                                 ),
                             ]
-                        )
+                        ),
                     ]
                 )
             ],
@@ -980,9 +892,8 @@ def render(*args, **kwargs):
             mask=False,
             width=650,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除用户二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='user-delete-text'),
@@ -990,46 +901,74 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
-
         # 用户导入modal
         fac.AntdModal(
             [
                 html.Div(
-                    fac.AntdDraggerUpload(
+                    dcc.Upload(
+                        html.Span(
+                            html.Div(
+                                html.Span(
+                                    html.Div(
+                                        [
+                                            html.P(
+                                                fac.AntdIcon(
+                                                    icon='antd-cloud-upload'
+                                                ),
+                                                className='ant-upload-drag-icon',
+                                            ),
+                                            html.P(
+                                                fac.AntdText('用户导入'),
+                                                className='ant-upload-text',
+                                            ),
+                                            html.P(
+                                                fac.AntdText(
+                                                    '点击或拖拽文件至此处进行上传'
+                                                ),
+                                                className='ant-upload-hint',
+                                            ),
+                                        ],
+                                        className='ant-upload-drag-container',
+                                    ),
+                                    tabIndex='0',
+                                    role='button',
+                                    className='ant-upload ant-upload-btn',
+                                ),
+                                className='css-1gwfwyx ant-upload ant-upload-drag',
+                            ),
+                            className='ant-upload-wrapper css-1gwfwyx',
+                        ),
                         id='user-upload-choose',
-                        apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
-                        apiUrlExtraParams={'taskPath': 'userUpload'},
-                        downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
-                        downloadUrlExtraParams={'taskPath': 'userUpload', 'token': session.get('Authorization')},
-                        headers={'Authorization': 'Bearer ' + session.get('Authorization')},
-                        fileTypes=['xls', 'xlsx'],
-                        fileListMaxLength=1,
-                        text='用户导入',
-                        hint='点击或拖拽文件至此处进行上传'
+                        accept='.xls,.xlsx',
                     ),
-                    style={
-                        'marginTop': '10px'
-                    }
+                    # fac.AntdDraggerUpload(
+                    #     id='user-upload-choose',
+                    #     apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
+                    #     downloadUrlFromBackend=True,
+                    #     headers={
+                    #         'Authorization': 'Bearer '
+                    #         + session.get('Authorization')
+                    #     },
+                    #     fileTypes=['xls', 'xlsx'],
+                    #     fileListMaxLength=1,
+                    #     text='用户导入',
+                    #     hint='点击或拖拽文件至此处进行上传',
+                    # ),
+                    style={'marginTop': '10px'},
                 ),
                 html.Div(
                     [
                         fac.AntdCheckbox(
-                            id='user-import-update-check',
-                            checked=False
+                            id='user-import-update-check', checked=False
                         ),
                         fac.AntdText(
                             '是否更新已经存在的用户数据',
-                            style={
-                                'marginLeft': '5px'
-                            }
-                        )
+                            style={'marginLeft': '5px'},
+                        ),
                     ],
-                    style={
-                        'textAlign': 'center',
-                        'marginTop': '10px'
-                    }
+                    style={'textAlign': 'center', 'marginTop': '10px'},
                 ),
                 html.Div(
                     [
@@ -1037,14 +976,11 @@ def render(*args, **kwargs):
                         fac.AntdButton(
                             '下载模板',
                             id='download-user-import-template',
-                            type='link'
-                        )
+                            type='link',
+                        ),
                     ],
-                    style={
-                        'textAlign': 'center',
-                        'marginTop': '10px'
-                    }
-                )
+                    style={'textAlign': 'center', 'marginTop': '10px'},
+                ),
             ],
             id='user-import-confirm-modal',
             visible=False,
@@ -1055,23 +991,19 @@ def render(*args, **kwargs):
             okText='导入',
             confirmAutoSpin=True,
             loadingOkText='导入中',
-            okClickClose=False
+            okClickClose=False,
         ),
-
         fac.AntdModal(
             fac.AntdText(
                 id='batch-result-content',
-                className={
-                    'whiteSpace': 'break-spaces'
-                }
+                className={'whiteSpace': 'break-spaces'},
             ),
             id='batch-result-modal',
             visible=False,
             title='用户导入结果',
             renderFooter=False,
-            centered=True
+            centered=True,
         ),
-
         # 重置密码modal
         fac.AntdModal(
             [
@@ -1079,23 +1011,21 @@ def render(*args, **kwargs):
                     [
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id='reset-password-input',
-                                mode='password'
+                                id='reset-password-input', mode='password'
                             ),
-                            label='请输入新密码'
+                            label='请输入新密码',
                         ),
                     ],
-                    layout='vertical'
+                    layout='vertical',
                 ),
-                dcc.Store(id='reset-password-row-key-store')
+                dcc.Store(id='reset-password-row-key-store'),
             ],
             id='user-reset-password-confirm-modal',
             visible=False,
             title='重置密码',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
-
         # 分配角色modal
         fac.AntdModal(
             allocate_role.render(button_perms),
@@ -1105,6 +1035,6 @@ def render(*args, **kwargs):
             maskClosable=False,
             width=1000,
             renderFooter=False,
-            okClickClose=False
-        )
+            okClickClose=False,
+        ),
     ]

@@ -75,6 +75,35 @@ class UserApi:
         )
 
     @classmethod
+    def download_template(cls):
+        """
+        下载用户导入模板接口
+
+        :return:
+        """
+        return api_request(
+            url='/system/user/importTemplate',
+            method='post',
+            stream=True,
+        )
+
+    @classmethod
+    def import_user(cls, file: bytes, update_support: bool):
+        """
+        导入用户接口
+
+        :param file: 导入模板文件
+        :param update_support: 是否更新已存在的用户数据
+        :return:
+        """
+        return api_request(
+            url='/system/user/importData',
+            method='post',
+            files={'file': file},
+            params={'update_support': update_support},
+        )
+
+    @classmethod
     def export_user(cls, data: dict):
         """
         导出用户接口
