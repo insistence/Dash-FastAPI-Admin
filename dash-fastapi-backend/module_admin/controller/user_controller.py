@@ -318,7 +318,7 @@ async def reset_system_user_password(
 async def batch_import_system_user(
     request: Request,
     file: UploadFile = File(...),
-    update_support: bool = Query(alias='updateSupport'),
+    update_support: bool = Query(),
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     user_data_scope_sql: str = Depends(GetDataScope('SysUser')),
