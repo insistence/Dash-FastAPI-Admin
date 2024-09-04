@@ -13,6 +13,7 @@ def api_request(
     params: Optional[Dict] = None,
     data: Optional[Dict] = None,
     json: Optional[Dict] = None,
+    files: Optional[Dict] = None,
     timeout: Optional[int] = None,
     stream: Optional[bool] = False,
 ):
@@ -25,6 +26,7 @@ def api_request(
     :param params: 查询参数
     :param data: 表单参数
     :param json: 请求体
+    :param files: 请求文件
     :param timeout: 请求超时时间
     :param stream: 是否为流式请求
     :return: 请求结果
@@ -61,6 +63,7 @@ def api_request(
                 params=params,
                 data=data,
                 json=json,
+                files=files,
                 headers=api_headers,
                 timeout=timeout,
                 stream=stream,
@@ -71,6 +74,7 @@ def api_request(
                 params=params,
                 data=data,
                 json=json,
+                files=files,
                 headers=api_headers,
                 timeout=timeout,
                 stream=stream,
@@ -81,6 +85,7 @@ def api_request(
                 params=params,
                 data=data,
                 json=json,
+                files=files,
                 headers=api_headers,
                 timeout=timeout,
                 stream=stream,
@@ -91,6 +96,7 @@ def api_request(
                 params=params,
                 data=data,
                 json=json,
+                files=files,
                 headers=api_headers,
                 timeout=timeout,
                 stream=stream,
@@ -101,6 +107,7 @@ def api_request(
                 params=params,
                 data=data,
                 json=json,
+                files=files,
                 headers=api_headers,
                 timeout=timeout,
                 stream=stream,
