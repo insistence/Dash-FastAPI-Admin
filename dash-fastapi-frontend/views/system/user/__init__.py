@@ -1,8 +1,10 @@
 from dash import dcc, html
 import feffery_antd_components as fac
+import feffery_utils_components as fuc
 from flask import session
 
 from . import allocate_role
+from views.components import ManuallyUpload
 from api.system.user import UserApi
 from utils.permission_util import PermissionManager
 from config.global_config import ApiBaseUrlConfig
@@ -907,55 +909,22 @@ def render(*args, **kwargs):
         fac.AntdModal(
             [
                 html.Div(
-                    dcc.Upload(
-                        html.Span(
-                            html.Div(
-                                html.Span(
-                                    html.Div(
-                                        [
-                                            html.P(
-                                                fac.AntdIcon(
-                                                    icon='antd-cloud-upload'
-                                                ),
-                                                className='ant-upload-drag-icon',
-                                            ),
-                                            html.P(
-                                                fac.AntdText('用户导入'),
-                                                className='ant-upload-text',
-                                            ),
-                                            html.P(
-                                                fac.AntdText(
-                                                    '点击或拖拽文件至此处进行上传'
-                                                ),
-                                                className='ant-upload-hint',
-                                            ),
-                                        ],
-                                        className='ant-upload-drag-container',
-                                    ),
-                                    tabIndex='0',
-                                    role='button',
-                                    className='ant-upload ant-upload-btn',
-                                ),
-                                className='css-1gwfwyx ant-upload ant-upload-drag',
-                            ),
-                            className='ant-upload-wrapper css-1gwfwyx',
-                        ),
-                        id='user-upload-choose',
-                        accept='.xls,.xlsx',
-                    ),
-                    # fac.AntdDraggerUpload(
-                    #     id='user-upload-choose',
-                    #     apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
-                    #     downloadUrlFromBackend=True,
-                    #     headers={
-                    #         'Authorization': 'Bearer '
-                    #         + session.get('Authorization')
-                    #     },
-                    #     fileTypes=['xls', 'xlsx'],
-                    #     fileListMaxLength=1,
-                    #     text='用户导入',
-                    #     hint='点击或拖拽文件至此处进行上传',
-                    # ),
+                    [
+                        ManuallyUpload().render(),
+                        # fac.AntdDraggerUpload(
+                        #     id='user-upload-choose',
+                        #     apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
+                        #     downloadUrlFromBackend=True,
+                        #     headers={
+                        #         'Authorization': 'Bearer '
+                        #         + session.get('Authorization')
+                        #     },
+                        #     fileTypes=['xls', 'xlsx'],
+                        #     fileListMaxLength=1,
+                        #     text='用户导入',
+                        #     hint='点击或拖拽文件至此处进行上传',
+                        # ),
+                    ],
                     style={'marginTop': '10px'},
                 ),
                 html.Div(
