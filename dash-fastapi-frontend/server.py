@@ -5,6 +5,7 @@ from loguru import logger
 from flask import request, session
 from user_agents import parse
 from config.env import AppConfig
+from config.exception import global_exception_handler
 from config.global_config import PathConfig
 
 app = dash.Dash(
@@ -12,6 +13,7 @@ app = dash.Dash(
     compress=True,
     suppress_callback_exceptions=True,
     update_title=None,
+    on_error=global_exception_handler,
 )
 
 server = app.server
