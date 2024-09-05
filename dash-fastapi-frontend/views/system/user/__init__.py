@@ -1,15 +1,13 @@
-from dash import dcc, html
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
+from dash import dcc, html
 from flask import session
-
-from . import allocate_role
-from views.components import ManuallyUpload
 from api.system.user import UserApi
-from utils.permission_util import PermissionManager
 from config.global_config import ApiBaseUrlConfig
-
-import callbacks.system_c.user_c.user_c  # noqa: F401
+from callbacks.system_c.user_c import user_c  # noqa: F401
+from utils.permission_util import PermissionManager
+from views.components import ManuallyUpload
+from . import allocate_role
 
 
 def render(*args, **kwargs):
@@ -17,45 +15,34 @@ def render(*args, **kwargs):
     user_params = dict(page_num=1, page_size=10)
     tree_info = UserApi.dept_tree_select()
     table_info = UserApi.list_user(user_params)
-    tree_data = []
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if tree_info['code'] == 200:
-        tree_data = tree_info['data']
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(
-                    checked=True, disabled=item['user_id'] == 1
-                )
-            else:
-                item['status'] = dict(
-                    checked=False, disabled=item['user_id'] == 1
-                )
-            item['key'] = str(item['user_id'])
-            if item['user_id'] == 1:
-                item['operation'] = []
-            else:
-                item['operation'] = [
-                    {'title': '修改', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:user:edit')
-                    else None,
-                    {'title': '删除', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:user:remove')
-                    else None,
-                    {'title': '重置密码', 'icon': 'antd-key'}
-                    if PermissionManager.check_perms('system:user:resetPwd')
-                    else None,
-                    {'title': '分配角色', 'icon': 'antd-check-circle'}
-                    if PermissionManager.check_perms('system:user:edit')
-                    else None,
-                ]
+    tree_data = tree_info['data']
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
+        else:
+            item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
+        item['key'] = str(item['user_id'])
+        if item['user_id'] == 1:
+            item['operation'] = []
+        else:
+            item['operation'] = [
+                {'title': '修改', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:user:edit')
+                else None,
+                {'title': '删除', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:user:remove')
+                else None,
+                {'title': '重置密码', 'icon': 'antd-key'}
+                if PermissionManager.check_perms('system:user:resetPwd')
+                else None,
+                {'title': '分配角色', 'icon': 'antd-check-circle'}
+                if PermissionManager.check_perms('system:user:edit')
+                else None,
+            ]
 
     return [
         dcc.Store(id='user-button-perms-container', data=button_perms),

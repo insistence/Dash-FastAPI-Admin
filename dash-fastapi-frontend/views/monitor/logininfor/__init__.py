@@ -1,8 +1,7 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.monitor_c.logininfor_c  # noqa: F401
+from dash import dcc, html
 from api.monitor.logininfor import LogininforApi
+from callbacks.monitor_c import logininfor_c  # noqa: F401
 from utils.permission_util import PermissionManager
 
 
@@ -11,21 +10,16 @@ def render(*args, **kwargs):
 
     login_log_params = dict(page_num=1, page_size=10)
     table_info = LogininforApi.list_logininfor(login_log_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='成功', color='blue')
-            else:
-                item['status'] = dict(tag='失败', color='volcano')
-            item['key'] = str(item['info_id'])
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(tag='成功', color='blue')
+        else:
+            item['status'] = dict(tag='失败', color='volcano')
+        item['key'] = str(item['info_id'])
 
     return [
         dcc.Store(id='login_log-button-perms-container', data=button_perms),

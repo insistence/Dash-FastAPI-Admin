@@ -1,44 +1,37 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.system_c.dict_c.dict_c  # noqa: F401
-from . import dict_data
+from dash import dcc, html
 from api.system.dict.type import DictTypeApi
+from callbacks.system_c.dict_c import dict_c  # noqa: F401
 from utils.permission_util import PermissionManager
+from . import dict_data
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-
     dict_type_params = dict(page_num=1, page_size=10)
     table_info = DictTypeApi.list_type(dict_type_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
-            item['key'] = str(item['dict_id'])
-            item['dict_type'] = {
-                'content': item['dict_type'],
-                'type': 'link',
-            }
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:dict:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:dict:remove')
-                else {},
-            ]
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(tag='正常', color='blue')
+        else:
+            item['status'] = dict(tag='停用', color='volcano')
+        item['key'] = str(item['dict_id'])
+        item['dict_type'] = {
+            'content': item['dict_type'],
+            'type': 'link',
+        }
+        item['operation'] = [
+            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('system:dict:edit')
+            else {},
+            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('system:dict:remove')
+            else {},
+        ]
 
     return [
         dcc.Store(id='dict_type-button-perms-container', data=button_perms),

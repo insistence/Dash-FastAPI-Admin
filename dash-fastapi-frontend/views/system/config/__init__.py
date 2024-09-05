@@ -1,39 +1,32 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.system_c.config_c  # noqa: F401
+from dash import dcc, html
 from api.system.config import ConfigApi
+from callbacks.system_c import config_c  # noqa: F401
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-
     config_params = dict(page_num=1, page_size=10)
     table_info = ConfigApi.list_config(config_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['config_type'] == 'Y':
-                item['config_type'] = dict(tag='是', color='blue')
-            else:
-                item['config_type'] = dict(tag='否', color='volcano')
-            item['key'] = str(item['config_id'])
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:config:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:config:remove')
-                else {},
-            ]
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['config_type'] == 'Y':
+            item['config_type'] = dict(tag='是', color='blue')
+        else:
+            item['config_type'] = dict(tag='否', color='volcano')
+        item['key'] = str(item['config_id'])
+        item['operation'] = [
+            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('system:config:edit')
+            else {},
+            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('system:config:remove')
+            else {},
+        ]
 
     return [
         dcc.Store(id='config-button-perms-container', data=button_perms),

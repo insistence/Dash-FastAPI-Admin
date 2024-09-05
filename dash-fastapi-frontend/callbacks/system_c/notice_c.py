@@ -1,15 +1,12 @@
-import dash
-import time
 import uuid
-import json
-from dash.dependencies import Input, Output, State, ALL
+from dash import ctx, no_update
+from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
-import feffery_utils_components as fuc
-
+from api.system.dict.data import DictDataApi
+from api.system.notice import NoticeApi
 from server import app
 from utils.common import validate_data_not_empty
-from api.system.notice import NoticeApi
-from api.system.dict.data import DictDataApi
+from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
 
@@ -24,9 +21,6 @@ from utils.permission_util import PermissionManager
         notice_table_key=Output('notice-list-table', 'key'),
         notice_table_selectedrowkeys=Output(
             'notice-list-table', 'selectedRowKeys'
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
         ),
     ),
     inputs=dict(
@@ -71,7 +65,7 @@ def get_notice_table_data(
         page_num=1,
         page_size=10,
     )
-    triggered_id = dash.ctx.triggered_id
+    triggered_id = ctx.triggered_id
     if triggered_id == 'notice-list-table':
         query_params.update(
             {
@@ -80,67 +74,53 @@ def get_notice_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        option_table = []
         info = DictDataApi.get_dicts(dict_type='sys_notice_type')
-        if info.get('code') == 200:
-            data = info.get('data')
-            option_table = [
-                dict(
-                    label=item.get('dict_label'),
-                    value=item.get('dict_value'),
-                    css_class=item.get('css_class'),
-                )
-                for item in data
-            ]
+        data = info.get('data')
+        option_table = [
+            dict(
+                label=item.get('dict_label'),
+                value=item.get('dict_value'),
+                css_class=item.get('css_class'),
+            )
+            for item in data
+        ]
         option_dict = {item.get('value'): item for item in option_table}
 
         table_info = NoticeApi.list_notice(query_params)
-        if table_info['code'] == 200:
-            table_data = table_info['rows']
-            table_pagination = dict(
-                pageSize=table_info['page_size'],
-                current=table_info['page_num'],
-                showSizeChanger=True,
-                pageSizeOptions=[10, 30, 50, 100],
-                showQuickJumper=True,
-                total=table_info['total'],
+        table_data = table_info['rows']
+        table_pagination = dict(
+            pageSize=table_info['page_size'],
+            current=table_info['page_num'],
+            showSizeChanger=True,
+            pageSizeOptions=[10, 30, 50, 100],
+            showQuickJumper=True,
+            total=table_info['total'],
+        )
+        for item in table_data:
+            if item['status'] == '0':
+                item['status'] = dict(tag='正常', color='blue')
+            else:
+                item['status'] = dict(tag='关闭', color='volcano')
+            item['notice_type'] = dict(
+                tag=option_dict.get(str(item.get('notice_type'))).get('label'),
+                color='blue',
             )
-            for item in table_data:
-                if item['status'] == '0':
-                    item['status'] = dict(tag='正常', color='blue')
-                else:
-                    item['status'] = dict(tag='关闭', color='volcano')
-                item['notice_type'] = dict(
-                    tag=option_dict.get(str(item.get('notice_type'))).get(
-                        'label'
-                    ),
-                    color='blue',
-                )
-                item['key'] = str(item['notice_id'])
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:notice:edit')
-                    else {},
-                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:notice:remove')
-                    else {},
-                ]
+            item['key'] = str(item['notice_id'])
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:notice:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:notice:remove')
+                else {},
+            ]
 
             return dict(
                 notice_table_data=table_data,
                 notice_table_pagination=table_pagination,
                 notice_table_key=str(uuid.uuid4()),
                 notice_table_selectedrowkeys=None,
-                api_check_token_trigger={'timestamp': time.time()},
             )
-
-        return dict(
-            notice_table_data=dash.no_update,
-            notice_table_pagination=dash.no_update,
-            notice_table_key=dash.no_update,
-            notice_table_selectedrowkeys=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
-        )
 
     raise PreventUpdate
 
@@ -199,7 +179,7 @@ def change_notice_edit_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制编辑按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             if len(table_rows_selected) > 1:
@@ -221,7 +201,7 @@ def change_notice_delete_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制删除按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             return False
@@ -263,9 +243,6 @@ def change_notice_delete_button_status(table_rows_selected):
             ),
         ],
         other=dict(
-            api_check_token_trigger=Output(
-                'api-check-token', 'data', allow_duplicate=True
-            ),
             edit_row_info=Output('notice-edit-id-store', 'data'),
             modal_type=Output('notice-operations-store-bk', 'data'),
         ),
@@ -295,7 +272,7 @@ def add_edit_notice_modal(
     """
     显示新增或编辑通知公告弹窗回调
     """
-    trigger_id = dash.ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if (
         trigger_id == {'index': 'add', 'type': 'notice-operation-button'}
         or trigger_id == {'index': 'edit', 'type': 'notice-operation-button'}
@@ -313,7 +290,6 @@ def add_edit_notice_modal(
                 ),
                 form_validate=[None] * 4,
                 other=dict(
-                    api_check_token_trigger=dash.no_update,
                     edit_row_info=None,
                     modal_type={'type': 'add'},
                 ),
@@ -330,39 +306,36 @@ def add_edit_notice_modal(
             else:
                 notice_id = int(recently_button_clicked_row['key'])
             notice_info_res = NoticeApi.get_notice(notice_id=notice_id)
-            if notice_info_res['code'] == 200:
-                notice_info = notice_info_res['data']
-                notice_content = notice_info.get('notice_content')
+            notice_info = notice_info_res['data']
+            notice_content = notice_info.get('notice_content')
 
-                return dict(
-                    modal=dict(visible=True, title='编辑通知公告'),
-                    form_value=dict(
-                        notice_title=notice_info.get('notice_title'),
-                        notice_type=notice_info.get('notice_type'),
-                        status=notice_info.get('status'),
-                        notice_content=notice_content,
-                        editor_key=str(uuid.uuid4()),
-                    ),
-                    form_validate=[None] * 4,
-                    other=dict(
-                        api_check_token_trigger={'timestamp': time.time()},
-                        edit_row_info=notice_info if notice_info else None,
-                        modal_type={'type': 'edit'},
-                    ),
-                )
+            return dict(
+                modal=dict(visible=True, title='编辑通知公告'),
+                form_value=dict(
+                    notice_title=notice_info.get('notice_title'),
+                    notice_type=notice_info.get('notice_type'),
+                    status=notice_info.get('status'),
+                    notice_content=notice_content,
+                    editor_key=str(uuid.uuid4()),
+                ),
+                form_validate=[None] * 4,
+                other=dict(
+                    edit_row_info=notice_info if notice_info else None,
+                    modal_type={'type': 'edit'},
+                ),
+            )
 
         return dict(
-            modal=dict(visible=dash.no_update, title=dash.no_update),
+            modal=dict(visible=no_update, title=no_update),
             form_value=dict(
-                notice_title=dash.no_update,
-                notice_type=dash.no_update,
-                status=dash.no_update,
-                notice_content=dash.no_update,
-                editor_key=dash.no_update,
+                notice_title=no_update,
+                notice_type=no_update,
+                status=no_update,
+                notice_content=no_update,
+                editor_key=no_update,
             ),
-            form_validate=[dash.no_update] * 4,
+            form_validate=[no_update] * 4,
             other=dict(
-                api_check_token_trigger={'timestamp': time.time()},
                 edit_row_info=None,
                 modal_type=None,
             ),
@@ -392,12 +365,6 @@ def add_edit_notice_modal(
         modal_visible=Output('notice-modal', 'visible'),
         operations=Output(
             'notice-operations-store', 'data', allow_duplicate=True
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
-        ),
-        global_message_container=Output(
-            'global-message-container', 'children', allow_duplicate=True
         ),
     ),
     inputs=dict(confirm_trigger=Input('notice-modal', 'okCounts')),
@@ -443,51 +410,41 @@ def notice_confirm(
                 status=status,
                 notice_content=notice_content,
             )
-            api_res = {}
             modal_type = modal_type.get('type')
             if modal_type == 'add':
-                api_res = NoticeApi.add_notice(params_add)
+                NoticeApi.add_notice(params_add)
             if modal_type == 'edit':
-                api_res = NoticeApi.update_notice(params_edit)
-            if api_res.get('code') == 200:
-                if modal_type == 'add':
-                    return dict(
-                        notice_title_form_status=None,
-                        notice_type_form_status=None,
-                        notice_title_form_help=None,
-                        notice_type_form_help=None,
-                        modal_visible=False,
-                        operations={'type': 'add'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '新增成功', type='success'
-                        ),
-                    )
-                if modal_type == 'edit':
-                    return dict(
-                        notice_title_form_status=None,
-                        notice_type_form_status=None,
-                        notice_title_form_help=None,
-                        notice_type_form_help=None,
-                        modal_visible=False,
-                        operations={'type': 'edit'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '编辑成功', type='success'
-                        ),
-                    )
+                NoticeApi.update_notice(params_edit)
+            if modal_type == 'add':
+                MessageManager.success(content='新增成功')
+
+                return dict(
+                    notice_title_form_status=None,
+                    notice_type_form_status=None,
+                    notice_title_form_help=None,
+                    notice_type_form_help=None,
+                    modal_visible=False,
+                    operations={'type': 'add'},
+                )
+            if modal_type == 'edit':
+                MessageManager.success(content='编辑成功')
+
+                return dict(
+                    notice_title_form_status=None,
+                    notice_type_form_status=None,
+                    notice_title_form_help=None,
+                    notice_type_form_help=None,
+                    modal_visible=False,
+                    operations={'type': 'edit'},
+                )
 
             return dict(
                 notice_title_form_status=None,
                 notice_type_form_status=None,
                 notice_title_form_help=None,
                 notice_type_form_help=None,
-                modal_visible=dash.no_update,
-                operations=dash.no_update,
-                api_check_token_trigger={'timestamp': time.time()},
-                global_message_container=fuc.FefferyFancyMessage(
-                    '处理失败', type='error'
-                ),
+                modal_visible=no_update,
+                operations=no_update,
             )
 
         return dict(
@@ -503,12 +460,8 @@ def notice_confirm(
             notice_type_form_help=None
             if validate_data_not_empty(notice_type)
             else '请输入公告类型！',
-            modal_visible=dash.no_update,
-            operations=dash.no_update,
-            api_check_token_trigger=dash.no_update,
-            global_message_container=fuc.FefferyFancyMessage(
-                '处理失败', type='error'
-            ),
+            modal_visible=no_update,
+            operations=no_update,
         )
 
     raise PreventUpdate
@@ -541,11 +494,11 @@ def notice_delete_modal(
     """
     显示删除通知公告二次确认弹窗回调
     """
-    trigger_id = dash.ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if trigger_id == {'index': 'delete', 'type': 'notice-operation-button'} or (
         trigger_id == 'notice-list-table' and clicked_content == '删除'
     ):
-        trigger_id = dash.ctx.triggered_id
+        trigger_id = ctx.triggered_id
 
         if trigger_id == {'index': 'delete', 'type': 'notice-operation-button'}:
             notice_ids = ','.join(selected_row_keys)
@@ -553,7 +506,7 @@ def notice_delete_modal(
             if clicked_content == '删除':
                 notice_ids = recently_button_clicked_row['key']
             else:
-                return dash.no_update
+                return no_update
 
         return [f'是否确认删除序号为{notice_ids}的通知公告？', True, notice_ids]
 
@@ -561,11 +514,7 @@ def notice_delete_modal(
 
 
 @app.callback(
-    [
-        Output('notice-operations-store', 'data', allow_duplicate=True),
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
-    ],
+    Output('notice-operations-store', 'data', allow_duplicate=True),
     Input('notice-delete-confirm-modal', 'okCounts'),
     State('notice-delete-ids-store', 'data'),
     prevent_initial_call=True,
@@ -576,18 +525,9 @@ def notice_delete_confirm(delete_confirm, notice_ids_data):
     """
     if delete_confirm:
         params = notice_ids_data
-        delete_button_info = NoticeApi.del_notice(params)
-        if delete_button_info['code'] == 200:
-            return [
-                {'type': 'delete'},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('删除成功', type='success'),
-            ]
+        NoticeApi.del_notice(params)
+        MessageManager.success(content='删除成功')
 
-        return [
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('删除失败', type='error'),
-        ]
+        return ({'type': 'delete'},)
 
     raise PreventUpdate

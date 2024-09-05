@@ -1,64 +1,54 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.monitor_c.operlog_c  # noqa: F401
+from dash import dcc, html
 from api.monitor.operlog import OperlogApi
 from api.system.dict.data import DictDataApi
+from callbacks.monitor_c import operlog_c  # noqa: F401
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-
-    option = []
-    option_table = []
     info = DictDataApi.get_dicts(dict_type='sys_oper_type')
-    if info.get('code') == 200:
-        data = info.get('data')
-        option = [
-            dict(label=item.get('dict_label'), value=item.get('dict_value'))
-            for item in data
-        ]
-        option_table = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-            )
-            for item in data
-        ]
+    data = info.get('data')
+    option = [
+        dict(label=item.get('dict_label'), value=item.get('dict_value'))
+        for item in data
+    ]
+    option_table = [
+        dict(
+            label=item.get('dict_label'),
+            value=item.get('dict_value'),
+            css_class=item.get('css_class'),
+        )
+        for item in data
+    ]
     option_dict = {item.get('value'): item for item in option_table}
 
     operation_log_params = dict(page_num=1, page_size=10)
     table_info = OperlogApi.list_operlog(operation_log_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['status'] == 0:
-                item['status'] = dict(tag='成功', color='blue')
-            else:
-                item['status'] = dict(tag='失败', color='volcano')
-            if str(item.get('business_type')) in option_dict.keys():
-                item['business_type'] = dict(
-                    tag=option_dict.get(str(item.get('business_type'))).get(
-                        'label'
-                    ),
-                    color='blue',
-                )
-            item['key'] = str(item['oper_id'])
-            item['cost_time'] = f"{item['cost_time']}毫秒"
-            item['operation'] = [
-                {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
-                if PermissionManager.check_perms('monitor:operlog:query')
-                else {},
-            ]
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['status'] == 0:
+            item['status'] = dict(tag='成功', color='blue')
+        else:
+            item['status'] = dict(tag='失败', color='volcano')
+        if str(item.get('business_type')) in option_dict.keys():
+            item['business_type'] = dict(
+                tag=option_dict.get(str(item.get('business_type'))).get(
+                    'label'
+                ),
+                color='blue',
+            )
+        item['key'] = str(item['oper_id'])
+        item['cost_time'] = f"{item['cost_time']}毫秒"
+        item['operation'] = [
+            {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
+            if PermissionManager.check_perms('monitor:operlog:query')
+            else {},
+        ]
 
     return [
         dcc.Store(id='operation_log-button-perms-container', data=button_perms),

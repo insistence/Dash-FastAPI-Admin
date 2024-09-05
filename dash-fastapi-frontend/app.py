@@ -1,31 +1,21 @@
 import dash
-import time
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
+from dash import dcc, html
+from dash.dependencies import Input, Output, State
 from flask import session
-from operator import itemgetter
-
-from server import app, logger
-from config.env import AppConfig
-from config.global_config import RouterConfig
-from store.store import render_store_container
-
-# 载入子页面
-import views
-
-from callbacks import app_c
 from api.login import LoginApi
 from api.router import RouterApi
+from callbacks import app_c  # noqa: F401
+from config.env import AppConfig
+from config.global_config import RouterConfig
+from server import app
+from store.store import render_store_container
 from utils.cache_util import CacheManager
 from utils.router_util import RouterUtil
-from utils.tree_tool import (
-    find_node_values,
-    find_key_by_href,
-    deal_user_menu_info,
-    get_search_panel_data,
-)
+from utils.tree_tool import find_key_by_href, find_node_values
+from views import forget, layout, login, page_404
+
 
 app.layout = html.Div(
     [
@@ -84,12 +74,6 @@ app.layout = html.Div(
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
         ),
-        global_message_container=Output(
-            'global-message-container', 'children', allow_duplicate=True
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
-        ),
         menu_current_key=Output('current-key-container', 'data'),
         search_panel_data=Output('search-panel', 'data'),
     ),
@@ -109,38 +93,24 @@ def router(pathname, url_trigger, session_token):
     # 若已登录
     if token_result and session_token and token_result == session_token:
         if url_trigger == 'load':
-            current_user_result = LoginApi.get_info()
+            current_user = LoginApi.get_info()
             router_list_result = RouterApi.get_routers()
-            if (
-                current_user_result['code'] == 200
-                and router_list_result['code'] == 200
-            ):
-                current_user = current_user_result
-                router_list = router_list_result['data']
-                menu_info = RouterUtil.generate_menu_tree(router_list)
-                # search_panel_data = get_search_panel_data(user_menu_list)
-                search_panel_data = []
-                session['user_info'] = current_user['user']
-                permissions = {
-                    'perms': current_user['permissions'],
-                    'roles': current_user['roles'],
-                }
-                cache_obj = dict(
-                    user_info=current_user['user'],
-                    permissions=permissions,
-                    menu_info=menu_info,
-                    search_panel_data=search_panel_data,
-                )
-                CacheManager.set(cache_obj)
-            else:
-                return dict(
-                    app_mount=dash.no_update,
-                    redirect_container=dash.no_update,
-                    global_message_container=dash.no_update,
-                    api_check_token_trigger={'timestamp': time.time()},
-                    menu_current_key=dash.no_update,
-                    search_panel_data=dash.no_update,
-                )
+            router_list = router_list_result['data']
+            menu_info = RouterUtil.generate_menu_tree(router_list)
+            # search_panel_data = get_search_panel_data(user_menu_list)
+            search_panel_data = []
+            session['user_info'] = current_user['user']
+            permissions = {
+                'perms': current_user['permissions'],
+                'roles': current_user['roles'],
+            }
+            cache_obj = dict(
+                user_info=current_user['user'],
+                permissions=permissions,
+                menu_info=menu_info,
+                search_panel_data=search_panel_data,
+            )
+            CacheManager.set(cache_obj)
         menu_info = CacheManager.get('menu_info')
         search_panel_data = CacheManager.get('search_panel_data')
         dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
@@ -162,8 +132,6 @@ def router(pathname, url_trigger, session_token):
                         redirect_container=dcc.Location(
                             pathname='/', id='router-redirect'
                         ),
-                        global_message_container=None,
-                        api_check_token_trigger={'timestamp': time.time()},
                         menu_current_key={'current_key': current_key},
                         search_panel_data=search_panel_data,
                     )
@@ -173,10 +141,8 @@ def router(pathname, url_trigger, session_token):
                 )
                 # 否则正常渲染主页面
                 return dict(
-                    app_mount=views.layout.render_content(user_menu_info),
+                    app_mount=layout.render_content(user_menu_info),
                     redirect_container=None,
-                    global_message_container=None,
-                    api_check_token_trigger={'timestamp': time.time()},
                     menu_current_key={'current_key': current_key},
                     search_panel_data=search_panel_data,
                 )
@@ -185,8 +151,6 @@ def router(pathname, url_trigger, session_token):
                 return dict(
                     app_mount=dash.no_update,
                     redirect_container=None,
-                    global_message_container=None,
-                    api_check_token_trigger={'timestamp': time.time()},
                     menu_current_key={'current_key': current_key},
                     search_panel_data=search_panel_data,
                 )
@@ -194,14 +158,12 @@ def router(pathname, url_trigger, session_token):
         else:
             # 渲染404状态页
             return dict(
-                app_mount=views.page_404.render_content(),
+                app_mount=page_404.render_content(),
                 redirect_container=None,
-                global_message_container=None,
-                api_check_token_trigger={'timestamp': time.time()},
                 menu_current_key=dash.no_update,
                 search_panel_data=dash.no_update,
             )
-            
+
     else:
         # 若未登录
         # 根据pathname控制渲染行为
@@ -209,30 +171,24 @@ def router(pathname, url_trigger, session_token):
         if pathname not in RouterConfig.BASIC_VALID_PATHNAME:
             # 渲染404状态页
             return dict(
-                app_mount=views.page_404.render_content(),
+                app_mount=page_404.render_content(),
                 redirect_container=None,
-                global_message_container=None,
-                api_check_token_trigger={'timestamp': time.time()},
                 menu_current_key=dash.no_update,
                 search_panel_data=dash.no_update,
             )
 
         if pathname == '/login':
             return dict(
-                app_mount=views.login.render_content(),
+                app_mount=login.render_content(),
                 redirect_container=None,
-                global_message_container=None,
-                api_check_token_trigger={'timestamp': time.time()},
                 menu_current_key=dash.no_update,
                 search_panel_data=dash.no_update,
             )
 
         if pathname == '/forget':
             return dict(
-                app_mount=views.forget.render_forget_content(),
+                app_mount=forget.render_forget_content(),
                 redirect_container=None,
-                global_message_container=None,
-                api_check_token_trigger={'timestamp': time.time()},
                 menu_current_key=dash.no_update,
                 search_panel_data=dash.no_update,
             )
@@ -243,8 +199,6 @@ def router(pathname, url_trigger, session_token):
             redirect_container=dcc.Location(
                 pathname='/login', id='router-redirect'
             ),
-            global_message_container=None,
-            api_check_token_trigger={'timestamp': time.time()},
             menu_current_key=dash.no_update,
             search_panel_data=dash.no_update,
         )

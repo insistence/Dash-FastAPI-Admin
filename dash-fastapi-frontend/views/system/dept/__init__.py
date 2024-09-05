@@ -1,57 +1,54 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.system_c.dept_c  # noqa: F401
+from dash import dcc, html
 from api.system.dept import DeptApi
+from callbacks.system_c import dept_c  # noqa: F401
 from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    table_data_new = []
     default_expanded_row_keys = []
     table_info = DeptApi.list_dept({})
-    if table_info['code'] == 200:
-        table_data = table_info['data']
-        for item in table_data:
-            default_expanded_row_keys.append(str(item['dept_id']))
-            item['key'] = str(item['dept_id'])
-            if item['parent_id'] == 0:
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                    if PermissionManager.check_perms('system:dept:add')
-                    else {},
-                ]
-            elif item['status'] == '1':
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:dept:remove')
-                    else {},
-                ]
-            else:
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                    if PermissionManager.check_perms('system:dept:add')
-                    else {},
-                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:dept:remove')
-                    else {},
-                ]
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
-        table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
+    table_data = table_info['data']
+    for item in table_data:
+        default_expanded_row_keys.append(str(item['dept_id']))
+        item['key'] = str(item['dept_id'])
+        if item['parent_id'] == 0:
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                if PermissionManager.check_perms('system:dept:add')
+                else {},
+            ]
+        elif item['status'] == '1':
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:dept:remove')
+                else {},
+            ]
+        else:
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                if PermissionManager.check_perms('system:dept:add')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:dept:remove')
+                else {},
+            ]
+        if item['status'] == '0':
+            item['status'] = dict(tag='正常', color='blue')
+        else:
+            item['status'] = dict(tag='停用', color='volcano')
+    table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
 
     return [
         dcc.Store(id='dept-button-perms-container', data=button_perms),

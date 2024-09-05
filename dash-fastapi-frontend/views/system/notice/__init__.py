@@ -1,71 +1,58 @@
-from dash import dcc, html
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-from flask import session
-import json
 import uuid
-
-import callbacks.system_c.notice_c
-from config.global_config import ApiBaseUrlConfig
+from dash import dcc, html
+from flask import session
 from api.system.notice import NoticeApi
 from api.system.dict.data import DictDataApi
+from callbacks.system_c import notice_c  # noqa: F401
+from config.global_config import ApiBaseUrlConfig
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-
-    option = []
-    option_table = []
     info = DictDataApi.get_dicts(dict_type='sys_notice_type')
-    if info.get('code') == 200:
-        data = info.get('data')
-        option = [
-            dict(label=item.get('dict_label'), value=item.get('dict_value'))
-            for item in data
-        ]
-        option_table = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-            )
-            for item in data
-        ]
+    data = info.get('data')
+    option = [
+        dict(label=item.get('dict_label'), value=item.get('dict_value'))
+        for item in data
+    ]
+    option_table = [
+        dict(
+            label=item.get('dict_label'),
+            value=item.get('dict_value'),
+            css_class=item.get('css_class'),
+        )
+        for item in data
+    ]
     option_dict = {item.get('value'): item for item in option_table}
 
     notice_params = dict(page_num=1, page_size=10)
     table_info = NoticeApi.list_notice(notice_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['rows']
-        page_num = table_info['page_num']
-        page_size = table_info['page_size']
-        total = table_info['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='关闭', color='volcano')
-            if str(item.get('notice_type')) in option_dict.keys():
-                item['notice_type'] = dict(
-                    tag=option_dict.get(str(item.get('notice_type'))).get(
-                        'label'
-                    ),
-                    color='blue',
-                )
-            item['key'] = str(item['notice_id'])
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:notice:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:notice:remove')
-                else {},
-            ]
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(tag='正常', color='blue')
+        else:
+            item['status'] = dict(tag='关闭', color='volcano')
+        if str(item.get('notice_type')) in option_dict.keys():
+            item['notice_type'] = dict(
+                tag=option_dict.get(str(item.get('notice_type'))).get('label'),
+                color='blue',
+            )
+        item['key'] = str(item['notice_id'])
+        item['operation'] = [
+            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('system:notice:edit')
+            else {},
+            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('system:notice:remove')
+            else {},
+        ]
 
     return [
         dcc.Store(id='notice-button-perms-container', data=button_perms),
