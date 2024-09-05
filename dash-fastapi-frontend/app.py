@@ -58,14 +58,15 @@ app.layout = html.Div(
                         icon='fc-high-priority', style={'font-size': '28px'}
                     ),
                     fac.AntdText(
-                        '用户信息已过期，请重新登录',
+                        '登录状态已过期，您可以继续留在该页面，或者重新登录',
                         style={'margin-left': '5px'},
                     ),
                 ]
             ),
             id='token-invalid-modal',
             visible=False,
-            title='提示',
+            title='系统提示',
+            okText='重新登录',
             renderFooter=True,
             centered=True,
         ),
@@ -107,114 +108,100 @@ def router(pathname, url_trigger, session_token):
     token_result = session.get('Authorization')
     # 若已登录
     if token_result and session_token and token_result == session_token:
-        try:
-            if url_trigger == 'load':
-                current_user_result = LoginApi.get_info()
-                router_list_result = RouterApi.get_routers()
-                if (
-                    current_user_result['code'] == 200
-                    and router_list_result['code'] == 200
-                ):
-                    current_user = current_user_result
-                    router_list = router_list_result['data']
-                    menu_info = RouterUtil.generate_menu_tree(router_list)
-                    # search_panel_data = get_search_panel_data(user_menu_list)
-                    search_panel_data = []
-                    session['user_info'] = current_user['user']
-                    permissions = {
-                        'perms': current_user['permissions'],
-                        'roles': current_user['roles'],
-                    }
-                    cache_obj = dict(
-                        user_info=current_user['user'],
-                        permissions=permissions,
-                        menu_info=menu_info,
-                        search_panel_data=search_panel_data,
-                    )
-                    CacheManager.set(cache_obj)
-                else:
-                    return dict(
-                        app_mount=dash.no_update,
-                        redirect_container=dash.no_update,
-                        global_message_container=dash.no_update,
-                        api_check_token_trigger={'timestamp': time.time()},
-                        menu_current_key=dash.no_update,
-                        search_panel_data=dash.no_update,
-                    )
-            menu_info = CacheManager.get('menu_info')
-            search_panel_data = CacheManager.get('search_panel_data')
-            dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
-            valid_href_list = (
-                dynamic_valid_pathname_list + RouterConfig.STATIC_VALID_PATHNAME
-            )
-            if pathname in valid_href_list:
-                current_key = find_key_by_href(menu_info, pathname)
-                if pathname == '/':
-                    current_key = '首页'
-                if pathname == '/user/profile':
-                    current_key = '个人资料'
-                if url_trigger == 'load':
-                    # 根据pathname控制渲染行为
-                    if pathname == '/login' or pathname == '/forget':
-                        # 重定向到主页面
-                        return dict(
-                            app_mount=dash.no_update,
-                            redirect_container=dcc.Location(
-                                pathname='/', id='router-redirect'
-                            ),
-                            global_message_container=None,
-                            api_check_token_trigger={'timestamp': time.time()},
-                            menu_current_key={'current_key': current_key},
-                            search_panel_data=search_panel_data,
-                        )
-
-                    user_menu_info = RouterUtil.generate_menu_tree(
-                        RouterUtil.get_visible_routers(router_list)
-                    )
-                    # 否则正常渲染主页面
-                    return dict(
-                        app_mount=views.layout.render_content(user_menu_info),
-                        redirect_container=None,
-                        global_message_container=None,
-                        api_check_token_trigger={'timestamp': time.time()},
-                        menu_current_key={'current_key': current_key},
-                        search_panel_data=search_panel_data,
-                    )
-
-                else:
-                    return dict(
-                        app_mount=dash.no_update,
-                        redirect_container=None,
-                        global_message_container=None,
-                        api_check_token_trigger={'timestamp': time.time()},
-                        menu_current_key={'current_key': current_key},
-                        search_panel_data=search_panel_data,
-                    )
-
+        if url_trigger == 'load':
+            current_user_result = LoginApi.get_info()
+            router_list_result = RouterApi.get_routers()
+            if (
+                current_user_result['code'] == 200
+                and router_list_result['code'] == 200
+            ):
+                current_user = current_user_result
+                router_list = router_list_result['data']
+                menu_info = RouterUtil.generate_menu_tree(router_list)
+                # search_panel_data = get_search_panel_data(user_menu_list)
+                search_panel_data = []
+                session['user_info'] = current_user['user']
+                permissions = {
+                    'perms': current_user['permissions'],
+                    'roles': current_user['roles'],
+                }
+                cache_obj = dict(
+                    user_info=current_user['user'],
+                    permissions=permissions,
+                    menu_info=menu_info,
+                    search_panel_data=search_panel_data,
+                )
+                CacheManager.set(cache_obj)
             else:
-                # 渲染404状态页
                 return dict(
-                    app_mount=views.page_404.render_content(),
-                    redirect_container=None,
-                    global_message_container=None,
+                    app_mount=dash.no_update,
+                    redirect_container=dash.no_update,
+                    global_message_container=dash.no_update,
                     api_check_token_trigger={'timestamp': time.time()},
                     menu_current_key=dash.no_update,
                     search_panel_data=dash.no_update,
                 )
+        menu_info = CacheManager.get('menu_info')
+        search_panel_data = CacheManager.get('search_panel_data')
+        dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
+        valid_href_list = (
+            dynamic_valid_pathname_list + RouterConfig.STATIC_VALID_PATHNAME
+        )
+        if pathname in valid_href_list:
+            current_key = find_key_by_href(menu_info, pathname)
+            if pathname == '/':
+                current_key = '首页'
+            if pathname == '/user/profile':
+                current_key = '个人资料'
+            if url_trigger == 'load':
+                # 根据pathname控制渲染行为
+                if pathname == '/login' or pathname == '/forget':
+                    # 重定向到主页面
+                    return dict(
+                        app_mount=dash.no_update,
+                        redirect_container=dcc.Location(
+                            pathname='/', id='router-redirect'
+                        ),
+                        global_message_container=None,
+                        api_check_token_trigger={'timestamp': time.time()},
+                        menu_current_key={'current_key': current_key},
+                        search_panel_data=search_panel_data,
+                    )
 
-        except Exception as e:
-            logger.exception(e)
+                user_menu_info = RouterUtil.generate_menu_tree(
+                    RouterUtil.get_visible_routers(router_list)
+                )
+                # 否则正常渲染主页面
+                return dict(
+                    app_mount=views.layout.render_content(user_menu_info),
+                    redirect_container=None,
+                    global_message_container=None,
+                    api_check_token_trigger={'timestamp': time.time()},
+                    menu_current_key={'current_key': current_key},
+                    search_panel_data=search_panel_data,
+                )
 
+            else:
+                return dict(
+                    app_mount=dash.no_update,
+                    redirect_container=None,
+                    global_message_container=None,
+                    api_check_token_trigger={'timestamp': time.time()},
+                    menu_current_key={'current_key': current_key},
+                    search_panel_data=search_panel_data,
+                )
+
+        else:
+            # 渲染404状态页
             return dict(
-                app_mount=dash.no_update,
+                app_mount=views.page_404.render_content(),
                 redirect_container=None,
-                global_message_container=fuc.FefferyFancyNotification(
-                    '接口异常', type='error', autoClose=2000
-                ),
+                global_message_container=None,
                 api_check_token_trigger={'timestamp': time.time()},
                 menu_current_key=dash.no_update,
                 search_panel_data=dash.no_update,
             )
+            
     else:
         # 若未登录
         # 根据pathname控制渲染行为
