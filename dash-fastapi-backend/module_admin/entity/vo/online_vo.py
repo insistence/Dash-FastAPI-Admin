@@ -22,11 +22,21 @@ class OnlineModel(BaseModel):
 @as_query
 class OnlineQueryModel(OnlineModel):
     """
-    岗位管理不分页查询模型
+    在线用户不分页查询模型
     """
 
     begin_time: Optional[str] = Field(default=None, description='开始时间')
     end_time: Optional[str] = Field(default=None, description='结束时间')
+
+
+@as_query
+class OnlinePageQueryModel(OnlineQueryModel):
+    """
+    在线用户分页查询模型
+    """
+
+    page_num: int = Field(default=1, description='当前页码')
+    page_size: int = Field(default=10, description='每页记录数')
 
 
 class DeleteOnlineModel(BaseModel):
