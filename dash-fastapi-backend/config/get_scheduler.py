@@ -243,17 +243,17 @@ class SchedulerUtil:
                 # 构造日志消息
                 job_message = f"事件类型: {event_type}, 任务ID: {job_id}, 任务名称: {job_name}, 执行于{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                 job_log = JobLogModel(
-                    jobName=job_name,
-                    jobGroup=job_group,
-                    jobExecutor=job_executor,
-                    invokeTarget=invoke_target,
-                    jobArgs=job_args,
-                    jobKwargs=job_kwargs,
-                    jobTrigger=job_trigger,
-                    jobMessage=job_message,
+                    job_name=job_name,
+                    job_group=job_group,
+                    job_executor=job_executor,
+                    invoke_target=invoke_target,
+                    job_args=job_args,
+                    job_kwargs=job_kwargs,
+                    job_trigger=job_trigger,
+                    job_message=job_message,
                     status=status,
-                    exceptionInfo=exception_info,
-                    createTime=datetime.now(),
+                    exception_info=exception_info,
+                    create_time=datetime.now(),
                 )
                 session = SessionLocal()
                 JobLogService.add_job_log_services(session, job_log)
