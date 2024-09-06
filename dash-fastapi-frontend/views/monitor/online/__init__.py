@@ -1,33 +1,26 @@
 from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.monitor_c.online_c
-from api.online import get_online_list_api
+from api.monitor.online import OnlineApi
+from callbacks.monitor_c import online_c  # noqa: F401
+from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
 
     online_params = dict(page_num=1, page_size=10)
-    table_info = get_online_list_api(online_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
-        for item in table_data:
-            item['key'] = str(item['session_id'])
-            item['operation'] = [
-                {
-                    'content': '强退',
-                    'type': 'link',
-                    'icon': 'antd-delete'
-                } if 'monitor:online:forceLogout' in button_perms else {},
-            ]
+    table_info = OnlineApi.list_online(online_params)
+    table_data = table_info['rows']
+    page_num = table_info['page_num']
+    page_size = table_info['page_size']
+    total = table_info['total']
+    for item in table_data:
+        item['key'] = str(item['token_id'])
+        item['operation'] = [
+            {'content': '强退', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('monitor:online:forceLogout')
+            else {},
+        ]
 
     return [
         dcc.Store(id='online-button-perms-container', data=button_perms),
@@ -57,9 +50,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 210
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='登录地址'
+                                                                label='登录地址',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdInput(
@@ -69,9 +62,9 @@ def render(*args, **kwargs):
                                                                     allowClear=True,
                                                                     style={
                                                                         'width': 210
-                                                                    }
+                                                                    },
                                                                 ),
-                                                                label='用户名称'
+                                                                label='用户名称',
                                                             ),
                                                             fac.AntdFormItem(
                                                                 fac.AntdButton(
@@ -80,7 +73,7 @@ def render(*args, **kwargs):
                                                                     type='primary',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-search'
-                                                                    )
+                                                                    ),
                                                                 )
                                                             ),
                                                             fac.AntdFormItem(
@@ -89,20 +82,20 @@ def render(*args, **kwargs):
                                                                     id='online-reset',
                                                                     icon=fac.AntdIcon(
                                                                         icon='antd-sync'
-                                                                    )
+                                                                    ),
                                                                 )
-                                                            )
+                                                            ),
                                                         ],
                                                         style={
                                                             'paddingBottom': '10px'
-                                                        }
+                                                        },
                                                     ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='online-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -121,21 +114,23 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'online-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:online:batchLogout' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:online:batchLogout'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -149,10 +144,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='online-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='online-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -164,24 +159,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='online-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -192,7 +185,7 @@ def render(*args, **kwargs):
                                             data=table_data,
                                             columns=[
                                                 {
-                                                    'dataIndex': 'session_id',
+                                                    'dataIndex': 'token_id',
                                                     'title': '会话编号',
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
@@ -253,7 +246,7 @@ def render(*args, **kwargs):
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -262,28 +255,32 @@ def render(*args, **kwargs):
                                                 'pageSize': page_size,
                                                 'current': page_num,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': total
+                                                'total': total,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 强退会话二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认强退？', id='online-delete-text'),
@@ -291,6 +288,6 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]

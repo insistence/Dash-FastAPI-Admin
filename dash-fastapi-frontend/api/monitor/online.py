@@ -15,7 +15,7 @@ class OnlineApi:
         :return:
         """
         return api_request(
-            url='/monitor/online/list',
+            url='/monitor/online/list/page',
             method='get',
             params=query,
         )
