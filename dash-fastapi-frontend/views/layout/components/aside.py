@@ -1,11 +1,9 @@
-import feffery_antd_components as fac
 import dash
-
-import callbacks.layout_c.aside_c
+import feffery_antd_components as fac
+from callbacks.layout_c import aside_c  # noqa: F401
 
 
 def render_aside_content(menu_info):
-
     return [
         fac.AntdSider(
             [
@@ -22,8 +20,8 @@ def render_aside_content(menu_info):
                             style={
                                 'height': '100%',
                                 'display': 'flex',
-                                'alignItems': 'center'
-                            }
+                                'alignItems': 'center',
+                            },
                         ),
                         fac.AntdCol(
                             fac.AntdText(
@@ -32,16 +30,16 @@ def render_aside_content(menu_info):
                                 style={
                                     'fontSize': '22px',
                                     # 'paddingLeft': '20px',
-                                    'color': 'rgb(255, 255, 255)'
-                                }
+                                    'color': 'rgb(255, 255, 255)',
+                                },
                             ),
                             flex='5',
                             style={
                                 'height': '100%',
                                 'display': 'flex',
                                 'alignItems': 'center',
-                            }
-                        )
+                            },
+                        ),
                     ],
                     style={
                         'height': '50px',
@@ -49,36 +47,33 @@ def render_aside_content(menu_info):
                         'position': 'sticky',
                         'top': 0,
                         'zIndex': 999,
-                        'paddingLeft': '10px'
-                    }
+                        'paddingLeft': '10px',
+                    },
                 ),
                 fac.AntdMenu(
                     id='index-side-menu',
                     menuItems=[
-                                  {
-                                      'component': 'Item',
-                                      'props': {
-                                          'key': '首页',
-                                          'title': '首页',
-                                          'icon': 'antd-dashboard',
-                                          'href': '/'
-                                      }
-                                  }
-                              ] + menu_info,
+                        {
+                            'component': 'Item',
+                            'props': {
+                                'key': '首页',
+                                'title': '首页',
+                                'icon': 'antd-dashboard',
+                                'href': '/',
+                            },
+                        }
+                    ]
+                    + menu_info,
                     mode='inline',
                     theme='dark',
                     defaultSelectedKey='首页',
-                    defaultOpenKeys=['-1_1'],
-                    style={
-                        'width': '100%',
-                        'height': 'calc(100vh - 50px)'
-                    }
+                    style={'width': '100%', 'height': 'calc(100vh - 50px)'},
                 ),
             ],
             id='menu-collapse-sider-custom',
             collapsible=True,
             collapsedWidth=60,
             trigger=None,
-            width=210
+            width=210,
         ),
     ]

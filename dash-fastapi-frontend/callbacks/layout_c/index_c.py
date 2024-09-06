@@ -1,14 +1,13 @@
 import dash
+import feffery_antd_components as fac
 import importlib
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import feffery_antd_components as fac
 from jsonpath_ng import parse
-
 from server import app
-import views  # noqa: F401
 from utils.cache_util import CacheManager
 from utils.tree_tool import find_href_by_key
+import views  # noqa: F401
 
 
 @app.callback(
@@ -16,12 +15,14 @@ from utils.tree_tool import find_href_by_key
         Output('tabs-container', 'items', allow_duplicate=True),
         Output('tabs-container', 'activeKey', allow_duplicate=True),
         Output('header-breadcrumb', 'items'),
+        Output('index-side-menu', 'openKeys'),
     ],
     [
         Input('index-side-menu', 'currentKey'),
         Input('tabs-container', 'tabCloseCounts'),
     ],
     [
+        State('index-side-menu', 'currentKeyPath'),
         State('index-side-menu', 'currentItem'),
         State('index-side-menu', 'currentItemPath'),
         State('tabs-container', 'latestDeletePane'),
@@ -33,6 +34,7 @@ from utils.tree_tool import find_href_by_key
 def handle_tab_switch_and_create(
     currentKey,
     tabCloseCounts,
+    currentKeyPath,
     currentItem,
     currentItemPath,
     latestDeletePane,
@@ -71,7 +73,12 @@ def handle_tab_switch_and_create(
             ]
         # 判断当前新选中的菜单栏项对应标签页是否已创建
         if currentKey in [item['key'] for item in origin_items]:
-            return [dash.no_update, currentKey, breadcrumb_items]
+            return [
+                dash.no_update,
+                currentKey,
+                breadcrumb_items,
+                currentKeyPath,
+            ]
 
         if currentKey == '个人资料':
             menu_title = '个人资料'
@@ -154,7 +161,7 @@ def handle_tab_switch_and_create(
                 }
             )
 
-        return [new_items, currentKey, breadcrumb_items]
+        return [new_items, currentKey, breadcrumb_items, currentKeyPath]
 
     elif trigger_id == 'tabs-container':
         # 如果删除的是当前标签页则回到最后新增的标签页，否则保持当前标签页不变
@@ -220,9 +227,30 @@ def handle_tab_switch_and_create(
             if activeKey == latestDeletePane
             else activeKey,
             dash.no_update,
+            dash.no_update,
         ]
 
     raise PreventUpdate
+
+
+# 处理侧边菜单栏自动滚动到当前菜单项位置
+app.clientside_callback(
+    """
+    (pathname) => {
+
+            // 处理侧边菜单项滚动
+            setTimeout(() => {
+                // 查找当前页面中name为pathname的元素
+                let scrollTarget = document.getElementsByName(pathname)
+                if (scrollTarget.length > 0) {
+                    // 滚动到该元素
+                    scrollTarget[0].scrollIntoView({ behavior: "smooth" });
+                }
+            }, 1000)
+        }
+    """,
+    Input('url-container', 'pathname'),
+)
 
 
 @app.callback(
