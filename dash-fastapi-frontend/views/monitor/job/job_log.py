@@ -1,7 +1,7 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.monitor_c.job_c.job_log_c
+from dash import dcc, html
+from callbacks.monitor_c.job_c import job_log_c  # noqa: F401
+from utils.permission_util import PermissionManager
 
 
 def render(button_perms):
@@ -131,7 +131,7 @@ def render(button_perms):
                                                     'background': '#ffeded',
                                                     'border-color': '#ffdbdb'
                                                 }
-                                            ) if 'monitor:job:remove' in button_perms else [],
+                                            ) if PermissionManager.check_perms('monitor:job:remove') else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -148,7 +148,7 @@ def render(button_perms):
                                                     'background': '#ffeded',
                                                     'border-color': '#ffdbdb'
                                                 }
-                                            ) if 'monitor:job:remove' in button_perms else [],
+                                            ) if PermissionManager.check_perms('monitor:job:remove') else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -162,7 +162,7 @@ def render(button_perms):
                                                     'background': '#fff8e6',
                                                     'border-color': '#ffe399'
                                                 }
-                                            ) if 'monitor:job:export' in button_perms else [],
+                                            ) if PermissionManager.check_perms('monitor:job:export') else [],
                                         ],
                                         style={
                                             'paddingBottom': '10px'

@@ -21,7 +21,7 @@ class JobApi:
         )
 
     @classmethod
-    def get_job(cls, job_id: str):
+    def get_job(cls, job_id: int):
         """
         查询定时任务调度详情接口
 
@@ -90,9 +90,9 @@ class JobApi:
         )
 
     @classmethod
-    def change_job_status(cls, job_id: str, status: str):
+    def change_job_status(cls, job_id: int, status: str):
         """
-        角色状态修改接口
+        定时任务调度状态修改接口
 
         :param job_id: 定时任务id
         :param status: 定时任务状态
@@ -105,7 +105,7 @@ class JobApi:
         )
 
     @classmethod
-    def run_job(cls, job_id: str, job_group: str):
+    def run_job(cls, job_id: int, job_group: str):
         """
         定时任务立即执行一次接口
 
