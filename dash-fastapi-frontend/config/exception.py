@@ -1,5 +1,6 @@
 from dash import set_props, ctx, no_update
 from utils.feedback_util import MessageManager, NotificationManager
+from utils.log_util import logger
 
 
 class AuthException(Exception):
@@ -43,17 +44,17 @@ class ServiceWarning(Exception):
 
 
 def global_exception_handler(error):
-    print(error)
     if isinstance(error, AuthException):
         set_props('token-invalid-modal', {'visible': True})
     elif isinstance(error, RequestException):
-        NotificationManager.error(description=error.message)
+        NotificationManager.error(description=error.message, message='请求异常')
     elif isinstance(error, ServiceWarning):
         MessageManager.warning(content=error.message)
     elif isinstance(error, ServiceException):
         MessageManager.error(content=error.message)
     else:
-        NotificationManager.error(description=str(error))
+        logger.exception(f'[exception]{error}')
+        NotificationManager.error(description=str(error), message='服务异常')
     # dash2.18版本对输出为字典形式的回调进行异常处理会报错，临时采用此方法解决
     outputs_grouping = ctx.outputs_grouping
     if isinstance(outputs_grouping, dict):

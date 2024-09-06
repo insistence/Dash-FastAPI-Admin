@@ -9,7 +9,7 @@ from config.exception import (
     ServiceWarning,
 )
 from config.global_config import ApiBaseUrlConfig
-from server import logger
+from utils.log_util import logger
 
 
 def api_request(

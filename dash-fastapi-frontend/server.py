@@ -1,12 +1,10 @@
 import dash
-import os
-import time
-from loguru import logger
 from flask import request, session
 from user_agents import parse
 from config.env import AppConfig
 from config.exception import global_exception_handler
-from config.global_config import PathConfig
+from utils.log_util import logger
+
 
 app = dash.Dash(
     __name__,
@@ -24,25 +22,6 @@ app.title = AppConfig.app_name
 app.server.secret_key = AppConfig.app_secret_key
 app.server.config['COMPRESS_ALGORITHM'] = AppConfig.app_compress_algorithm
 app.server.config['COMPRESS_BR_LEVEL'] = AppConfig.app_compress_br_level
-
-log_time = time.strftime('%Y%m%d', time.localtime())
-# sys_log_file_path = os.path.join(PathConfig.ABS_ROOT_PATH, 'log', 'sys_log', f'sys_request_log_{log_time}.log')
-api_log_file_path = os.path.join(
-    PathConfig.ABS_ROOT_PATH,
-    'log',
-    'api_log',
-    f'api_request_log_{log_time}.log',
-)
-# logger.add(sys_log_file_path, filter=lambda x: '[sys]' in x['message'],
-#            rotation="50MB", encoding="utf-8", enqueue=True, compression="zip")
-logger.add(
-    api_log_file_path,
-    filter=lambda x: '[api]' in x['message'],
-    rotation='50MB',
-    encoding='utf-8',
-    enqueue=True,
-    compression='zip',
-)
 
 
 # 获取用户浏览器信息
