@@ -603,7 +603,7 @@ def table_switch_user_status(
     """
     if recently_switch_data_index:
         UserApi.change_user_status(
-            user_id=recently_switch_row['key'],
+            user_id=int(recently_switch_row['key']),
             status='0' if recently_switch_status else '1',
         )
         MessageManager.success(content='修改成功')
@@ -728,7 +728,7 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
     重置用户密码弹窗确认回调，实现重置密码操作
     """
     if reset_confirm:
-        UserApi.reset_user_pwd(user_id=user_id_data, password=reset_password)
+        UserApi.reset_user_pwd(user_id=int(user_id_data), password=reset_password)
         MessageManager.success(content='重置成功')
 
         return {'type': 'reset-password'}

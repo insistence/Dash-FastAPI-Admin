@@ -1,12 +1,10 @@
-import dash
-import time
+from dash import no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import feffery_utils_components as fuc
-
+from api.system.menu import MenuApi
 from server import app
 from utils.common import validate_data_not_empty
-from api.system.menu import MenuApi
+from utils.feedback_util import MessageManager
 
 
 @app.callback(
@@ -36,12 +34,6 @@ from api.system.menu import MenuApi
         modal_visible=Output('menu-modal', 'visible', allow_duplicate=True),
         operations=Output(
             'menu-operations-store', 'data', allow_duplicate=True
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
-        ),
-        global_message_container=Output(
-            'global-message-container', 'children', allow_duplicate=True
         ),
     ),
     inputs=dict(confirm_trigger=Input('menu-modal-M-trigger', 'data')),
@@ -105,42 +97,32 @@ def menu_confirm_content(
                 visible=visible,
                 status=status,
             )
-            api_res = {}
             modal_type = modal_type.get('type')
             if modal_type == 'add':
-                api_res = MenuApi.add_menu(params_add)
+                MenuApi.add_menu(params_add)
             if modal_type == 'edit':
-                api_res = MenuApi.update_menu(params_edit)
-            if api_res.get('code') == 200:
-                if modal_type == 'add':
-                    return dict(
-                        form_validate=[None] * 8,
-                        modal_visible=False,
-                        operations={'type': 'add'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '新增成功', type='success'
-                        ),
-                    )
-                if modal_type == 'edit':
-                    return dict(
-                        form_validate=[None] * 8,
-                        modal_visible=False,
-                        operations={'type': 'edit'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '编辑成功', type='success'
-                        ),
-                    )
+                MenuApi.update_menu(params_edit)
+            if modal_type == 'add':
+                MessageManager.success(content='新增成功')
+
+                return dict(
+                    form_validate=[None] * 8,
+                    modal_visible=False,
+                    operations={'type': 'add'},
+                )
+            if modal_type == 'edit':
+                MessageManager.success(content='编辑成功')
+
+                return dict(
+                    form_validate=[None] * 8,
+                    modal_visible=False,
+                    operations={'type': 'edit'},
+                )
 
             return dict(
                 form_validate=[None] * 8,
-                modal_visible=dash.no_update,
-                operations=dash.no_update,
-                api_check_token_trigger={'timestamp': time.time()},
-                global_message_container=fuc.FefferyFancyMessage(
-                    '处理失败', type='error'
-                ),
+                modal_visible=no_update,
+                operations=no_update,
             )
 
         return dict(
@@ -160,12 +142,8 @@ def menu_confirm_content(
                 else '请输入显示排序！',
                 None if validate_data_not_empty(path) else '请输入路由地址！',
             ],
-            modal_visible=dash.no_update,
-            operations=dash.no_update,
-            api_check_token_trigger=dash.no_update,
-            global_message_container=fuc.FefferyFancyMessage(
-                '处理失败', type='error'
-            ),
+            modal_visible=no_update,
+            operations=no_update,
         )
 
     raise PreventUpdate

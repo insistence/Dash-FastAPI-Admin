@@ -1,13 +1,11 @@
-import dash
 import time
 import uuid
-from dash import dcc
+from dash import ctx, dcc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
-import feffery_utils_components as fuc
-
-from server import app
 from api.monitor.logininfor import LogininforApi
+from server import app
+from utils.feedback_util import MessageManager
 
 
 @app.callback(
@@ -21,9 +19,6 @@ from api.monitor.logininfor import LogininforApi
         login_log_table_key=Output('login_log-list-table', 'key'),
         login_log_table_selectedrowkeys=Output(
             'login_log-list-table', 'selectedRowKeys'
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
         ),
     ),
     inputs=dict(
@@ -72,7 +67,7 @@ def get_login_log_table_data(
         page_num=1,
         page_size=10,
     )
-    triggered_prop = dash.ctx.triggered[0].get('prop_id')
+    triggered_prop = ctx.triggered[0].get('prop_id')
     if triggered_prop == 'login_log-list-table.pagination':
         query_params.update(
             {
@@ -82,37 +77,27 @@ def get_login_log_table_data(
         )
     if search_click or refresh_click or pagination or operations:
         table_info = LogininforApi.list_logininfor(query_params)
-        if table_info['code'] == 200:
-            table_data = table_info['rows']
-            table_pagination = dict(
-                pageSize=table_info['page_size'],
-                current=table_info['page_num'],
-                showSizeChanger=True,
-                pageSizeOptions=[10, 30, 50, 100],
-                showQuickJumper=True,
-                total=table_info['total'],
-            )
-            for item in table_data:
-                if item['status'] == '0':
-                    item['status'] = dict(tag='成功', color='blue')
-                else:
-                    item['status'] = dict(tag='失败', color='volcano')
-                item['key'] = str(item['info_id'])
-
-            return dict(
-                login_log_table_data=table_data,
-                login_log_table_pagination=table_pagination,
-                login_log_table_key=str(uuid.uuid4()),
-                login_log_table_selectedrowkeys=None,
-                api_check_token_trigger={'timestamp': time.time()},
-            )
+        table_data = table_info['rows']
+        table_pagination = dict(
+            pageSize=table_info['page_size'],
+            current=table_info['page_num'],
+            showSizeChanger=True,
+            pageSizeOptions=[10, 30, 50, 100],
+            showQuickJumper=True,
+            total=table_info['total'],
+        )
+        for item in table_data:
+            if item['status'] == '0':
+                item['status'] = dict(tag='成功', color='blue')
+            else:
+                item['status'] = dict(tag='失败', color='volcano')
+            item['key'] = str(item['info_id'])
 
         return dict(
-            login_log_table_data=dash.no_update,
-            login_log_table_pagination=dash.no_update,
-            login_log_table_key=dash.no_update,
-            login_log_table_selectedrowkeys=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            login_log_table_data=table_data,
+            login_log_table_pagination=table_pagination,
+            login_log_table_key=str(uuid.uuid4()),
+            login_log_table_selectedrowkeys=None,
         )
 
     raise PreventUpdate
@@ -174,7 +159,7 @@ def change_login_log_delete_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制删除按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             return False
@@ -193,7 +178,7 @@ def change_login_log_unlock_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制解锁按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             if len(table_rows_selected) > 1:
@@ -220,7 +205,7 @@ def login_log_delete_modal(operation_click, selected_row_keys):
     """
     显示删除或清空登录日志二次确认弹窗回调
     """
-    trigger_id = dash.ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if trigger_id.index in ['delete', 'clear']:
         if trigger_id.index == 'delete':
             info_ids = ','.join(selected_row_keys)
@@ -228,25 +213,21 @@ def login_log_delete_modal(operation_click, selected_row_keys):
             return [
                 f'是否确认删除访问编号为{info_ids}的登录日志？',
                 True,
-                info_ids,
+                {'oper_type': 'delete', 'info_ids': info_ids},
             ]
 
         elif trigger_id.index == 'clear':
             return [
                 '是否确认清除所有的登录日志？',
                 True,
-                None,
+                {'oper_type': 'clear'},
             ]
 
     raise PreventUpdate
 
 
 @app.callback(
-    [
-        Output('login_log-operations-store', 'data', allow_duplicate=True),
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
-    ],
+    Output('login_log-operations-store', 'data', allow_duplicate=True),
     Input('login_log-delete-confirm-modal', 'okCounts'),
     State('login_log-delete-ids-store', 'data'),
     prevent_initial_call=True,
@@ -258,34 +239,16 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
     if delete_confirm:
         oper_type = info_ids_data.get('oper_type')
         if oper_type == 'clear':
-            clear_button_info = LogininforApi.clean_logininfor()
-            if clear_button_info['code'] == 200:
-                return [
-                    {'type': 'delete'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('清除成功', type='success'),
-                ]
+            LogininforApi.clean_logininfor()
+            MessageManager.success(content='清除成功')
 
-            return [
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('清除失败', type='error'),
-            ]
+            return {'type': 'clear'}
         else:
             params = info_ids_data.get('info_ids')
-            delete_button_info = LogininforApi.del_logininfor(params)
-            if delete_button_info['code'] == 200:
-                return [
-                    {'type': 'delete'},
-                    {'timestamp': time.time()},
-                    fuc.FefferyFancyMessage('删除成功', type='success'),
-                ]
+            LogininforApi.del_logininfor(params)
+            MessageManager.success(content='删除成功')
 
-            return [
-                dash.no_update,
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('删除失败', type='error'),
-            ]
+            return {'type': 'delete'}
 
     raise PreventUpdate
 
@@ -294,8 +257,6 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
     [
         Output('login_log-export-container', 'data', allow_duplicate=True),
         Output('login_log-export-complete-judge-container', 'data'),
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
     ],
     Input('login_log-export', 'nClicks'),
     prevent_initial_call=True,
@@ -306,24 +267,15 @@ def export_login_log_list(export_click):
     """
     if export_click:
         export_login_log_res = LogininforApi.export_logininfor({})
-        if export_login_log_res.status_code == 200:
-            export_login_log = export_login_log_res.content
-
-            return [
-                dcc.send_bytes(
-                    export_login_log,
-                    f'登录日志信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
-                ),
-                {'timestamp': time.time()},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('导出成功', type='success'),
-            ]
+        export_login_log = export_login_log_res.content
+        MessageManager.success(content='导出成功')
 
         return [
-            dash.no_update,
-            dash.no_update,
+            dcc.send_bytes(
+                export_login_log,
+                f'登录日志信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
+            ),
             {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('导出失败', type='error'),
         ]
 
     raise PreventUpdate
@@ -346,10 +298,6 @@ def reset_login_log_export_status(data):
 
 
 @app.callback(
-    [
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
-    ],
     Input('login_log-unlock', 'nClicks'),
     State('login_log-list-table', 'selectedRows'),
     prevent_initial_call=True,
@@ -360,16 +308,5 @@ def unlock_user(unlock_click, selected_rows):
     """
     if unlock_click:
         user_name = selected_rows[0].get('user_name')
-        unlock_info_res = LogininforApi.unlock_logininfor(user_name=user_name)
-        if unlock_info_res.get('code') == 200:
-            return [
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('解锁成功', type='success'),
-            ]
-
-        return [
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('解锁失败', type='error'),
-        ]
-
-    raise PreventUpdate
+        LogininforApi.unlock_logininfor(user_name=user_name)
+        MessageManager.success(content='解锁成功')

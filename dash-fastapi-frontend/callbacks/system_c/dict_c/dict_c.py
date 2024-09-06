@@ -1,14 +1,12 @@
-import dash
 import time
 import uuid
-from dash import dcc
+from dash import ctx, dcc, no_update
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
-import feffery_utils_components as fuc
-
+from api.system.dict.type import DictTypeApi
 from server import app
 from utils.common import validate_data_not_empty
-from api.system.dict.type import DictTypeApi
+from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
 
@@ -23,9 +21,6 @@ from utils.permission_util import PermissionManager
         dict_type_table_key=Output('dict_type-list-table', 'key'),
         dict_type_table_selectedrowkeys=Output(
             'dict_type-list-table', 'selectedRowKeys'
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
         ),
     ),
     inputs=dict(
@@ -70,7 +65,7 @@ def get_dict_type_table_data(
         page_num=1,
         page_size=10,
     )
-    triggered_id = dash.ctx.triggered_id
+    triggered_id = ctx.triggered_id
     if triggered_id == 'dict_type-list-table':
         query_params.update(
             {
@@ -80,49 +75,39 @@ def get_dict_type_table_data(
         )
     if search_click or refresh_click or pagination or operations:
         table_info = DictTypeApi.list_type(query_params)
-        if table_info['code'] == 200:
-            table_data = table_info['rows']
-            table_pagination = dict(
-                pageSize=table_info['page_size'],
-                current=table_info['page_num'],
-                showSizeChanger=True,
-                pageSizeOptions=[10, 30, 50, 100],
-                showQuickJumper=True,
-                total=table_info['total'],
-            )
-            for item in table_data:
-                if item['status'] == '0':
-                    item['status'] = dict(tag='正常', color='blue')
-                else:
-                    item['status'] = dict(tag='停用', color='volcano')
-                item['key'] = str(item['dict_id'])
-                item['dict_type'] = {
-                    'content': item['dict_type'],
-                    'type': 'link',
-                }
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dict:edit')
-                    else {},
-                    {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:dict:remove')
-                    else {},
-                ]
-
-            return dict(
-                dict_type_table_data=table_data,
-                dict_type_table_pagination=table_pagination,
-                dict_type_table_key=str(uuid.uuid4()),
-                dict_type_table_selectedrowkeys=None,
-                api_check_token_trigger={'timestamp': time.time()},
-            )
+        table_data = table_info['rows']
+        table_pagination = dict(
+            pageSize=table_info['page_size'],
+            current=table_info['page_num'],
+            showSizeChanger=True,
+            pageSizeOptions=[10, 30, 50, 100],
+            showQuickJumper=True,
+            total=table_info['total'],
+        )
+        for item in table_data:
+            if item['status'] == '0':
+                item['status'] = dict(tag='正常', color='blue')
+            else:
+                item['status'] = dict(tag='停用', color='volcano')
+            item['key'] = str(item['dict_id'])
+            item['dict_type'] = {
+                'content': item['dict_type'],
+                'type': 'link',
+            }
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dict:edit')
+                else {},
+                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:dict:remove')
+                else {},
+            ]
 
         return dict(
-            dict_type_table_data=dash.no_update,
-            dict_type_table_pagination=dash.no_update,
-            dict_type_table_key=dash.no_update,
-            dict_type_table_selectedrowkeys=dash.no_update,
-            api_check_token_trigger={'timestamp': time.time()},
+            dict_type_table_data=table_data,
+            dict_type_table_pagination=table_pagination,
+            dict_type_table_key=str(uuid.uuid4()),
+            dict_type_table_selectedrowkeys=None,
         )
 
     raise PreventUpdate
@@ -182,7 +167,7 @@ def change_dict_type_edit_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制编辑按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             if len(table_rows_selected) > 1:
@@ -206,7 +191,7 @@ def change_dict_type_delete_button_status(table_rows_selected):
     """
     根据选择的表格数据行数控制删除按钮状态回调
     """
-    outputs_list = dash.ctx.outputs_list
+    outputs_list = ctx.outputs_list
     if outputs_list:
         if table_rows_selected:
             return False
@@ -234,9 +219,6 @@ def change_dict_type_delete_button_status(table_rows_selected):
             {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
             'help',
             allow_duplicate=True,
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
         ),
         edit_row_info=Output('dict_type-edit-id-store', 'data'),
         modal_type=Output('dict_type-operations-store-bk', 'data'),
@@ -266,16 +248,16 @@ def add_edit_dict_type_modal(
     """
     显示新增或编辑字典类型弹窗回调
     """
-    trigger_id = dash.ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if (
         trigger_id == {'index': 'add', 'type': 'dict_type-operation-button'}
         or trigger_id == {'index': 'edit', 'type': 'dict_type-operation-button'}
         or (trigger_id == 'dict_type-list-table' and clicked_content == '修改')
     ):
         # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in dash.ctx.outputs_list[2]]
+        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
         # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in dash.ctx.outputs_list[3]]
+        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'dict_type-operation-button'}:
             dict_type_info = dict(
                 dict_name=None,
@@ -289,7 +271,6 @@ def add_edit_dict_type_modal(
                 form_value=[dict_type_info.get(k) for k in form_value_list],
                 form_label_validate_status=[None] * len(form_label_list),
                 form_label_validate_info=[None] * len(form_label_list),
-                api_check_token_trigger=dash.no_update,
                 edit_row_info=None,
                 modal_type={'type': 'add'},
             )
@@ -307,26 +288,23 @@ def add_edit_dict_type_modal(
             else:
                 dict_id = int(recently_button_clicked_row['key'])
             dict_type_info_res = DictTypeApi.get_type(dict_id=dict_id)
-            if dict_type_info_res['code'] == 200:
-                dict_type_info = dict_type_info_res['data']
-                return dict(
-                    modal_visible=True,
-                    modal_title='编辑字典类型',
-                    form_value=[dict_type_info.get(k) for k in form_value_list],
-                    form_label_validate_status=[None] * len(form_label_list),
-                    form_label_validate_info=[None] * len(form_label_list),
-                    api_check_token_trigger={'timestamp': time.time()},
-                    edit_row_info=dict_type_info if dict_type_info else None,
-                    modal_type={'type': 'edit'},
-                )
+            dict_type_info = dict_type_info_res['data']
+            return dict(
+                modal_visible=True,
+                modal_title='编辑字典类型',
+                form_value=[dict_type_info.get(k) for k in form_value_list],
+                form_label_validate_status=[None] * len(form_label_list),
+                form_label_validate_info=[None] * len(form_label_list),
+                edit_row_info=dict_type_info if dict_type_info else None,
+                modal_type={'type': 'edit'},
+            )
 
         return dict(
-            modal_visible=dash.no_update,
-            modal_title=dash.no_update,
-            form_value=[dash.no_update] * len(form_value_list),
-            form_label_validate_status=[dash.no_update] * len(form_label_list),
-            form_label_validate_info=[dash.no_update] * len(form_label_list),
-            api_check_token_trigger={'timestamp': time.time()},
+            modal_visible=no_update,
+            modal_title=no_update,
+            form_value=[no_update] * len(form_value_list),
+            form_label_validate_status=[no_update] * len(form_label_list),
+            form_label_validate_info=[no_update] * len(form_label_list),
             edit_row_info=None,
             modal_type=None,
         )
@@ -349,12 +327,6 @@ def add_edit_dict_type_modal(
         modal_visible=Output('dict_type-modal', 'visible'),
         operations=Output(
             'dict_type-operations-store', 'data', allow_duplicate=True
-        ),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
-        ),
-        global_message_container=Output(
-            'global-message-container', 'children', allow_duplicate=True
         ),
     ),
     inputs=dict(confirm_trigger=Input('dict_type-modal', 'okCounts')),
@@ -379,15 +351,13 @@ def dict_type_confirm(
     """
     if confirm_trigger:
         # 获取所有输出表单项对应label的index
-        form_label_output_list = [
-            x['id']['index'] for x in dash.ctx.outputs_list[0]
-        ]
+        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
         # 获取所有输入表单项对应的value及label
         form_value_state = {
-            x['id']['index']: x.get('value') for x in dash.ctx.states_list[-2]
+            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
         }
         form_label_state = {
-            x['id']['index']: x.get('value') for x in dash.ctx.states_list[-1]
+            x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
         if all(
             validate_data_not_empty(item)
@@ -400,49 +370,39 @@ def dict_type_confirm(
             params_edit['dict_id'] = (
                 edit_row_info.get('dict_id') if edit_row_info else None
             )
-            api_res = {}
             modal_type = modal_type.get('type')
             if modal_type == 'add':
-                api_res = DictTypeApi.add_type(params_add)
+                DictTypeApi.add_type(params_add)
             if modal_type == 'edit':
-                api_res = DictTypeApi.update_type(params_edit)
-            if api_res.get('code') == 200:
-                if modal_type == 'add':
-                    return dict(
-                        form_label_validate_status=[None]
-                        * len(form_label_output_list),
-                        form_label_validate_info=[None]
-                        * len(form_label_output_list),
-                        modal_visible=False,
-                        operations={'type': 'add'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '新增成功', type='success'
-                        ),
-                    )
-                if modal_type == 'edit':
-                    return dict(
-                        form_label_validate_status=[None]
-                        * len(form_label_output_list),
-                        form_label_validate_info=[None]
-                        * len(form_label_output_list),
-                        modal_visible=False,
-                        operations={'type': 'edit'},
-                        api_check_token_trigger={'timestamp': time.time()},
-                        global_message_container=fuc.FefferyFancyMessage(
-                            '编辑成功', type='success'
-                        ),
-                    )
+                DictTypeApi.update_type(params_edit)
+            if modal_type == 'add':
+                MessageManager.success(content='新增成功')
+
+                return dict(
+                    form_label_validate_status=[None]
+                    * len(form_label_output_list),
+                    form_label_validate_info=[None]
+                    * len(form_label_output_list),
+                    modal_visible=False,
+                    operations={'type': 'add'},
+                )
+            if modal_type == 'edit':
+                MessageManager.success(content='编辑成功')
+
+                return dict(
+                    form_label_validate_status=[None]
+                    * len(form_label_output_list),
+                    form_label_validate_info=[None]
+                    * len(form_label_output_list),
+                    modal_visible=False,
+                    operations={'type': 'edit'},
+                )
 
             return dict(
                 form_label_validate_status=[None] * len(form_label_output_list),
                 form_label_validate_info=[None] * len(form_label_output_list),
-                modal_visible=dash.no_update,
-                operations=dash.no_update,
-                api_check_token_trigger={'timestamp': time.time()},
-                global_message_container=fuc.FefferyFancyMessage(
-                    '处理失败', type='error'
-                ),
+                modal_visible=no_update,
+                operations=no_update,
             )
 
         return dict(
@@ -458,12 +418,8 @@ def dict_type_confirm(
                 else f'{form_label_state.get(k)}不能为空!'
                 for k in form_label_output_list
             ],
-            modal_visible=dash.no_update,
-            operations=dash.no_update,
-            api_check_token_trigger=dash.no_update,
-            global_message_container=fuc.FefferyFancyMessage(
-                '处理失败', type='error'
-            ),
+            modal_visible=no_update,
+            operations=no_update,
         )
 
     raise PreventUpdate
@@ -496,7 +452,7 @@ def dict_type_delete_modal(
     """
     显示删除字典类型二次确认弹窗回调
     """
-    trigger_id = dash.ctx.triggered_id
+    trigger_id = ctx.triggered_id
     if trigger_id == {
         'index': 'delete',
         'type': 'dict_type-operation-button',
@@ -510,7 +466,7 @@ def dict_type_delete_modal(
             if clicked_content == '删除':
                 dict_ids = recently_button_clicked_row['key']
             else:
-                return dash.no_update
+                return no_update
 
         return [
             f'是否确认删除字典编号为{dict_ids}的字典类型？',
@@ -522,11 +478,7 @@ def dict_type_delete_modal(
 
 
 @app.callback(
-    [
-        Output('dict_type-operations-store', 'data', allow_duplicate=True),
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
-    ],
+    Output('dict_type-operations-store', 'data', allow_duplicate=True),
     Input('dict_type-delete-confirm-modal', 'okCounts'),
     State('dict_type-delete-ids-store', 'data'),
     prevent_initial_call=True,
@@ -537,19 +489,10 @@ def dict_type_delete_confirm(delete_confirm, dict_ids_data):
     """
     if delete_confirm:
         params = dict_ids_data
-        delete_button_info = DictTypeApi.del_type(params)
-        if delete_button_info['code'] == 200:
-            return [
-                {'type': 'delete'},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('删除成功', type='success'),
-            ]
+        DictTypeApi.del_type(params)
+        MessageManager.success(content='删除成功')
 
-        return [
-            dash.no_update,
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('删除失败', type='error'),
-        ]
+        return {'type': 'delete'}
 
     raise PreventUpdate
 
@@ -567,9 +510,6 @@ def dict_type_delete_confirm(delete_confirm, dict_ids_data):
             'dict_data-dict_type-select', 'value', allow_duplicate=True
         ),
         dict_data_search_nclick=Output('dict_data-search', 'nClicks'),
-        api_check_token_trigger=Output(
-            'api-check-token', 'data', allow_duplicate=True
-        ),
     ),
     inputs=dict(button_click=Input('dict_type-list-table', 'nClicksButton')),
     state=dict(
@@ -595,37 +535,22 @@ def dict_type_to_dict_data_modal(
         'dict_type'
     ).get('content'):
         all_dict_type_info = DictTypeApi.optionselect()
-        if all_dict_type_info.get('code') == 200:
-            all_dict_type = all_dict_type_info.get('data')
-            dict_data_options = [
-                dict(label=item.get('dict_name'), value=item.get('dict_type'))
-                for item in all_dict_type
-            ]
-
-            return dict(
-                dict_data_modal_visible=True,
-                dict_data_modal_title='字典数据',
-                dict_data_select_options=dict_data_options,
-                dict_data_select_value=recently_button_clicked_row.get(
-                    'dict_type'
-                ).get('content'),
-                dict_data_search_nclick=dict_data_search_nclick + 1
-                if dict_data_search_nclick
-                else 1,
-                api_check_token_trigger={'timestamp': time.time()},
-            )
+        all_dict_type = all_dict_type_info.get('data')
+        dict_data_options = [
+            dict(label=item.get('dict_name'), value=item.get('dict_type'))
+            for item in all_dict_type
+        ]
 
         return dict(
             dict_data_modal_visible=True,
             dict_data_modal_title='字典数据',
-            dict_data_select_options=[],
+            dict_data_select_options=dict_data_options,
             dict_data_select_value=recently_button_clicked_row.get(
                 'dict_type'
             ).get('content'),
             dict_data_search_nclick=dict_data_search_nclick + 1
             if dict_data_search_nclick
             else 1,
-            api_check_token_trigger={'timestamp': time.time()},
         )
 
     raise PreventUpdate
@@ -635,8 +560,6 @@ def dict_type_to_dict_data_modal(
     [
         Output('dict_type-export-container', 'data', allow_duplicate=True),
         Output('dict_type-export-complete-judge-container', 'data'),
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
     ],
     Input('dict_type-export', 'nClicks'),
     prevent_initial_call=True,
@@ -647,24 +570,15 @@ def export_dict_type_list(export_click):
     """
     if export_click:
         export_dict_type_res = DictTypeApi.export_type({})
-        if export_dict_type_res.status_code == 200:
-            export_dict_type = export_dict_type_res.content
-
-            return [
-                dcc.send_bytes(
-                    export_dict_type,
-                    f'字典类型信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
-                ),
-                {'timestamp': time.time()},
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('导出成功', type='success'),
-            ]
+        export_dict_type = export_dict_type_res.content
+        MessageManager.success(content='导出成功')
 
         return [
-            dash.no_update,
-            dash.no_update,
+            dcc.send_bytes(
+                export_dict_type,
+                f'字典类型信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
+            ),
             {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('导出失败', type='error'),
         ]
 
     raise PreventUpdate
@@ -687,10 +601,6 @@ def reset_dict_type_export_status(data):
 
 
 @app.callback(
-    [
-        Output('api-check-token', 'data', allow_duplicate=True),
-        Output('global-message-container', 'children', allow_duplicate=True),
-    ],
     Input('dict_type-refresh-cache', 'nClicks'),
     prevent_initial_call=True,
 )
@@ -699,16 +609,5 @@ def refresh_dict_cache(refresh_click):
     刷新缓存回调
     """
     if refresh_click:
-        refresh_info_res = DictTypeApi.refresh_cache()
-        if refresh_info_res.get('code') == 200:
-            return [
-                {'timestamp': time.time()},
-                fuc.FefferyFancyMessage('刷新成功', type='success'),
-            ]
-
-        return [
-            {'timestamp': time.time()},
-            fuc.FefferyFancyMessage('刷新失败', type='error'),
-        ]
-
-    raise PreventUpdate
+        DictTypeApi.refresh_cache()
+        MessageManager.success(content='刷新成功')
