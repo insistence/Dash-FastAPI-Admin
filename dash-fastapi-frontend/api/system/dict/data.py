@@ -21,7 +21,7 @@ class DictDataApi:
         )
 
     @classmethod
-    def get_data(cls, dict_code: str):
+    def get_data(cls, dict_code: int):
         """
         查询字典数据详情接口
 

@@ -21,7 +21,7 @@ class DeptApi:
         )
 
     @classmethod
-    def list_dept_exclude_child(cls, dept_id: str):
+    def list_dept_exclude_child(cls, dept_id: int):
         """
         查询部门列表（排除节点）接口
 
@@ -34,7 +34,7 @@ class DeptApi:
         )
 
     @classmethod
-    def get_dept(cls, dept_id: str):
+    def get_dept(cls, dept_id: int):
         """
         查询部门详情接口
 

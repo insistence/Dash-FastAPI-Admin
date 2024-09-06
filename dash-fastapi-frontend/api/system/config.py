@@ -21,7 +21,7 @@ class ConfigApi:
         )
 
     @classmethod
-    def get_config(cls, config_id: str):
+    def get_config(cls, config_id: int):
         """
         查询参数配置详情接口
 

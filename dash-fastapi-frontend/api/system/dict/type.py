@@ -21,7 +21,7 @@ class DictTypeApi:
         )
 
     @classmethod
-    def get_type(cls, dict_id: str):
+    def get_type(cls, dict_id: int):
         """
         查询字典类型详情接口
 

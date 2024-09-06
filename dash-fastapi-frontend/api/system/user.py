@@ -1,3 +1,4 @@
+from typing import Union
 from utils.request import api_request
 
 
@@ -21,7 +22,7 @@ class UserApi:
         )
 
     @classmethod
-    def get_user(cls, user_id: str):
+    def get_user(cls, user_id: Union[int, str]):
         """
         查询用户详情接口
 
@@ -119,7 +120,7 @@ class UserApi:
         )
 
     @classmethod
-    def reset_user_pwd(cls, user_id: str, password: str):
+    def reset_user_pwd(cls, user_id: int, password: str):
         """
         用户密码重置接口
 
@@ -134,7 +135,7 @@ class UserApi:
         )
 
     @classmethod
-    def change_user_status(cls, user_id: str, status: str):
+    def change_user_status(cls, user_id: int, status: str):
         """
         用户状态修改接口
 

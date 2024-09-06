@@ -21,7 +21,7 @@ class PostApi:
         )
 
     @classmethod
-    def get_post(cls, post_id: str):
+    def get_post(cls, post_id: int):
         """
         查询岗位详情接口
 

@@ -21,7 +21,7 @@ class NoticeApi:
         )
 
     @classmethod
-    def get_notice(cls, notice_id: str):
+    def get_notice(cls, notice_id: int):
         """
         查询通知公告详情接口
 

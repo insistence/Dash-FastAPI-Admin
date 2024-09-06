@@ -21,7 +21,7 @@ class MenuApi:
         )
 
     @classmethod
-    def get_menu(cls, menu_id: str):
+    def get_menu(cls, menu_id: int):
         """
         查询菜单详情接口
 
@@ -46,7 +46,7 @@ class MenuApi:
         )
 
     @classmethod
-    def role_menu_treeselect(cls, role_id: str):
+    def role_menu_treeselect(cls, role_id: int):
         """
         根据角色id查询菜单下拉树结构接口
 

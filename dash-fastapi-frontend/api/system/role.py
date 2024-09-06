@@ -21,7 +21,7 @@ class RoleApi:
         )
 
     @classmethod
-    def get_role(cls, role_id: str):
+    def get_role(cls, role_id: int):
         """
         查询角色详情接口
 
@@ -76,7 +76,7 @@ class RoleApi:
         )
 
     @classmethod
-    def change_role_status(cls, role_id: str, status: str):
+    def change_role_status(cls, role_id: int, status: str):
         """
         角色状态修改接口
 
@@ -189,7 +189,7 @@ class RoleApi:
         )
 
     @classmethod
-    def dept_tree_select(cls, role_id: str):
+    def dept_tree_select(cls, role_id: int):
         """
         根据角色id查询部门树结构接口
 
