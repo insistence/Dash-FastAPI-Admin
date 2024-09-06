@@ -1,16 +1,21 @@
-from dash import html, dcc
 import feffery_antd_components as fac
-
-from api.cache import get_cache_name_list_api
-import callbacks.monitor_c.cache_c.list_c
+from dash import dcc, html
+from api.monitor.cache import CacheApi
+from callbacks.monitor_c.cache_c import list_c  # noqa: F401
 
 
 def render(*args, **kwargs):
-    cache_name_data = []
-    cache_name_res = get_cache_name_list_api()
-    if cache_name_res.get('code') == 200:
-        cache_name_list = cache_name_res.get('data')
-        cache_name_data = [{'key': item.get('cache_name'), 'id': index + 1, 'operation': {'type': 'link', 'icon': 'antd-delete'}, **item} for index, item in enumerate(cache_name_list)]
+    cache_name_res = CacheApi.list_cache_name()
+    cache_name_list = cache_name_res.get('data')
+    cache_name_data = [
+        {
+            'key': item.get('cache_name'),
+            'id': index + 1,
+            'operation': {'type': 'link', 'icon': 'antd-delete'},
+            **item,
+        }
+        for index, item in enumerate(cache_name_list)
+    ]
 
     return html.Div(
         [
@@ -53,36 +58,38 @@ def render(*args, **kwargs):
                                             'renderOptions': {
                                                 'renderType': 'button'
                                             },
-                                        }
+                                        },
                                     ],
-                                    enableCellClickListenColumns=['id', 'cache_name', 'remark'],
+                                    enableCellClickListenColumns=[
+                                        'id',
+                                        'cache_name',
+                                        'remark',
+                                    ],
                                     bordered=False,
                                     pagination={
                                         'showSizeChanger': True,
                                         'showQuickJumper': True,
-                                        'hideOnSinglePage': True
+                                        'hideOnSinglePage': True,
                                     },
                                 )
                             ),
                             title=fac.AntdSpace(
                                 [
                                     fac.AntdIcon(icon='antd-book'),
-                                    fac.AntdText('缓存列表')
+                                    fac.AntdText('缓存列表'),
                                 ]
                             ),
                             extra=fac.AntdButton(
                                 id='refresh-cache_name',
                                 type='link',
-                                icon=fac.AntdIcon(
-                                    icon='antd-reload'
-                                )
+                                icon=fac.AntdIcon(icon='antd-reload'),
                             ),
                             size='small',
                             style={
                                 'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                            }
+                            },
                         ),
-                        span=8
+                        span=8,
                     ),
                     fac.AntdCol(
                         fac.AntdCard(
@@ -111,36 +118,37 @@ def render(*args, **kwargs):
                                             'renderOptions': {
                                                 'renderType': 'button'
                                             },
-                                        }
+                                        },
                                     ],
-                                    enableCellClickListenColumns=['id', 'cache_key'],
+                                    enableCellClickListenColumns=[
+                                        'id',
+                                        'cache_key',
+                                    ],
                                     bordered=False,
                                     pagination={
                                         'showSizeChanger': True,
                                         'showQuickJumper': True,
                                         'hideOnSinglePage': True,
-                                    }
+                                    },
                                 )
                             ),
                             title=fac.AntdSpace(
                                 [
                                     fac.AntdIcon(icon='antd-key'),
-                                    fac.AntdText('键名列表')
+                                    fac.AntdText('键名列表'),
                                 ]
                             ),
                             extra=fac.AntdButton(
                                 id='refresh-cache_key',
                                 type='link',
-                                icon=fac.AntdIcon(
-                                    icon='antd-reload'
-                                )
+                                icon=fac.AntdIcon(icon='antd-reload'),
                             ),
                             size='small',
                             style={
                                 'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                            }
+                            },
                         ),
-                        span=8
+                        span=8,
                     ),
                     fac.AntdCol(
                         fac.AntdCard(
@@ -150,21 +158,17 @@ def render(*args, **kwargs):
                                         fac.AntdInput(
                                             id='cache_name-input',
                                             readOnly=True,
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
-                                        label='缓存名称'
+                                        label='缓存名称',
                                     ),
                                     fac.AntdFormItem(
                                         fac.AntdInput(
                                             id='cache_key-input',
                                             readOnly=True,
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
-                                        label='缓存键名'
+                                        label='缓存键名',
                                     ),
                                     fac.AntdFormItem(
                                         fac.AntdInput(
@@ -173,43 +177,37 @@ def render(*args, **kwargs):
                                             readOnly=True,
                                             autoSize={
                                                 'minRows': 5,
-                                                'maxRows': 10
+                                                'maxRows': 10,
                                             },
-                                            style={
-                                                'width': '100%'
-                                            }
+                                            style={'width': '100%'},
                                         ),
-                                        label='缓存内容'
-                                    )
+                                        label='缓存内容',
+                                    ),
                                 ],
                                 layout='vertical',
-                                style={
-                                    'width': '100%'
-                                }
+                                style={'width': '100%'},
                             ),
                             title=fac.AntdSpace(
                                 [
                                     fac.AntdIcon(icon='antd-file-text'),
-                                    fac.AntdText('缓存内容')
+                                    fac.AntdText('缓存内容'),
                                 ]
                             ),
                             extra=fac.AntdButton(
                                 '清除全部',
                                 id='clear-all-cache',
                                 type='link',
-                                icon=fac.AntdIcon(
-                                    icon='antd-clear'
-                                )
+                                icon=fac.AntdIcon(icon='antd-clear'),
                             ),
                             size='small',
                             style={
                                 'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                            }
+                            },
                         ),
-                        span=8
-                    )
+                        span=8,
+                    ),
                 ],
-                gutter=10
-            )
+                gutter=10,
+            ),
         ]
     )

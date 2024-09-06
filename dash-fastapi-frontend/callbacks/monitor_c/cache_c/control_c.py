@@ -1,5 +1,4 @@
-from dash.dependencies import Input, Output, State, ClientsideFunction
-
+from dash.dependencies import ClientsideFunction, Input, Output, State
 from server import app
 
 

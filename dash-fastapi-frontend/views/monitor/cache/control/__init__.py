@@ -1,21 +1,17 @@
-from dash import html, dcc
 import feffery_antd_components as fac
+from dash import dcc, html
+from api.monitor.cache import CacheApi
+from callbacks.monitor_c.cache_c import control_c  # noqa: F401
 
-import callbacks.monitor_c.cache_c.control_c
-from api.cache import get_cache_statistical_info_api
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    command_stats = []
-    db_size = ''
-    info = {}
-    cache_info_res = get_cache_statistical_info_api()
-    if cache_info_res.get('code') == 200:
-        cache_info = cache_info_res.get('data')
-        command_stats = cache_info.get('command_stats')
-        db_size = cache_info.get('db_size')
-        info = cache_info.get('info')
+    cache_info_res = CacheApi.get_cache()
+    cache_info = cache_info_res.get('data')
+    command_stats = cache_info.get('command_stats')
+    db_size = cache_info.get('db_size')
+    info = cache_info.get('info')
 
     return [
         dcc.Store(id='control-button-perms-container', data=button_perms),
