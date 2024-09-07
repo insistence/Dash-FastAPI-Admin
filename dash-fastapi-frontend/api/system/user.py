@@ -191,17 +191,17 @@ class UserApi:
         )
 
     @classmethod
-    def upload_avatar(cls, data: dict):
+    def upload_avatar(cls, files: dict):
         """
         用户头像上传接口
 
-        :param data: 用户头像参数
+        :param files: 用户头像参数
         :return:
         """
         return api_request(
             url='/system/user/profile/avatar',
             method='post',
-            data=data,
+            files=files,
         )
 
     @classmethod

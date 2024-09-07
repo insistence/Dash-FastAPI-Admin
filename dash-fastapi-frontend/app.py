@@ -99,7 +99,6 @@ def router(pathname, url_trigger, session_token):
             menu_info = RouterUtil.generate_menu_tree(router_list)
             # search_panel_data = get_search_panel_data(user_menu_list)
             search_panel_data = []
-            session['user_info'] = current_user['user']
             permissions = {
                 'perms': current_user['permissions'],
                 'roles': current_user['roles'],

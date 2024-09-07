@@ -1,63 +1,59 @@
-from dash import html
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-
-from flask import session
+from dash import html
 from config.global_config import ApiBaseUrlConfig
+from utils.cache_util import CacheManager
 
 
 def render_page_top():
-
     return html.Div(
-            [
-                html.Div(
-                    fac.AntdAvatar(
-                        id='dashboard-avatar-info',
-                        mode='image',
-                        src=f"{ApiBaseUrlConfig.BaseUrl}{session.get('user_info').get('avatar')}&token={session.get('Authorization')}",
-                        size='large'
+        [
+            html.Div(
+                fac.AntdAvatar(
+                    id='dashboard-avatar-info',
+                    mode='image',
+                    src=f"{ApiBaseUrlConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
+                    if CacheManager.get('user_info').get('avatar')
+                    else '/assets/imgs/profile.jpg',
+                    size='large',
+                ),
+                className='avatar',
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        fac.AntdText(
+                            f"早安，{CacheManager.get('user_info').get('nick_name')}，祝你开心每一天！"
+                        ),
+                        className='content-title',
                     ),
-                    className='avatar',
-                ),
-                html.Div(
-                    [
-                        html.Div(
-                            fac.AntdText(f"早安，{session.get('user_info').get('nick_name')}，祝你开心每一天！"),
-                            className='content-title',
+                    html.Div(
+                        '交互专家 |蚂蚁金服－某某某事业群－某某平台部－某某技术部－UED'
+                    ),
+                ],
+                className='content',
+            ),
+            html.Div(
+                [
+                    html.Div(
+                        fac.AntdStatistic(title='项目数', value=56),
+                        className='stat-item',
+                    ),
+                    html.Div(
+                        fac.AntdStatistic(
+                            title='团队内排名', value=8, suffix='/ 24'
                         ),
-                        html.Div('交互专家 |蚂蚁金服－某某某事业群－某某平台部－某某技术部－UED')
-                    ],
-                    className='content',
-                ),
-                html.Div(
-                    [
-                        html.Div(
-                            fac.AntdStatistic(
-                                title='项目数',
-                                value=56
-                            ),
-                            className='stat-item'
-                        ),
-                        html.Div(
-                            fac.AntdStatistic(
-                                title='团队内排名',
-                                value=8,
-                                suffix='/ 24'
-                            ),
-                            className='stat-item'
-                        ),
-                        html.Div(
-                            fac.AntdStatistic(
-                                title='项目访问',
-                                value=2223
-                            ),
-                            className='stat-item'
-                        ),
-                    ],
-                    className='extra-content'
-                ),
-                fuc.FefferyStyle(
-                    rawStyle='''
+                        className='stat-item',
+                    ),
+                    html.Div(
+                        fac.AntdStatistic(title='项目访问', value=2223),
+                        className='stat-item',
+                    ),
+                ],
+                className='extra-content',
+            ),
+            fuc.FefferyStyle(
+                rawStyle="""
                     .page-header-content {
                         display: flex;
                     }
@@ -137,13 +133,13 @@ def render_page_top():
                     .extra-content .stat-item:last-child::after {
                         display: none;
                     }
-                    '''
-                )
-            ],
-            className='page-header-content',
-            style={
-                'padding': '12px',
-                'marginBottom': '24px',
-                'boxShadow': 'rgba(0, 0, 0, 0.1) 0px 4px 12px'
-            }
-        )
+                    """
+            ),
+        ],
+        className='page-header-content',
+        style={
+            'padding': '12px',
+            'marginBottom': '24px',
+            'boxShadow': 'rgba(0, 0, 0, 0.1) 0px 4px 12px',
+        },
+    )

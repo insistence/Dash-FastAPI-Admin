@@ -1,6 +1,5 @@
 import feffery_antd_components as fac
-
-import callbacks.system_c.user_c.profile_c.user_info_c
+from callbacks.system_c.user_c.profile_c import user_info_c  # noqa: F401
 
 
 def render():
