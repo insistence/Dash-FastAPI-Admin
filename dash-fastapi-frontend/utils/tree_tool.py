@@ -301,3 +301,24 @@ def get_search_panel_data(menu_list: list):
             search_data.append(item_dict)
 
     return search_data
+
+
+def find_tree_all_keys(tree, keys_list):
+    """
+    递归函数，用于查找树形数据结构中所有键名为'name'的值，并将它们添加到列表中。
+
+    :param tree: 树形数据结构，假设为嵌套字典或列表
+    :param keys_list: 用于存储找到的'key'值的列表
+    :return: 包含所有找到的'key'值的列表
+    """
+    if isinstance(tree, dict):
+        for key, value in tree.items():
+            if key == 'key':
+                keys_list.append(value)
+            elif isinstance(value, (dict, list)):
+                find_tree_all_keys(value, keys_list)
+    elif isinstance(tree, list):
+        for item in tree:
+            find_tree_all_keys(item, keys_list)
+
+    return keys_list
