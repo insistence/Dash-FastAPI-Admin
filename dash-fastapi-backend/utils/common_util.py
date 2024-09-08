@@ -52,7 +52,7 @@ class SqlalchemyUtil:
         :param obj: sqlalchemy模型对象
         :return: 字典结果
         """
-        base_dict = obj.__dict__
+        base_dict = obj.__dict__.copy()
         base_dict.pop('_sa_instance_state', None)
 
         return base_dict
