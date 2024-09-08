@@ -205,17 +205,27 @@ class UserApi:
         )
 
     @classmethod
-    def update_auth_role(cls, json: dict):
+    def get_auth_role(cls, user_id: int):
+        """
+        查询授权角色接口
+        """
+        return api_request(
+            url=f'/system/user/authRole/{user_id}',
+            method='get',
+        )
+
+    @classmethod
+    def update_auth_role(cls, params: dict):
         """
         保存授权角色接口
 
-        :param json: 授权角色参数
+        :param params: 授权角色参数
         :return:
         """
         return api_request(
             url='/system/user/authRole',
             method='put',
-            json=json,
+            params=params,
         )
 
     @classmethod

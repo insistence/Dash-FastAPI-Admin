@@ -353,8 +353,8 @@ def usr_add_confirm(add_confirm, post, role, form_value, form_label):
             ]
         ):
             params = form_value_state
-            params['post_ids'] = post if post else ''
-            params['role_ids'] = role if role else ''
+            params['post_ids'] = [int(item) for item in post] if post else []
+            params['role_ids'] = [int(item) for item in role] if role else []
             UserApi.add_user(params)
             MessageManager.success(content='新增成功')
 
@@ -554,8 +554,9 @@ def usr_edit_confirm(
             params['user_id'] = (
                 edit_row_info.get('user_id') if edit_row_info else None
             )
-            params['post_ids'] = ','.join(map(str, post)) if post else ''
-            params['role_ids'] = ','.join(map(str, role)) if role else ''
+            params['post_ids'] = [int(item) for item in post] if post else []
+            params['role_ids'] = [int(item) for item in role] if role else []
+            params['role'] = []
             UserApi.update_user(params)
             MessageManager.success(content='编辑成功')
 
@@ -728,7 +729,9 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
     重置用户密码弹窗确认回调，实现重置密码操作
     """
     if reset_confirm:
-        UserApi.reset_user_pwd(user_id=int(user_id_data), password=reset_password)
+        UserApi.reset_user_pwd(
+            user_id=int(user_id_data), password=reset_password
+        )
         MessageManager.success(content='重置成功')
 
         return {'type': 'reset-password'}
@@ -739,18 +742,16 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
 @app.callback(
     [
         Output('user_to_allocated_role-modal', 'visible'),
-        Output(
-            {'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks'
-        ),
         Output('allocate_role-user_id-container', 'data'),
+        Output('allocate_role-nick_name-input', 'value'),
+        Output('allocate_role-user_name-input', 'value'),
+        Output('allocate_role-list-table', 'selectedRowKeys'),
+        Output('allocate_role-list-table', 'data'),
     ],
     Input('user-list-table', 'nClicksDropdownItem'),
     [
         State('user-list-table', 'recentlyClickedDropdownItemTitle'),
         State('user-list-table', 'recentlyDropdownItemClickedRow'),
-        State(
-            {'type': 'allocate_role-search', 'index': 'allocated'}, 'nClicks'
-        ),
     ],
     prevent_initial_call=True,
 )
@@ -758,18 +759,40 @@ def role_to_allocated_user_modal(
     dropdown_click,
     recently_clicked_dropdown_item_title,
     recently_dropdown_item_clicked_row,
-    allocated_role_search_nclick,
 ):
     """
     显示用户分配角色弹窗回调
     """
     if dropdown_click and recently_clicked_dropdown_item_title == '分配角色':
+        user_id = int(recently_dropdown_item_clicked_row['key'])
+        allocated_role_info = UserApi.get_auth_role(user_id=user_id)
+        table_data = allocated_role_info.get('roles')
+        selected_row_keys = []
+        for item in table_data:
+            item['key'] = str(item['role_id'])
+            if item.get('flag'):
+                selected_row_keys.append(str(item['role_id']))
+        new_table_data = [
+            {
+                k: v
+                for k, v in item.items()
+                if k
+                not in [
+                    'admin',
+                    'dept_check_strictly',
+                    'flag',
+                    'menu_check_strictly',
+                ]
+            }
+            for item in table_data
+        ]
         return [
             True,
-            allocated_role_search_nclick + 1
-            if allocated_role_search_nclick
-            else 1,
-            recently_dropdown_item_clicked_row['key'],
+            user_id,
+            allocated_role_info.get('user').get('nick_name'),
+            allocated_role_info.get('user').get('user_name'),
+            selected_row_keys,
+            new_table_data,
         ]
 
     raise PreventUpdate
