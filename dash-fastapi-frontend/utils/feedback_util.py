@@ -207,7 +207,6 @@ class MessageManager:
                     'namespace': 'feffery_antd_components',
                 }
             },
-            namespace='feffery_antd_components',
         )
 
 
