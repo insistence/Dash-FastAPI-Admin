@@ -19,8 +19,10 @@ class CacheManager:
         :param target_key: 缓存key
         :return: 缓存值
         """
-        cache_value = cache_manager.get(session.get('Authorization')).get(
-            target_key
+        cache_value = (
+            cache_manager.get(session.get('Authorization')).get(target_key)
+            if cache_manager.get(session.get('Authorization'))
+            else None
         )
         return cache_value
 
