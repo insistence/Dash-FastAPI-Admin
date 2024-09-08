@@ -417,7 +417,7 @@ def render(*args, **kwargs):
                                                 },
                                                 {
                                                     'title': '操作',
-                                                    'width': 180,
+                                                    'width': 200,
                                                     'dataIndex': 'operation',
                                                 },
                                             ],

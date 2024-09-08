@@ -158,7 +158,7 @@ def render(button_perms, allocate_index, is_operation):
                                             },
                                         )
                                         if PermissionManager.check_perms(
-                                            'system:role:edit'
+                                            'system:role:add'
                                         )
                                         else [],
                                         fac.AntdButton(
@@ -180,7 +180,7 @@ def render(button_perms, allocate_index, is_operation):
                                             },
                                         )
                                         if PermissionManager.check_perms(
-                                            'system:role:edit'
+                                            'system:role:remove'
                                         )
                                         else [],
                                     ],

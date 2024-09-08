@@ -161,31 +161,31 @@ class RoleApi:
         )
 
     @classmethod
-    def auth_user_cancel_all(cls, json: dict):
+    def auth_user_cancel_all(cls, params: dict):
         """
         批量取消用户授权角色接口
 
-        :param json: 用户授权角色参数
+        :param params: 用户授权角色参数
         :return:
         """
         return api_request(
             url='/system/role/authUser/cancelAll',
             method='put',
-            json=json,
+            params=params,
         )
 
     @classmethod
-    def auth_user_select_all(cls, json: dict):
+    def auth_user_select_all(cls, params: dict):
         """
         授权用户选择接口
 
-        :param json: 用户选择角色参数
+        :param params: 用户选择角色参数
         :return:
         """
         return api_request(
             url='/system/role/authUser/selectAll',
             method='put',
-            json=json,
+            params=params,
         )
 
     @classmethod

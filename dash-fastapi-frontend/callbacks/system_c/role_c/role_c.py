@@ -10,6 +10,7 @@ from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.tree_tool import find_tree_all_keys
 
 
 @app.callback(
@@ -270,23 +271,19 @@ def change_role_delete_button_status(table_rows_selected):
 
 
 @app.callback(
-    Output('role-menu-perms', 'expandedKeys', allow_duplicate=True),
+    Output('role-menu-perms', 'expandedKeys'),
     Input('role-menu-perms-radio-fold-unfold', 'checked'),
-    State('role-menu-store', 'data'),
+    State('role-menu-perms', 'treeData'),
     prevent_initial_call=True,
 )
-def fold_unfold_role_menu(fold_unfold, menu_info):
+def fold_unfold_role_menu(fold_unfold, menu_tree):
     """
     新增和编辑表单中展开/折叠checkbox回调
     """
-    if menu_info:
-        default_expanded_keys = []
-        for item in menu_info:
-            if item.get('parent_id') == 0:
-                default_expanded_keys.append(str(item.get('menu_id')))
-
+    if menu_tree and fold_unfold is not None:
+        expanded_keys = [menu.get('key') for menu in menu_tree]
         if fold_unfold:
-            return default_expanded_keys
+            return expanded_keys
         else:
             return []
 
@@ -296,21 +293,17 @@ def fold_unfold_role_menu(fold_unfold, menu_info):
 @app.callback(
     Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
     Input('role-menu-perms-radio-all-none', 'checked'),
-    State('role-menu-store', 'data'),
+    State('role-menu-perms', 'treeData'),
     prevent_initial_call=True,
 )
-def all_none_role_menu_mode(all_none, menu_info):
+def all_none_role_menu_mode(all_none, menu_tree):
     """
     新增和编辑表单中全选/全不选checkbox回调
     """
-    if menu_info:
-        default_expanded_keys = []
-        for item in menu_info:
-            if item.get('parent_id') == 0:
-                default_expanded_keys.append(str(item.get('menu_id')))
-
+    if menu_tree and all_none is not None:
         if all_none:
-            return [str(item.get('menu_id')) for item in menu_info]
+            all_keys = find_tree_all_keys(menu_tree, [])
+            return all_keys
         else:
             return []
 
@@ -320,34 +313,16 @@ def all_none_role_menu_mode(all_none, menu_info):
 @app.callback(
     [
         Output('role-menu-perms', 'checkStrictly'),
-        Output('role-menu-perms', 'checkedKeys', allow_duplicate=True),
+        Output('role-menu-perms', 'key', allow_duplicate=True),
     ],
     Input('role-menu-perms-radio-parent-children', 'checked'),
-    State('current-role-menu-store', 'data'),
     prevent_initial_call=True,
 )
-def change_role_menu_mode(parent_children, current_role_menu):
+def change_role_menu_mode(parent_children):
     """
     新增和编辑表单中父子联动checkbox回调
     """
-    checked_menu = []
-    if parent_children:
-        if current_role_menu:
-            for item in current_role_menu:
-                has_children = False
-                for other_item in current_role_menu:
-                    if other_item['parent_id'] == item['menu_id']:
-                        has_children = True
-                        break
-                if not has_children:
-                    checked_menu.append(str(item.get('menu_id')))
-        return [False, checked_menu]
-    else:
-        if current_role_menu:
-            checked_menu = [
-                str(item.get('menu_id')) for item in current_role_menu if item
-            ] or []
-        return [True, checked_menu]
+    return [not parent_children, str(uuid.uuid4())]
 
 
 @app.callback(
@@ -368,17 +343,14 @@ def change_role_menu_mode(parent_children, current_role_menu):
             allow_duplicate=True,
         ),
         menu_perms_tree=Output('role-menu-perms', 'treeData'),
-        menu_perms_expandedkeys=Output(
-            'role-menu-perms', 'expandedKeys', allow_duplicate=True
-        ),
         menu_perms_checkedkeys=Output(
             'role-menu-perms', 'checkedKeys', allow_duplicate=True
         ),
-        menu_perms_halfcheckedkeys=Output(
-            'role-menu-perms', 'halfCheckedKeys', allow_duplicate=True
+        fold_unfold=Output('role-menu-perms-radio-fold-unfold', 'checked'),
+        all_none=Output('role-menu-perms-radio-all-none', 'checked'),
+        radio_parent_children=Output(
+            'role-menu-perms-radio-parent-children', 'checked'
         ),
-        role_menu=Output('role-menu-store', 'data'),
-        current_role_menu=Output('current-role-menu-store', 'data'),
         edit_row_info=Output('role-edit-id-store', 'data'),
         modal_type=Output('role-operations-store-bk', 'data'),
     ),
@@ -424,11 +396,10 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
                 form_label_validate_status=[None] * len(form_label_list),
                 form_label_validate_info=[None] * len(form_label_list),
                 menu_perms_tree=tree_data,
-                menu_perms_expandedkeys=[],
                 menu_perms_checkedkeys=None,
-                menu_perms_halfcheckedkeys=None,
-                role_menu=[],
-                current_role_menu=None,
+                fold_unfold=None,
+                all_none=None,
+                radio_parent_children=no_update,
                 edit_row_info=None,
                 modal_type={'type': 'add'},
             )
@@ -440,37 +411,21 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             role_info_res = RoleApi.get_role(role_id=role_id)
             tree_info = MenuApi.role_menu_treeselect(role_id=role_id)
             role_info = role_info_res['data']
+            menu_check_strictly = role_info['menu_check_strictly']
             tree_data = tree_info['menus']
-            checked_menu = []
-            checked_menu_all = []
-            if role_info.get('menu')[0]:
-                for item in role_info.get('menu'):
-                    checked_menu_all.append(str(item.get('menu_id')))
-                    has_children = False
-                    for other_item in role_info.get('menu'):
-                        if other_item['parent_id'] == item['menu_id']:
-                            has_children = True
-                            break
-                    if not has_children:
-                        checked_menu.append(str(item.get('menu_id')))
-            half_checked_menu = [
-                x for x in checked_menu_all if x not in checked_menu
-            ]
+            checked_keys = [str(item) for item in tree_info['checked_keys']]
             return dict(
                 modal_visible=True,
                 modal_title='编辑角色',
-                form_value=[
-                    role_info.get('role').get(k) for k in form_value_list
-                ],
+                form_value=[role_info.get(k) for k in form_value_list],
                 form_label_validate_status=[None] * len(form_label_list),
                 form_label_validate_info=[None] * len(form_label_list),
                 menu_perms_tree=tree_data,
-                menu_perms_expandedkeys=[],
-                menu_perms_checkedkeys=tree_data['checked_keys'],
-                menu_perms_halfcheckedkeys=half_checked_menu,
-                role_menu=[],
-                current_role_menu=role_info.get('menu'),
-                edit_row_info=role_info.get('role') if role_info else None,
+                menu_perms_checkedkeys=checked_keys,
+                fold_unfold=None,
+                all_none=None,
+                radio_parent_children=menu_check_strictly,
+                edit_row_info=role_info if role_info else None,
                 modal_type={'type': 'edit'},
             )
 
@@ -481,11 +436,10 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             form_label_validate_status=[no_update] * len(form_value_list),
             form_label_validate_info=[no_update] * len(form_value_list),
             menu_perms_tree=no_update,
-            menu_perms_expandedkeys=no_update,
             menu_perms_checkedkeys=no_update,
-            menu_perms_halfcheckedkeys=no_update,
-            role_menu=no_update,
-            current_role_menu=no_update,
+            fold_unfold=no_update,
+            all_none=no_update,
+            radio_parent_children=no_update,
             edit_row_info=None,
             modal_type=None,
         )
@@ -544,9 +498,7 @@ def role_confirm(
     """
     if confirm_trigger:
         # 获取所有输出表单项对应label的index
-        form_label_output_list = [
-            x['id']['index'] for x in ctx.outputs_list[0]
-        ]
+        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
         # 获取所有输入表单项对应的value及label
         form_value_state = {
             x['id']['index']: x.get('value') for x in ctx.states_list[2]
@@ -569,7 +521,10 @@ def role_confirm(
             else:
                 menu_perms = menu_checked_keys
             params_add = form_value_state
-            params_add['menu_id'] = ','.join(menu_perms) if menu_perms else None
+            params_add['menu_ids'] = (
+                [int(item) for item in menu_perms] if menu_perms else []
+            )
+            params_add['menu_check_strictly'] = parent_checked
             params_edit = params_add.copy()
             params_edit['role_id'] = (
                 edit_row_info.get('role_id') if edit_row_info else None
