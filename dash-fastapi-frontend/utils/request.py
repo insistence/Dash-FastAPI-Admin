@@ -9,6 +9,7 @@ from config.exception import (
     ServiceWarning,
 )
 from config.global_config import ApiBaseUrlConfig
+from utils.cache_util import CacheManager
 from utils.log_util import logger
 
 
@@ -121,8 +122,8 @@ def api_request(
     data_list = [params, data, json, files]
     status_code = response.status_code
     request_user = (
-        session.get('user_info').get('user_name')
-        if session.get('user_info')
+        CacheManager.get('user_info').get('user_name')
+        if CacheManager.get('user_info')
         else None
     )
     request_params = ','.join([str(x) for x in data_list if x])
