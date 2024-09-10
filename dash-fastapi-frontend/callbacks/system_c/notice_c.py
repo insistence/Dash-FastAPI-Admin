@@ -6,6 +6,7 @@ from api.system.dict.data import DictDataApi
 from api.system.notice import NoticeApi
 from server import app
 from utils.common import validate_data_not_empty
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
@@ -74,18 +75,6 @@ def get_notice_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        info = DictDataApi.get_dicts(dict_type='sys_notice_type')
-        data = info.get('data')
-        option_table = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-            )
-            for item in data
-        ]
-        option_dict = {item.get('value'): item for item in option_table}
-
         table_info = NoticeApi.list_notice(query_params)
         table_data = table_info['rows']
         table_pagination = dict(
@@ -101,9 +90,8 @@ def get_notice_table_data(
                 item['status'] = dict(tag='正常', color='blue')
             else:
                 item['status'] = dict(tag='关闭', color='volcano')
-            item['notice_type'] = dict(
-                tag=option_dict.get(str(item.get('notice_type'))).get('label'),
-                color='blue',
+            item['notice_type'] = DictManager.get_dict_tag(
+                dict_type='sys_notice_type', dict_value=item.get('notice_type')
             )
             item['key'] = str(item['notice_id'])
             item['operation'] = [
@@ -115,12 +103,12 @@ def get_notice_table_data(
                 else {},
             ]
 
-            return dict(
-                notice_table_data=table_data,
-                notice_table_pagination=table_pagination,
-                notice_table_key=str(uuid.uuid4()),
-                notice_table_selectedrowkeys=None,
-            )
+        return dict(
+            notice_table_data=table_data,
+            notice_table_pagination=table_pagination,
+            notice_table_key=str(uuid.uuid4()),
+            notice_table_selectedrowkeys=None,
+        )
 
     raise PreventUpdate
 

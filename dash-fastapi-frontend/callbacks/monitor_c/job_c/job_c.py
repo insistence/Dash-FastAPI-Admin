@@ -7,6 +7,7 @@ from api.monitor.job import JobApi
 from api.system.dict.data import DictDataApi
 from server import app
 from utils.common import validate_data_not_empty
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
@@ -63,18 +64,6 @@ def get_job_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        info = DictDataApi.get_dicts(dict_type='sys_job_group')
-        data = info.get('data')
-        option_table = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-            )
-            for item in data
-        ]
-        option_dict = {item.get('value'): item for item in option_table}
-
         table_info = JobApi.list_job(query_params)
         table_data = table_info['rows']
         table_pagination = dict(
@@ -90,13 +79,9 @@ def get_job_table_data(
                 item['status'] = dict(checked=True)
             else:
                 item['status'] = dict(checked=False)
-            if str(item.get('job_group')) in option_dict.keys():
-                item['job_group'] = dict(
-                    tag=option_dict.get(str(item.get('job_group'))).get(
-                        'label'
-                    ),
-                    color='blue',
-                )
+            item['job_group'] = DictManager.get_dict_tag(
+                dict_type='sys_job_group', dict_value=item.get('job_group')
+            )
             item['key'] = str(item['job_id'])
             item['operation'] = [
                 {'title': '修改', 'icon': 'antd-edit'}
@@ -606,7 +591,6 @@ def job_delete_confirm(delete_confirm, job_ids_data):
         job_log_job_name=Output(
             'job_log-job_name-input', 'value', allow_duplicate=True
         ),
-        job_log_job_group_options=Output('job_log-job_group-select', 'options'),
         job_log_search_nclick=Output('job_log-search', 'nClicks'),
     ),
     inputs=dict(
@@ -642,14 +626,6 @@ def job_to_job_log_modal(
         trigger_id == 'job-list-table'
         and recently_clicked_dropdown_item_title == '调度日志'
     ):
-        option_table = []
-        info = DictDataApi.get_dicts(dict_type='sys_job_group')
-        data = info.get('data')
-        option_table = [
-            dict(label=item.get('dict_label'), value=item.get('dict_value'))
-            for item in data
-        ]
-
         if (
             trigger_id == 'job-list-table'
             and recently_clicked_dropdown_item_title == '调度日志'
@@ -660,7 +636,6 @@ def job_to_job_log_modal(
                 job_log_job_name=recently_dropdown_item_clicked_row.get(
                     'job_name'
                 ),
-                job_log_job_group_options=option_table,
                 job_log_search_nclick=job_log_search_nclick + 1
                 if job_log_search_nclick
                 else 1,
@@ -670,7 +645,6 @@ def job_to_job_log_modal(
             job_log_modal_visible=True,
             job_log_modal_title='任务调度日志',
             job_log_job_name=None,
-            job_log_job_group_options=option_table,
             job_log_search_nclick=job_log_search_nclick + 1
             if job_log_search_nclick
             else 1,

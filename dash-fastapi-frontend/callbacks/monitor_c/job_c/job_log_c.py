@@ -4,8 +4,8 @@ from dash import ctx, dcc
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.monitor.job_log import JobLogApi
-from api.system.dict.data import DictDataApi
 from server import app
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
@@ -76,18 +76,6 @@ def get_job_log_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        info = DictDataApi.get_dicts(dict_type='sys_job_group')
-        data = info.get('data')
-        option_table = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-            )
-            for item in data
-        ]
-        option_dict = {item.get('value'): item for item in option_table}
-
         table_info = JobLogApi.list_job_log(query_params)
         table_data = table_info['rows']
         table_pagination = dict(
@@ -103,13 +91,9 @@ def get_job_log_table_data(
                 item['status'] = dict(tag='成功', color='blue')
             else:
                 item['status'] = dict(tag='失败', color='volcano')
-            if str(item.get('job_group')) in option_dict.keys():
-                item['job_group'] = dict(
-                    tag=option_dict.get(str(item.get('job_group'))).get(
-                        'label'
-                    ),
-                    color='blue',
-                )
+            item['job_group'] = DictManager.get_dict_tag(
+                dict_type='sys_job_group', dict_value=item.get('job_group')
+            )
             item['key'] = str(item['job_log_id'])
             item['operation'] = [
                 {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}

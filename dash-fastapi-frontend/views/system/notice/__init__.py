@@ -4,30 +4,16 @@ import uuid
 from dash import dcc, html
 from flask import session
 from api.system.notice import NoticeApi
-from api.system.dict.data import DictDataApi
 from callbacks.system_c import notice_c  # noqa: F401
 from config.global_config import ApiBaseUrlConfig
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiRadioGroup import ApiRadioGroup
+from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    info = DictDataApi.get_dicts(dict_type='sys_notice_type')
-    data = info.get('data')
-    option = [
-        dict(label=item.get('dict_label'), value=item.get('dict_value'))
-        for item in data
-    ]
-    option_table = [
-        dict(
-            label=item.get('dict_label'),
-            value=item.get('dict_value'),
-            css_class=item.get('css_class'),
-        )
-        for item in data
-    ]
-    option_dict = {item.get('value'): item for item in option_table}
-
     notice_params = dict(page_num=1, page_size=10)
     table_info = NoticeApi.list_notice(notice_params)
     table_data = table_info['rows']
@@ -35,15 +21,12 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(tag='正常', color='blue')
-        else:
-            item['status'] = dict(tag='关闭', color='volcano')
-        if str(item.get('notice_type')) in option_dict.keys():
-            item['notice_type'] = dict(
-                tag=option_dict.get(str(item.get('notice_type'))).get('label'),
-                color='blue',
-            )
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_notice_status', dict_value=item.get('status')
+        )
+        item['notice_type'] = DictManager.get_dict_tag(
+            dict_type='sys_notice_type', dict_value=item.get('notice_type')
+        )
         item['key'] = str(item['notice_id'])
         item['operation'] = [
             {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
@@ -105,10 +88,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_notice_type',
                                                             id='notice-notice_type-select',
                                                             placeholder='公告类型',
-                                                            options=option,
                                                             style={
                                                                 'width': 240
                                                             },
@@ -398,9 +381,9 @@ def render(*args, **kwargs):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdSelect(
+                                        ApiSelect(
+                                            dict_type='sys_notice_type',
                                             id='notice-notice_type',
-                                            options=option,
                                             style={'width': '100%'},
                                         ),
                                         id='notice-notice_type-form-item',
@@ -418,12 +401,9 @@ def render(*args, **kwargs):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdRadioGroup(
+                                        ApiRadioGroup(
+                                            dict_type='sys_notice_status',
                                             id='notice-status',
-                                            options=[
-                                                {'label': '正常', 'value': '0'},
-                                                {'label': '关闭', 'value': '1'},
-                                            ],
                                             style={'width': '100%'},
                                         ),
                                         id='notice-status-form-item',

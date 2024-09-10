@@ -1,30 +1,16 @@
 import feffery_antd_components as fac
 from dash import dcc, html
 from api.monitor.job import JobApi
-from api.system.dict.data import DictDataApi
 from callbacks.monitor_c.job_c import job_c  # noqa: F401
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiRadioGroup import ApiRadioGroup
+from views.components.ApiSelect import ApiSelect
 from . import job_log
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    info = DictDataApi.get_dicts(dict_type='sys_job_group')
-    data = info.get('data')
-    option = [
-        dict(label=item.get('dict_label'), value=item.get('dict_value'))
-        for item in data
-    ]
-    option_table = [
-        dict(
-            label=item.get('dict_label'),
-            value=item.get('dict_value'),
-            css_class=item.get('css_class'),
-        )
-        for item in data
-    ]
-    option_dict = {item.get('value'): item for item in option_table}
-
     job_params = dict(page_num=1, page_size=10)
     table_info = JobApi.list_job(job_params)
     table_data = table_info['rows']
@@ -36,11 +22,9 @@ def render(*args, **kwargs):
             item['status'] = dict(checked=True)
         else:
             item['status'] = dict(checked=False)
-        if str(item.get('job_group')) in option_dict.keys():
-            item['job_group'] = dict(
-                tag=option_dict.get(str(item.get('job_group'))).get('label'),
-                color='blue',
-            )
+        item['job_group'] = DictManager.get_dict_tag(
+            dict_type='sys_job_group', dict_value=item.get('job_group')
+        )
         item['key'] = str(item['job_id'])
         item['operation'] = [
             {'title': '修改', 'icon': 'antd-edit'}
@@ -103,10 +87,10 @@ def render(*args, **kwargs):
                                                                 label='任务名称',
                                                             ),
                                                             fac.AntdFormItem(
-                                                                fac.AntdSelect(
+                                                                ApiSelect(
+                                                                    dict_type='sys_job_group',
                                                                     id='job-job_group-select',
                                                                     placeholder='请选择任务组名',
-                                                                    options=option,
                                                                     style={
                                                                         'width': 210
                                                                     },
@@ -114,19 +98,10 @@ def render(*args, **kwargs):
                                                                 label='任务组名',
                                                             ),
                                                             fac.AntdFormItem(
-                                                                fac.AntdSelect(
+                                                                ApiSelect(
+                                                                    dict_type='sys_job_status',
                                                                     id='job-status-select',
                                                                     placeholder='请选择任务状态',
-                                                                    options=[
-                                                                        {
-                                                                            'label': '正常',
-                                                                            'value': '0',
-                                                                        },
-                                                                        {
-                                                                            'label': '暂停',
-                                                                            'value': '1',
-                                                                        },
-                                                                    ],
                                                                     style={
                                                                         'width': 200
                                                                     },
@@ -450,13 +425,13 @@ def render(*args, **kwargs):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdSelect(
+                                        ApiSelect(
+                                            dict_type='sys_job_group',
                                             id={
                                                 'type': 'job-form-value',
                                                 'index': 'job_group',
                                             },
                                             placeholder='请选择任务分组',
-                                            options=option,
                                             style={'width': '100%'},
                                         ),
                                         id={
@@ -660,15 +635,12 @@ def render(*args, **kwargs):
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdRadioGroup(
+                                        ApiRadioGroup(
+                                            dict_type='sys_job_status',
                                             id={
                                                 'type': 'job-form-value',
                                                 'index': 'status',
                                             },
-                                            options=[
-                                                {'label': '正常', 'value': '0'},
-                                                {'label': '暂停', 'value': '1'},
-                                            ],
                                             defaultValue='0',
                                         ),
                                         id={

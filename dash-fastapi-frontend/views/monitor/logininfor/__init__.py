@@ -2,7 +2,9 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.monitor.logininfor import LogininforApi
 from callbacks.monitor_c import logininfor_c  # noqa: F401
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
@@ -15,10 +17,9 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(tag='成功', color='blue')
-        else:
-            item['status'] = dict(tag='失败', color='volcano')
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_common_status', dict_value=item.get('status')
+        )
         item['key'] = str(item['info_id'])
 
     return [
@@ -73,19 +74,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_common_status',
                                                             id='login_log-status-select',
                                                             placeholder='登录状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '成功',
-                                                                    'value': 0,
-                                                                },
-                                                                {
-                                                                    'label': '失败',
-                                                                    'value': 1,
-                                                                },
-                                                            ],
                                                             style={
                                                                 'width': 240
                                                             },

@@ -1,29 +1,14 @@
 import feffery_antd_components as fac
 from dash import dcc, html
 from api.monitor.operlog import OperlogApi
-from api.system.dict.data import DictDataApi
 from callbacks.monitor_c import operlog_c  # noqa: F401
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
     button_perms = kwargs.get('button_perms')
-    info = DictDataApi.get_dicts(dict_type='sys_oper_type')
-    data = info.get('data')
-    option = [
-        dict(label=item.get('dict_label'), value=item.get('dict_value'))
-        for item in data
-    ]
-    option_table = [
-        dict(
-            label=item.get('dict_label'),
-            value=item.get('dict_value'),
-            css_class=item.get('css_class'),
-        )
-        for item in data
-    ]
-    option_dict = {item.get('value'): item for item in option_table}
-
     operation_log_params = dict(page_num=1, page_size=10)
     table_info = OperlogApi.list_operlog(operation_log_params)
     table_data = table_info['rows']
@@ -31,17 +16,12 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        if item['status'] == 0:
-            item['status'] = dict(tag='成功', color='blue')
-        else:
-            item['status'] = dict(tag='失败', color='volcano')
-        if str(item.get('business_type')) in option_dict.keys():
-            item['business_type'] = dict(
-                tag=option_dict.get(str(item.get('business_type'))).get(
-                    'label'
-                ),
-                color='blue',
-            )
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_common_status', dict_value=item.get('status')
+        )
+        item['business_type'] = DictManager.get_dict_tag(
+            dict_type='sys_oper_type', dict_value=item.get('business_type')
+        )
         item['key'] = str(item['oper_id'])
         item['cost_time'] = f"{item['cost_time']}毫秒"
         item['operation'] = [
@@ -102,10 +82,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_oper_type',
                                                             id='operation_log-business_type-select',
                                                             placeholder='操作类型',
-                                                            options=option,
                                                             style={
                                                                 'width': 240
                                                             },
@@ -116,19 +96,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_common_status',
                                                             id='operation_log-status-select',
                                                             placeholder='操作状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '成功',
-                                                                    'value': 0,
-                                                                },
-                                                                {
-                                                                    'label': '失败',
-                                                                    'value': 1,
-                                                                },
-                                                            ],
                                                             style={
                                                                 'width': 240
                                                             },
