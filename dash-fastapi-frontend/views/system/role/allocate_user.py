@@ -4,9 +4,8 @@ from callbacks.system_c.role_c import allocate_user_c  # noqa: F401
 from .component import query_form_table
 
 
-def render(button_perms):
+def render():
     return [
-        dcc.Store(id='allocate_user-button-perms-container', data=button_perms),
         dcc.Store(id='allocate_user-role_id-container'),
         # 分配用户模块操作类型存储容器
         dcc.Store(
@@ -24,7 +23,6 @@ def render(button_perms):
         # 分配用户模块删除操作行key存储容器
         dcc.Store(id='allocate_user-delete-ids-store'),
         query_form_table.render(
-            button_perms=button_perms,
             allocate_index='allocated',
             is_operation=True,
         ),
@@ -32,7 +30,6 @@ def render(button_perms):
         fac.AntdModal(
             [
                 query_form_table.render(
-                    button_perms=button_perms,
                     allocate_index='unallocated',
                     is_operation=False,
                 ),

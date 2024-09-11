@@ -5,9 +5,8 @@ from utils.permission_util import PermissionManager
 from views.components.ApiSelect import ApiSelect
 
 
-def render(button_perms):
+def render():
     return [
-        dcc.Store(id='job_log-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='job_log-export-complete-judge-container'),
         # 绑定的导出组件

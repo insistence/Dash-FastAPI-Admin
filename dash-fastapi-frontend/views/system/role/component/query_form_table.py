@@ -3,7 +3,7 @@ import feffery_antd_components as fac
 from utils.permission_util import PermissionManager
 
 
-def render(button_perms, allocate_index, is_operation):
+def render(allocate_index, is_operation):
     table_column = [
         {
             'dataIndex': 'user_id',

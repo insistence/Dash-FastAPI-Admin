@@ -8,8 +8,6 @@ from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
-
     login_log_params = dict(page_num=1, page_size=10)
     table_info = LogininforApi.list_logininfor(login_log_params)
     table_data = table_info['rows']
@@ -23,7 +21,6 @@ def render(*args, **kwargs):
         item['key'] = str(item['info_id'])
 
     return [
-        dcc.Store(id='login_log-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='login_log-export-complete-judge-container'),
         # 绑定的导出组件

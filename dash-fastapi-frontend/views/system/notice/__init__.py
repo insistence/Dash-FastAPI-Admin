@@ -13,7 +13,6 @@ from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     notice_params = dict(page_num=1, page_size=10)
     table_info = NoticeApi.list_notice(notice_params)
     table_data = table_info['rows']
@@ -38,7 +37,6 @@ def render(*args, **kwargs):
         ]
 
     return [
-        dcc.Store(id='notice-button-perms-container', data=button_perms),
         # 通知公告管理模块操作类型存储容器
         dcc.Store(id='notice-operations-store'),
         dcc.Store(id='notice-operations-store-bk'),

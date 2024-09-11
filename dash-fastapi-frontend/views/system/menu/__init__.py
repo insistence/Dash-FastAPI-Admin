@@ -8,7 +8,6 @@ from views.system.menu.components.icon_category import render_icon
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     table_info = MenuApi.list_menu({})
     table_data = table_info['data']
     for item in table_data:
@@ -49,7 +48,6 @@ def render(*args, **kwargs):
     table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
 
     return [
-        dcc.Store(id='menu-button-perms-container', data=button_perms),
         # 菜单管理模块操作类型存储容器
         dcc.Store(id='menu-operations-store'),
         dcc.Store(id='menu-operations-store-bk'),

@@ -7,7 +7,6 @@ from . import data_scope, allocate_user
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     role_params = dict(page_num=1, page_size=10)
     table_info = RoleApi.list_role(role_params)
     table_data = table_info['rows']
@@ -95,7 +94,6 @@ def render(*args, **kwargs):
             )
 
     return [
-        dcc.Store(id='role-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='role-export-complete-judge-container'),
         # 绑定的导出组件
@@ -663,7 +661,7 @@ def render(*args, **kwargs):
         ),
         # 分配用户modal
         fac.AntdModal(
-            allocate_user.render(button_perms),
+            allocate_user.render(),
             id='role_to_allocated_user-modal',
             title='分配用户',
             mask=False,

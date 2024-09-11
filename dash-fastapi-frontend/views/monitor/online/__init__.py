@@ -6,8 +6,6 @@ from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
-
     online_params = dict(page_num=1, page_size=10)
     table_info = OnlineApi.list_online(online_params)
     table_data = table_info['rows']
@@ -23,7 +21,6 @@ def render(*args, **kwargs):
         ]
 
     return [
-        dcc.Store(id='online-button-perms-container', data=button_perms),
         # 在线用户模块操作类型存储容器
         dcc.Store(id='online-operations-store'),
         dcc.Store(id='online-operations-store-bk'),

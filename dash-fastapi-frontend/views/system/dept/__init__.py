@@ -7,7 +7,6 @@ from utils.tree_tool import list_to_tree
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     default_expanded_row_keys = []
     table_info = DeptApi.list_dept({})
     table_data = table_info['data']
@@ -51,7 +50,6 @@ def render(*args, **kwargs):
     table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
 
     return [
-        dcc.Store(id='dept-button-perms-container', data=button_perms),
         # 部门管理模块操作类型存储容器
         dcc.Store(id='dept-operations-store'),
         dcc.Store(id='dept-operations-store-bk'),

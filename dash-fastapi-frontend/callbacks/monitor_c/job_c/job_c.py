@@ -4,7 +4,6 @@ from dash import ctx, dcc, no_update
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.monitor.job import JobApi
-from api.system.dict.data import DictDataApi
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -31,7 +30,6 @@ from utils.permission_util import PermissionManager
         job_name=State('job-job_name-input', 'value'),
         job_group=State('job-job_group-select', 'value'),
         status_select=State('job-status-select', 'value'),
-        button_perms=State('job-button-perms-container', 'data'),
     ),
     prevent_initial_call=True,
 )
@@ -43,7 +41,6 @@ def get_job_table_data(
     job_name,
     job_group,
     status_select,
-    button_perms,
 ):
     """
     获取定时任务表格数据回调（进行表格相关增删查改操作后均会触发此回调）

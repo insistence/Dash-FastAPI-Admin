@@ -5,9 +5,8 @@ import callbacks.system_c.dict_c.dict_data_c  # noqa: F401
 from utils.permission_util import PermissionManager
 
 
-def render(button_perms):
+def render():
     return [
-        dcc.Store(id='dict_data-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='dict_data-export-complete-judge-container'),
         # 绑定的导出组件

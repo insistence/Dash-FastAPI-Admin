@@ -10,7 +10,6 @@ from . import job_log
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     job_params = dict(page_num=1, page_size=10)
     table_info = JobApi.list_job(job_params)
     table_data = table_info['rows']
@@ -45,7 +44,6 @@ def render(*args, **kwargs):
         ]
 
     return [
-        dcc.Store(id='job-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='job-export-complete-judge-container'),
         # 绑定的导出组件
@@ -678,7 +676,7 @@ def render(*args, **kwargs):
         ),
         # 任务调度日志modal
         fac.AntdModal(
-            job_log.render(button_perms),
+            job_log.render(),
             id='job_to_job_log-modal',
             mask=False,
             maskClosable=False,

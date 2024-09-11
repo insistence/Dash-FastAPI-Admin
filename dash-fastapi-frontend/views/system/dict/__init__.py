@@ -7,7 +7,6 @@ from . import dict_data
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     dict_type_params = dict(page_num=1, page_size=10)
     table_info = DictTypeApi.list_type(dict_type_params)
     table_data = table_info['rows']
@@ -34,7 +33,6 @@ def render(*args, **kwargs):
         ]
 
     return [
-        dcc.Store(id='dict_type-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='dict_type-export-complete-judge-container'),
         # 绑定的导出组件
@@ -536,7 +534,7 @@ def render(*args, **kwargs):
         ),
         # 字典数据modal
         fac.AntdModal(
-            dict_data.render(button_perms),
+            dict_data.render(),
             id='dict_type_to_dict_data-modal',
             mask=False,
             maskClosable=False,

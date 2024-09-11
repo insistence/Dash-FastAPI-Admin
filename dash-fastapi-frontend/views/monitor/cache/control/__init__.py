@@ -4,9 +4,7 @@ from api.monitor.cache import CacheApi
 from callbacks.monitor_c.cache_c import control_c  # noqa: F401
 
 
-
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     cache_info_res = CacheApi.get_cache()
     cache_info = cache_info_res.get('data')
     command_stats = cache_info.get('command_stats')
@@ -14,14 +12,19 @@ def render(*args, **kwargs):
     info = cache_info.get('info')
 
     return [
-        dcc.Store(id='control-button-perms-container', data=button_perms),
-        dcc.Store(id='init-echarts-data-container', data=dict(command_stats=command_stats, used_memory_human=info.get('used_memory_human'))),
+        dcc.Store(
+            id='init-echarts-data-container',
+            data=dict(
+                command_stats=command_stats,
+                used_memory_human=info.get('used_memory_human'),
+            ),
+        ),
         dcc.Store(id='echarts-data-container'),
         dcc.Interval(
             id='init-echarts-interval',
             n_intervals=0,
             interval=500,
-            disabled=False
+            disabled=False,
         ),
         html.Div(
             [
@@ -34,82 +37,93 @@ def render(*args, **kwargs):
                                         [
                                             fac.AntdDescriptionItem(
                                                 info.get('redis_version'),
-                                                label='Redis版本'
+                                                label='Redis版本',
                                             ),
                                             fac.AntdDescriptionItem(
-                                                '单机'if info.get('redis_mode') == 'standalone' else '集群',
-                                                label='运行模式'
+                                                '单机'
+                                                if info.get('redis_mode')
+                                                == 'standalone'
+                                                else '集群',
+                                                label='运行模式',
                                             ),
                                             fac.AntdDescriptionItem(
                                                 info.get('tcp_port'),
-                                                label='端口'
+                                                label='端口',
                                             ),
                                             fac.AntdDescriptionItem(
                                                 info.get('connected_clients'),
-                                                label='客户端数'
+                                                label='客户端数',
                                             ),
                                             fac.AntdDescriptionItem(
                                                 info.get('uptime_in_days'),
-                                                label='运行时间(天)'
+                                                label='运行时间(天)',
                                             ),
                                             fac.AntdDescriptionItem(
                                                 info.get('used_memory_human'),
-                                                label='使用内存'
+                                                label='使用内存',
                                             ),
                                             fac.AntdDescriptionItem(
-                                                info.get('used_cpu_user_children'),
-                                                label='使用CPU'
+                                                info.get(
+                                                    'used_cpu_user_children'
+                                                ),
+                                                label='使用CPU',
                                             ),
                                             fac.AntdDescriptionItem(
                                                 info.get('maxmemory_human'),
-                                                label='内存配置'
+                                                label='内存配置',
                                             ),
                                             fac.AntdDescriptionItem(
-                                                '否' if info.get('aof_enabled') == 0 else '是',
-                                                label='AOF是否开启'
+                                                '否'
+                                                if info.get('aof_enabled') == 0
+                                                else '是',
+                                                label='AOF是否开启',
                                             ),
                                             fac.AntdDescriptionItem(
-                                                info.get('rdb_last_bgsave_status'),
-                                                label='RDB是否成功'
+                                                info.get(
+                                                    'rdb_last_bgsave_status'
+                                                ),
+                                                label='RDB是否成功',
                                             ),
                                             fac.AntdDescriptionItem(
-                                                db_size,
-                                                label='Key数量'
+                                                db_size, label='Key数量'
                                             ),
                                             fac.AntdDescriptionItem(
                                                 f"{info.get('instantaneous_input_kbps')}kps/{info.get('instantaneous_output_kbps')}kps",
-                                                label='网络入口/出口'
+                                                label='网络入口/出口',
                                             ),
                                         ],
                                         bordered=True,
                                         column=4,
                                         labelStyle={
                                             'fontWeight': 600,
-                                            'textAlign': 'center'
+                                            'textAlign': 'center',
                                         },
                                         style={
                                             'width': '100%',
                                             'textAlign': 'center',
                                             'marginLeft': '20px',
-                                            'marginRight': '20px'
-                                        }
+                                            'marginRight': '20px',
+                                        },
                                     )
                                 ],
                                 title=html.Div(
                                     [
                                         fac.AntdIcon(icon='antd-desktop'),
-                                        fac.AntdText('基本信息', style={'marginLeft': '10px'})
+                                        fac.AntdText(
+                                            '基本信息',
+                                            style={'marginLeft': '10px'},
+                                        ),
                                     ]
                                 ),
                                 size='small',
                                 style={
                                     'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                                }
+                                },
                             ),
-                            span=24
+                            span=24,
                         ),
                     ],
-                    gutter=20
+                    gutter=20,
                 ),
                 fac.AntdRow(
                     [
@@ -120,22 +134,25 @@ def render(*args, **kwargs):
                                         id='command-stats-charts-container',
                                         style={
                                             'height': '420px',
-                                            'width': '100%'
-                                        }
+                                            'width': '100%',
+                                        },
                                     ),
                                 ],
                                 title=html.Div(
                                     [
                                         fac.AntdIcon(icon='antd-pie-chart'),
-                                        fac.AntdText('命令统计', style={'marginLeft': '10px'})
+                                        fac.AntdText(
+                                            '命令统计',
+                                            style={'marginLeft': '10px'},
+                                        ),
                                     ]
                                 ),
                                 size='small',
                                 style={
                                     'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                                }
+                                },
                             ),
-                            span=12
+                            span=12,
                         ),
                         fac.AntdCol(
                             fac.AntdCard(
@@ -144,30 +161,30 @@ def render(*args, **kwargs):
                                         id='memory-charts-container',
                                         style={
                                             'height': '420px',
-                                            'width': '100%'
-                                        }
+                                            'width': '100%',
+                                        },
                                     ),
                                 ],
                                 title=html.Div(
                                     [
                                         fac.AntdIcon(icon='antd-compass'),
-                                        fac.AntdText('内存信息', style={'marginLeft': '10px'})
+                                        fac.AntdText(
+                                            '内存信息',
+                                            style={'marginLeft': '10px'},
+                                        ),
                                     ]
                                 ),
                                 size='small',
                                 style={
                                     'boxShadow': 'rgba(99, 99, 99, 0.2) 0px 2px 8px 0px'
-                                }
+                                },
                             ),
-                            span=12
+                            span=12,
                         ),
                     ],
                     gutter=20,
-                    style={
-                        'marginTop': '20px',
-                        'marginBottom': '20px'
-                    }
+                    style={'marginTop': '20px', 'marginBottom': '20px'},
                 ),
             ],
-        )
+        ),
     ]

@@ -34,7 +34,6 @@ from utils.permission_util import PermissionManager
         job_group=State('job_log-job_group-select', 'value'),
         status_select=State('job_log-status-select', 'value'),
         create_time_range=State('job_log-create_time-range', 'value'),
-        button_perms=State('job_log-button-perms-container', 'data'),
     ),
     prevent_initial_call=True,
 )
@@ -47,7 +46,6 @@ def get_job_log_table_data(
     job_group,
     status_select,
     create_time_range,
-    button_perms,
 ):
     """
     获取定时任务对应调度日志表格数据回调（进行表格相关增删查改操作后均会触发此回调）

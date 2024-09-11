@@ -4,7 +4,6 @@ from api.monitor.server import ServerApi
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
     server_info_res = ServerApi.get_server()
     server_info = server_info_res.get('data')
     cpu = [
@@ -42,7 +41,6 @@ def render(*args, **kwargs):
     sys_files = server_info.get('sys_files')
 
     return [
-        dcc.Store(id='server-button-perms-container', data=button_perms),
         html.Div(
             [
                 fac.AntdRow(

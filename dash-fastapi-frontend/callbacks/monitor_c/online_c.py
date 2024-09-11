@@ -30,7 +30,6 @@ from utils.permission_util import PermissionManager
     state=dict(
         ipaddr=State('online-ipaddr-input', 'value'),
         user_name=State('online-user_name-input', 'value'),
-        button_perms=State('online-button-perms-container', 'data'),
     ),
     prevent_initial_call=True,
 )
@@ -41,7 +40,6 @@ def get_online_table_data(
     operations,
     ipaddr,
     user_name,
-    button_perms,
 ):
     """
     获取在线用户表格数据回调（进行表格相关增删查改操作后均会触发此回调）
