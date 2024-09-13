@@ -34,9 +34,10 @@ def render(*args, **kwargs):
         dcc.Download(id='config-export-container'),
         # 参数管理模块操作类型存储容器
         dcc.Store(id='config-operations-store'),
-        dcc.Store(id='config-operations-store-bk'),
-        # 参数管理模块修改操作行key存储容器
-        dcc.Store(id='config-edit-id-store'),
+        # 参数管理模块弹窗类型存储容器
+        dcc.Store(id='config-modal_type-store'),
+        # 参数管理模块表单数据存储容器
+        dcc.Store(id='config-form-store'),
         # 参数管理模块删除操作行key存储容器
         dcc.Store(id='config-delete-ids-store'),
         fac.AntdRow(
@@ -414,10 +415,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'config-form-value',
-                                                'index': 'config_name',
-                                            },
+                                            name='config_name',
                                             placeholder='请输入参数名称',
                                             allowClear=True,
                                             style={'width': 350},
@@ -439,10 +437,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'config-form-value',
-                                                'index': 'config_key',
-                                            },
+                                            name='config_key',
                                             placeholder='请输入参数键名',
                                             allowClear=True,
                                             style={'width': 350},
@@ -464,10 +459,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'config-form-value',
-                                                'index': 'config_value',
-                                            },
+                                            name='config_value',
                                             placeholder='请输入参数键值',
                                             allowClear=True,
                                             style={'width': 350},
@@ -489,10 +481,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'config-form-value',
-                                                'index': 'config_type',
-                                            },
+                                            name='config_type',
                                             options=[
                                                 {'label': '是', 'value': 'Y'},
                                                 {'label': '否', 'value': 'N'},
@@ -516,10 +505,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'config-form-value',
-                                                'index': 'remark',
-                                            },
+                                            name='remark',
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
@@ -537,6 +523,8 @@ def render(*args, **kwargs):
                             ]
                         ),
                     ],
+                    id='config-form',
+                    enableBatchControl=True,
                     labelCol={'span': 6},
                     wrapperCol={'span': 18},
                 )
