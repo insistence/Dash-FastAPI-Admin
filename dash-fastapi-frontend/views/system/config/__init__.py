@@ -2,7 +2,10 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.system.config import ConfigApi
 from callbacks.system_c import config_c  # noqa: F401
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiRadioGroup import ApiRadioGroup
+from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
@@ -13,10 +16,9 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        if item['config_type'] == 'Y':
-            item['config_type'] = dict(tag='是', color='blue')
-        else:
-            item['config_type'] = dict(tag='否', color='volcano')
+        item['config_type'] = DictManager.get_dict_tag(
+            dict_type='sys_yes_no', dict_value=item.get('config_type')
+        )
         item['key'] = str(item['config_id'])
         item['operation'] = [
             {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
@@ -82,19 +84,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_yes_no',
                                                             id='config-config_type-select',
                                                             placeholder='系统内置',
-                                                            options=[
-                                                                {
-                                                                    'label': '是',
-                                                                    'value': 'Y',
-                                                                },
-                                                                {
-                                                                    'label': '否',
-                                                                    'value': 'N',
-                                                                },
-                                                            ],
                                                             style={
                                                                 'width': 235
                                                             },
@@ -480,13 +473,10 @@ def render(*args, **kwargs):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdRadioGroup(
+                                        ApiRadioGroup(
+                                            dict_type='sys_yes_no',
                                             name='config_type',
-                                            options=[
-                                                {'label': '是', 'value': 'Y'},
-                                                {'label': '否', 'value': 'N'},
-                                            ],
-                                            defaultValue='0',
+                                            defaultValue='Y',
                                             style={'width': 350},
                                         ),
                                         label='系统内置',

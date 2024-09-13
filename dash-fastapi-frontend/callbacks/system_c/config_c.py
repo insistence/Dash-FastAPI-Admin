@@ -6,6 +6,7 @@ from dash.exceptions import PreventUpdate
 from api.system.config import ConfigApi
 from server import app
 from utils.common import validate_data_not_empty
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
@@ -85,10 +86,9 @@ def get_config_table_data(
             total=table_info['total'],
         )
         for item in table_data:
-            if item['config_type'] == 'Y':
-                item['config_type'] = dict(tag='是', color='blue')
-            else:
-                item['config_type'] = dict(tag='否', color='volcano')
+            item['config_type'] = DictManager.get_dict_tag(
+                dict_type='sys_yes_no', dict_value=item.get('config_type')
+            )
             item['key'] = str(item['config_id'])
             item['operation'] = [
                 {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
