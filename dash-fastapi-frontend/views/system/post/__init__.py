@@ -34,9 +34,10 @@ def render(*args, **kwargs):
         dcc.Download(id='post-export-container'),
         # 岗位管理模块操作类型存储容器
         dcc.Store(id='post-operations-store'),
-        dcc.Store(id='post-operations-store-bk'),
-        # 岗位管理模块修改操作行key存储容器
-        dcc.Store(id='post-edit-id-store'),
+        # 岗位管理模块弹窗类型存储容器
+        dcc.Store(id='post-modal_type-store'),
+        # 岗位管理模块表单数据存储容器
+        dcc.Store(id='post-form-store'),
         # 岗位管理模块删除操作行key存储容器
         dcc.Store(id='post-delete-ids-store'),
         fac.AntdRow(
@@ -367,10 +368,7 @@ def render(*args, **kwargs):
                     [
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id={
-                                    'type': 'post-form-value',
-                                    'index': 'post_name',
-                                },
+                                name='post_name',
                                 placeholder='请输入岗位名称',
                                 allowClear=True,
                                 style={'width': 350},
@@ -382,13 +380,11 @@ def render(*args, **kwargs):
                                 'index': 'post_name',
                                 'required': True,
                             },
+                            hasFeedback=True,
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id={
-                                    'type': 'post-form-value',
-                                    'index': 'post_code',
-                                },
+                                name='post_code',
                                 placeholder='请输入岗位编码',
                                 allowClear=True,
                                 style={'width': 350},
@@ -400,13 +396,11 @@ def render(*args, **kwargs):
                                 'index': 'post_code',
                                 'required': True,
                             },
+                            hasFeedback=True,
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
-                                id={
-                                    'type': 'post-form-value',
-                                    'index': 'post_sort',
-                                },
+                                name='post_sort',
                                 defaultValue=0,
                                 min=0,
                                 style={'width': 350},
@@ -418,13 +412,11 @@ def render(*args, **kwargs):
                                 'index': 'post_sort',
                                 'required': True,
                             },
+                            hasFeedback=True,
                         ),
                         fac.AntdFormItem(
                             fac.AntdRadioGroup(
-                                id={
-                                    'type': 'post-form-value',
-                                    'index': 'status',
-                                },
+                                name='status',
                                 options=[
                                     {'label': '正常', 'value': '0'},
                                     {'label': '停用', 'value': '1'},
@@ -438,13 +430,11 @@ def render(*args, **kwargs):
                                 'index': 'status',
                                 'required': False,
                             },
+                            hasFeedback=True,
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
-                                id={
-                                    'type': 'post-form-value',
-                                    'index': 'remark',
-                                },
+                                name='remark',
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
@@ -456,8 +446,11 @@ def render(*args, **kwargs):
                                 'index': 'remark',
                                 'required': False,
                             },
+                            hasFeedback=True,
                         ),
                     ],
+                    id='post-form',
+                    enableBatchControl=True,
                     labelCol={'span': 6},
                     wrapperCol={'span': 18},
                 )

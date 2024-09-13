@@ -181,22 +181,45 @@ def change_post_delete_button_status(table_rows_selected):
 
 
 @app.callback(
+    [
+        Output('post-form-store', 'data', allow_duplicate=True),
+        Output('post-form', 'values'),
+    ],
+    [
+        Input('post-form-store', 'data'),
+        Input('post-form', 'values'),
+    ],
+    State('post-modal_type-store', 'data'),
+    prevent_initial_call=True,
+)
+def show_post_form(row_data, form_value, modal_type):
+    """
+    岗位表单数据双向绑定回调
+    """
+    trigger_id = ctx.triggered_id
+    if trigger_id == 'post-form-store':
+        return no_update, row_data
+    if trigger_id == 'post-form':
+        if modal_type == 'add':
+            row_data = form_value
+        else:
+            row_data.update(form_value)
+        return row_data, no_update
+    raise PreventUpdate
+
+
+@app.callback(
     output=dict(
         modal_visible=Output('post-modal', 'visible', allow_duplicate=True),
         modal_title=Output('post-modal', 'title'),
-        form_value=Output({'type': 'post-form-value', 'index': ALL}, 'value'),
+        form_value=Output('post-form-store', 'data', allow_duplicate=True),
         form_label_validate_status=Output(
-            {'type': 'post-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'post-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'post-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'post-form', 'helps', allow_duplicate=True
         ),
-        edit_row_info=Output('post-edit-id-store', 'data'),
-        modal_type=Output('post-operations-store-bk', 'data'),
+        modal_type=Output('post-modal_type-store', 'data'),
     ),
     inputs=dict(
         operation_click=Input(
@@ -229,10 +252,6 @@ def add_edit_post_modal(
         or trigger_id == {'index': 'edit', 'type': 'post-operation-button'}
         or (trigger_id == 'post-list-table' and clicked_content == '修改')
     ):
-        # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
-        # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'post-operation-button'}:
             post_info = dict(
                 post_name=None,
@@ -244,10 +263,9 @@ def add_edit_post_modal(
             return dict(
                 modal_visible=True,
                 modal_title='新增岗位',
-                form_value=[post_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=None,
+                form_value=post_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'add'},
             )
         elif trigger_id == {
@@ -263,22 +281,11 @@ def add_edit_post_modal(
             return dict(
                 modal_visible=True,
                 modal_title='编辑岗位',
-                form_value=[post_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=post_info if post_info else None,
+                form_value=post_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'edit'},
             )
-
-        return dict(
-            modal_visible=no_update,
-            modal_title=no_update,
-            form_value=[no_update] * len(form_value_list),
-            form_label_validate_status=[no_update] * len(form_label_list),
-            form_label_validate_info=[no_update] * len(form_label_list),
-            edit_row_info=None,
-            modal_type=None,
-        )
 
     raise PreventUpdate
 
@@ -286,14 +293,10 @@ def add_edit_post_modal(
 @app.callback(
     output=dict(
         form_label_validate_status=Output(
-            {'type': 'post-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'post-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'post-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'post-form', 'helps', allow_duplicate=True
         ),
         modal_visible=Output('post-modal', 'visible'),
         operations=Output(
@@ -302,42 +305,31 @@ def add_edit_post_modal(
     ),
     inputs=dict(confirm_trigger=Input('post-modal', 'okCounts')),
     state=dict(
-        modal_type=State('post-operations-store-bk', 'data'),
-        edit_row_info=State('post-edit-id-store', 'data'),
-        form_value=State({'type': 'post-form-value', 'index': ALL}, 'value'),
+        modal_type=State('post-modal_type-store', 'data'),
+        form_value=State('post-form-store', 'data'),
         form_label=State(
             {'type': 'post-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
     prevent_initial_call=True,
 )
-def post_confirm(
-    confirm_trigger, modal_type, edit_row_info, form_value, form_label
-):
+def post_confirm(confirm_trigger, modal_type, form_value, form_label):
     """
     新增或编辑岗位弹窗确认回调，实现新增或编辑操作
     """
     if confirm_trigger:
-        # 获取所有输出表单项对应label的index
-        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
-        # 获取所有输入表单项对应的value及label
-        form_value_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
-        }
+        # 获取所有必填表单项对应label的index
+        form_label_list = [x['id']['index'] for x in ctx.states_list[-1]]
+        # 获取所有输入必填表单项对应的label
         form_label_state = {
             x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
         if all(
             validate_data_not_empty(item)
-            for item in [
-                form_value_state.get(k) for k in form_label_output_list
-            ]
+            for item in [form_value.get(k) for k in form_label_list]
         ):
-            params_add = form_value_state
+            params_add = form_value
             params_edit = params_add.copy()
-            params_edit['post_id'] = (
-                edit_row_info.get('post_id') if edit_row_info else None
-            )
             modal_type = modal_type.get('type')
             if modal_type == 'add':
                 PostApi.add_post(params_add)
@@ -345,47 +337,43 @@ def post_confirm(
                 PostApi.update_post(params_edit)
             if modal_type == 'add':
                 MessageManager.success(content='新增成功')
-                
+
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'add'},
                 )
             if modal_type == 'edit':
                 MessageManager.success(content='编辑成功')
-                
+
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'edit'},
                 )
 
             return dict(
-                form_label_validate_status=[None] * len(form_label_output_list),
-                form_label_validate_info=[None] * len(form_label_output_list),
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_visible=no_update,
                 operations=no_update,
             )
 
         return dict(
-            form_label_validate_status=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+            form_label_validate_status={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else 'error'
-                for k in form_label_output_list
-            ],
-            form_label_validate_info=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+                for k in form_label_list
+            },
+            form_label_validate_info={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
-                for k in form_label_output_list
-            ],
+                for k in form_label_list
+            },
             modal_visible=no_update,
             operations=no_update,
         )
