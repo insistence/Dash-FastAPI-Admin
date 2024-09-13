@@ -1,7 +1,7 @@
 APScheduler==3.10.4
 asyncmy==0.2.9
 cachebox==4.1.2
-dash==2.18.0
+dash==2.18.1
 DateTime==5.5
 fastapi[all]==0.112.2
 feffery-antd-charts==0.1.0rc5
