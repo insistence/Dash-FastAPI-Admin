@@ -39,12 +39,13 @@ def render(*args, **kwargs):
         dcc.Download(id='dict_type-export-container'),
         # 字典管理模块操作类型存储容器
         dcc.Store(id='dict_type-operations-store'),
-        dcc.Store(id='dict_type-operations-store-bk'),
         dcc.Store(id='dict_data-operations-store'),
-        dcc.Store(id='dict_data-operations-store-bk'),
-        # 字典管理模块修改操作行key存储容器
-        dcc.Store(id='dict_type-edit-id-store'),
-        dcc.Store(id='dict_data-edit-id-store'),
+        # 字典管理模块弹窗类型存储容器
+        dcc.Store(id='dict_type-modal_type-store'),
+        dcc.Store(id='dict_data-modal_type-store'),
+        # 字典管理模块表单数据存储容器
+        dcc.Store(id='dict_type-form-store'),
+        dcc.Store(id='dict_data-form-store'),
         # 字典管理模块删除操作行key存储容器
         dcc.Store(id='dict_type-delete-ids-store'),
         dcc.Store(id='dict_data-delete-ids-store'),
@@ -415,10 +416,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_type-form-value',
-                                                'index': 'dict_name',
-                                            },
+                                            name='dict_name',
                                             placeholder='请输入字典名称',
                                             allowClear=True,
                                             style={'width': 350},
@@ -440,10 +438,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_type-form-value',
-                                                'index': 'dict_type',
-                                            },
+                                            name='dict_type',
                                             placeholder='请输入字典类型',
                                             allowClear=True,
                                             style={'width': 350},
@@ -465,10 +460,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'dict_type-form-value',
-                                                'index': 'status',
-                                            },
+                                            name='status',
                                             options=[
                                                 {'label': '正常', 'value': '0'},
                                                 {'label': '停用', 'value': '1'},
@@ -492,10 +484,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_type-form-value',
-                                                'index': 'remark',
-                                            },
+                                            name='remark',
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
@@ -513,6 +502,8 @@ def render(*args, **kwargs):
                             ]
                         ),
                     ],
+                    id='dict_type-form',
+                    enableBatchControl=True,
                     labelCol={'span': 6},
                     wrapperCol={'span': 18},
                 )

@@ -358,10 +358,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_type',
-                                            },
+                                            name='dict_type',
                                             placeholder='请输入字典类型',
                                             disabled=True,
                                             style={'width': 350},
@@ -382,10 +379,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_label',
-                                            },
+                                            name='dict_label',
                                             placeholder='请输入数据标签',
                                             allowClear=True,
                                             style={'width': 350},
@@ -407,10 +401,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_value',
-                                            },
+                                            name='dict_value',
                                             placeholder='请输入数据键值',
                                             allowClear=True,
                                             style={'width': 350},
@@ -432,10 +423,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'css_class',
-                                            },
+                                            name='css_class',
                                             placeholder='请输入样式属性',
                                             allowClear=True,
                                             style={'width': 350},
@@ -456,10 +444,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInputNumber(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_sort',
-                                            },
+                                            name='dict_sort',
                                             defaultValue=0,
                                             min=0,
                                             style={'width': 350},
@@ -481,10 +466,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdSelect(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'list_class',
-                                            },
+                                            name='list_class',
                                             placeholder='回显样式',
                                             options=[
                                                 {
@@ -530,10 +512,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'status',
-                                            },
+                                            name='status',
                                             options=[
                                                 {'label': '正常', 'value': '0'},
                                                 {'label': '停用', 'value': '1'},
@@ -557,10 +536,7 @@ def render():
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'remark',
-                                            },
+                                            name='remark',
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
@@ -578,6 +554,8 @@ def render():
                             ]
                         ),
                     ],
+                    id='dict_data-form',
+                    enableBatchControl=True,
                     labelCol={'span': 6},
                     wrapperCol={'span': 18},
                 )

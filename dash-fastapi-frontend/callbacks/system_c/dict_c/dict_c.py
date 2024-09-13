@@ -202,26 +202,47 @@ def change_dict_type_delete_button_status(table_rows_selected):
 
 
 @app.callback(
+    [
+        Output('dict_type-form-store', 'data', allow_duplicate=True),
+        Output('dict_type-form', 'values'),
+    ],
+    [
+        Input('dict_type-form-store', 'data'),
+        Input('dict_type-form', 'values'),
+    ],
+    State('dict_type-modal_type-store', 'data'),
+    prevent_initial_call=True,
+)
+def show_dict_type_form(row_data, form_value, modal_type):
+    """
+    字典类型表单数据双向绑定回调
+    """
+    trigger_id = ctx.triggered_id
+    if trigger_id == 'dict_type-form-store':
+        return no_update, row_data
+    if trigger_id == 'dict_type-form':
+        if modal_type == 'add':
+            row_data = form_value
+        else:
+            row_data.update(form_value)
+        return row_data, no_update
+    raise PreventUpdate
+
+
+@app.callback(
     output=dict(
         modal_visible=Output(
             'dict_type-modal', 'visible', allow_duplicate=True
         ),
         modal_title=Output('dict_type-modal', 'title'),
-        form_value=Output(
-            {'type': 'dict_type-form-value', 'index': ALL}, 'value'
-        ),
+        form_value=Output('dict_type-form-store', 'data', allow_duplicate=True),
         form_label_validate_status=Output(
-            {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'dict_type-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'dict_type-form', 'helps', allow_duplicate=True
         ),
-        edit_row_info=Output('dict_type-edit-id-store', 'data'),
-        modal_type=Output('dict_type-operations-store-bk', 'data'),
+        modal_type=Output('dict_type-modal_type-store', 'data'),
     ),
     inputs=dict(
         operation_click=Input(
@@ -254,10 +275,6 @@ def add_edit_dict_type_modal(
         or trigger_id == {'index': 'edit', 'type': 'dict_type-operation-button'}
         or (trigger_id == 'dict_type-list-table' and clicked_content == '修改')
     ):
-        # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
-        # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'dict_type-operation-button'}:
             dict_type_info = dict(
                 dict_name=None,
@@ -268,10 +285,9 @@ def add_edit_dict_type_modal(
             return dict(
                 modal_visible=True,
                 modal_title='新增字典类型',
-                form_value=[dict_type_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=None,
+                form_value=dict_type_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'add'},
             )
         elif trigger_id == {
@@ -292,22 +308,11 @@ def add_edit_dict_type_modal(
             return dict(
                 modal_visible=True,
                 modal_title='编辑字典类型',
-                form_value=[dict_type_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=dict_type_info if dict_type_info else None,
+                form_value=dict_type_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'edit'},
             )
-
-        return dict(
-            modal_visible=no_update,
-            modal_title=no_update,
-            form_value=[no_update] * len(form_value_list),
-            form_label_validate_status=[no_update] * len(form_label_list),
-            form_label_validate_info=[no_update] * len(form_label_list),
-            edit_row_info=None,
-            modal_type=None,
-        )
 
     raise PreventUpdate
 
@@ -315,14 +320,10 @@ def add_edit_dict_type_modal(
 @app.callback(
     output=dict(
         form_label_validate_status=Output(
-            {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'dict_type-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'dict_type-form', 'helps', allow_duplicate=True
         ),
         modal_visible=Output('dict_type-modal', 'visible'),
         operations=Output(
@@ -331,11 +332,8 @@ def add_edit_dict_type_modal(
     ),
     inputs=dict(confirm_trigger=Input('dict_type-modal', 'okCounts')),
     state=dict(
-        modal_type=State('dict_type-operations-store-bk', 'data'),
-        edit_row_info=State('dict_type-edit-id-store', 'data'),
-        form_value=State(
-            {'type': 'dict_type-form-value', 'index': ALL}, 'value'
-        ),
+        modal_type=State('dict_type-modal_type-store', 'data'),
+        form_value=State('dict_type-form-store', 'data'),
         form_label=State(
             {'type': 'dict_type-form-label', 'index': ALL, 'required': True},
             'label',
@@ -343,33 +341,23 @@ def add_edit_dict_type_modal(
     ),
     prevent_initial_call=True,
 )
-def dict_type_confirm(
-    confirm_trigger, modal_type, edit_row_info, form_value, form_label
-):
+def dict_type_confirm(confirm_trigger, modal_type, form_value, form_label):
     """
     新增或编字典类型弹窗确认回调，实现新增或编辑操作
     """
     if confirm_trigger:
-        # 获取所有输出表单项对应label的index
-        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
-        # 获取所有输入表单项对应的value及label
-        form_value_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
-        }
+        # 获取所有必填表单项对应label的index
+        form_label_list = [x['id']['index'] for x in ctx.states_list[-1]]
+        # 获取所有输入必填表单项对应的label
         form_label_state = {
             x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
         if all(
             validate_data_not_empty(item)
-            for item in [
-                form_value_state.get(k) for k in form_label_output_list
-            ]
+            for item in [form_value.get(k) for k in form_label_list]
         ):
-            params_add = form_value_state
+            params_add = form_value
             params_edit = params_add.copy()
-            params_edit['dict_id'] = (
-                edit_row_info.get('dict_id') if edit_row_info else None
-            )
             modal_type = modal_type.get('type')
             if modal_type == 'add':
                 DictTypeApi.add_type(params_add)
@@ -379,10 +367,8 @@ def dict_type_confirm(
                 MessageManager.success(content='新增成功')
 
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'add'},
                 )
@@ -390,34 +376,32 @@ def dict_type_confirm(
                 MessageManager.success(content='编辑成功')
 
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'edit'},
                 )
 
             return dict(
-                form_label_validate_status=[None] * len(form_label_output_list),
-                form_label_validate_info=[None] * len(form_label_output_list),
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_visible=no_update,
                 operations=no_update,
             )
 
         return dict(
-            form_label_validate_status=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+            form_label_validate_status={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else 'error'
-                for k in form_label_output_list
-            ],
-            form_label_validate_info=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+                for k in form_label_list
+            },
+            form_label_validate_info={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
-                for k in form_label_output_list
-            ],
+                for k in form_label_list
+            },
             modal_visible=no_update,
             operations=no_update,
         )
