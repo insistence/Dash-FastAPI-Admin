@@ -1,5 +1,6 @@
 from feffery_antd_components import AntdRadioGroup
 from typing import Any, Dict, List, Literal, Optional, Union
+from uuid import uuid4
 from utils.dict_util import DictManager
 
 
@@ -7,7 +8,7 @@ class ApiRadioGroup(AntdRadioGroup):
     def __init__(
         self,
         dict_type: str,
-        id: Optional[Union[str, Dict]] = None,
+        id: Optional[Union[str, Dict]] = str(uuid4()),
         key: Optional[str] = None,
         style: Optional[Dict] = None,
         className: Optional[Union[str, Dict]] = None,
