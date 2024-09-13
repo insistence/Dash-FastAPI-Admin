@@ -3,6 +3,8 @@ import feffery_antd_components as fac
 
 import callbacks.system_c.dict_c.dict_data_c  # noqa: F401
 from utils.permission_util import PermissionManager
+from views.components.ApiRadioGroup import ApiRadioGroup
+from views.components.ApiSelect import ApiSelect
 
 
 def render():
@@ -53,19 +55,10 @@ def render():
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_normal_disable',
                                                             id='dict_data-status-select',
                                                             placeholder='数据状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0',
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1',
-                                                                },
-                                                            ],
                                                             style={
                                                                 'width': 240
                                                             },
@@ -511,12 +504,9 @@ def render():
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdRadioGroup(
+                                        ApiRadioGroup(
+                                            dict_type='sys_normal_disable',
                                             name='status',
-                                            options=[
-                                                {'label': '正常', 'value': '0'},
-                                                {'label': '停用', 'value': '1'},
-                                            ],
                                             defaultValue='0',
                                             style={'width': 350},
                                         ),

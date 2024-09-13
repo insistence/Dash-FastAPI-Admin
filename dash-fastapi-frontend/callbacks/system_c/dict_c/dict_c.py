@@ -6,6 +6,7 @@ from dash.exceptions import PreventUpdate
 from api.system.dict.type import DictTypeApi
 from server import app
 from utils.common import validate_data_not_empty
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 
@@ -85,10 +86,9 @@ def get_dict_type_table_data(
             total=table_info['total'],
         )
         for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
+            item['status'] = DictManager.get_dict_tag(
+                dict_type='sys_normal_disable', dict_value=item.get('status')
+            )
             item['key'] = str(item['dict_id'])
             item['dict_type'] = {
                 'content': item['dict_type'],
