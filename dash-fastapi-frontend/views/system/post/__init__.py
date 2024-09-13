@@ -2,7 +2,10 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.system.post import PostApi
 from callbacks.system_c import post_c  # noqa: F401
+from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
+from views.components.ApiRadioGroup import ApiRadioGroup
+from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):
@@ -13,10 +16,9 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(tag='正常', color='blue')
-        else:
-            item['status'] = dict(tag='停用', color='volcano')
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_normal_disable', dict_value=item.get('status')
+        )
         item['key'] = str(item['post_id'])
         item['operation'] = [
             {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
@@ -78,19 +80,10 @@ def render(*args, **kwargs):
                                                                 label='岗位名称',
                                                             ),
                                                             fac.AntdFormItem(
-                                                                fac.AntdSelect(
+                                                                ApiSelect(
+                                                                    dict_type='sys_normal_disable',
                                                                     id='post-status-select',
                                                                     placeholder='岗位状态',
-                                                                    options=[
-                                                                        {
-                                                                            'label': '正常',
-                                                                            'value': '0',
-                                                                        },
-                                                                        {
-                                                                            'label': '停用',
-                                                                            'value': '1',
-                                                                        },
-                                                                    ],
                                                                     style={
                                                                         'width': 200
                                                                     },
@@ -415,12 +408,9 @@ def render(*args, **kwargs):
                             hasFeedback=True,
                         ),
                         fac.AntdFormItem(
-                            fac.AntdRadioGroup(
+                            ApiRadioGroup(
+                                dict_type='sys_normal_disable',
                                 name='status',
-                                options=[
-                                    {'label': '正常', 'value': '0'},
-                                    {'label': '停用', 'value': '1'},
-                                ],
                                 defaultValue='0',
                                 style={'width': 350},
                             ),
