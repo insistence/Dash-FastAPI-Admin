@@ -1,4 +1,4 @@
-from dash import set_props, ctx, no_update
+from dash import set_props
 from utils.feedback_util import MessageManager, NotificationManager
 from utils.log_util import logger
 
@@ -55,12 +55,3 @@ def global_exception_handler(error):
     else:
         logger.exception(f'[exception]{error}')
         NotificationManager.error(description=str(error), message='服务异常')
-    # dash2.18版本对输出为字典形式的回调进行异常处理会报错，临时采用此方法解决
-    outputs_grouping = ctx.outputs_grouping
-    if isinstance(outputs_grouping, dict):
-        return {
-            key: [no_update] * len(value)
-            if isinstance(value, list) and len(value) > 0
-            else no_update
-            for key, value in outputs_grouping.items()
-        }
