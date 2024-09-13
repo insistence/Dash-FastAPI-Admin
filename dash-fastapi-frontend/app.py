@@ -61,9 +61,9 @@ app.layout = html.Div(
             centered=True,
         ),
         # 注入全局消息提示容器
-        html.Div(id='global-message-container'),
+        fac.Fragment(id='global-message-container'),
         # 注入全局通知信息容器
-        html.Div(id='global-notification-container'),
+        fac.Fragment(id='global-notification-container'),
     ]
 )
 
