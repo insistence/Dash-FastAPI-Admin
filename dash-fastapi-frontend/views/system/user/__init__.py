@@ -7,7 +7,7 @@ from config.global_config import ApiBaseUrlConfig
 from callbacks.system_c.user_c import user_c  # noqa: F401
 from utils.permission_util import PermissionManager
 from views.components import ManuallyUpload
-from . import allocate_role
+from . import allocate_role, profile  # noqa: F401
 
 
 def render(*args, **kwargs):
