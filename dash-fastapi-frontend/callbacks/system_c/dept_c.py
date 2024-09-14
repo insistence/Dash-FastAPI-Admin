@@ -5,6 +5,7 @@ from dash.exceptions import PreventUpdate
 from api.system.dept import DeptApi
 from server import app
 from utils.common import validate_data_not_empty
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree, list_to_tree_select
@@ -92,10 +93,9 @@ def get_dept_table_data(
                     if PermissionManager.check_perms('system:dept:remove')
                     else {},
                 ]
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
+            item['status'] = DictManager.get_dict_tag(
+                dict_type='sys_normal_disable', dict_value=item.get('status')
+            )
         table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
 
         if fold_click:
