@@ -3,10 +3,10 @@ import feffery_utils_components as fuc
 from dash import dcc, html
 from flask import session
 from api.system.user import UserApi
-from config.global_config import ApiBaseUrlConfig
 from callbacks.system_c.user_c import user_c  # noqa: F401
+from components import ManuallyUpload
+from config.global_config import ApiBaseUrlConfig
 from utils.permission_util import PermissionManager
-from views.components import ManuallyUpload
 from . import allocate_role, profile  # noqa: F401
 
 

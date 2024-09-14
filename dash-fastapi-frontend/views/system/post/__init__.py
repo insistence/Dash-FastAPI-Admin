@@ -2,10 +2,10 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.system.post import PostApi
 from callbacks.system_c import post_c  # noqa: F401
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
 from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
-from views.components.ApiRadioGroup import ApiRadioGroup
-from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):

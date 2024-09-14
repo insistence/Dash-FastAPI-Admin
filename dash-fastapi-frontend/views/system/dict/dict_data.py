@@ -1,10 +1,9 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.system_c.dict_c.dict_data_c  # noqa: F401
+from dash import dcc, html
+from callbacks.system_c.dict_c import dict_data_c  # noqa: F401
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
-from views.components.ApiRadioGroup import ApiRadioGroup
-from views.components.ApiSelect import ApiSelect
 
 
 def render():

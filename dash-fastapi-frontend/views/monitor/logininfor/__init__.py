@@ -2,9 +2,9 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.monitor.logininfor import LogininforApi
 from callbacks.monitor_c import logininfor_c  # noqa: F401
+from components.ApiSelect import ApiSelect
 from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
-from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):

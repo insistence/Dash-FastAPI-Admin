@@ -5,11 +5,11 @@ from dash import dcc, html
 from flask import session
 from api.system.notice import NoticeApi
 from callbacks.system_c import notice_c  # noqa: F401
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
 from config.global_config import ApiBaseUrlConfig
 from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
-from views.components.ApiRadioGroup import ApiRadioGroup
-from views.components.ApiSelect import ApiSelect
 
 
 def render(*args, **kwargs):

@@ -1,8 +1,8 @@
 import feffery_antd_components as fac
 from dash import dcc, html
 from callbacks.monitor_c.job_c import job_log_c  # noqa: F401
+from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
-from views.components.ApiSelect import ApiSelect
 
 
 def render():
