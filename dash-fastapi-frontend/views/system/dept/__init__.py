@@ -52,9 +52,10 @@ def render(*args, **kwargs):
     return [
         # 部门管理模块操作类型存储容器
         dcc.Store(id='dept-operations-store'),
-        dcc.Store(id='dept-operations-store-bk'),
-        # 部门管理模块修改操作行key存储容器
-        dcc.Store(id='dept-edit-id-store'),
+        # 部门管理模块弹窗类型存储容器
+        dcc.Store(id='dept-modal_type-store'),
+        # 部门管理模块表单数据存储容器
+        dcc.Store(id='dept-form-store'),
         # 部门管理模块删除操作行key存储容器
         dcc.Store(id='dept-delete-ids-store'),
         fac.AntdRow(
@@ -311,10 +312,8 @@ def render(*args, **kwargs):
                                         [
                                             fac.AntdFormItem(
                                                 fac.AntdTreeSelect(
-                                                    id={
-                                                        'type': 'dept-form-value',
-                                                        'index': 'parent_id',
-                                                    },
+                                                    id='dept-tree-select',
+                                                    name='parent_id',
                                                     placeholder='请选择上级部门',
                                                     treeData=[],
                                                     treeNodeFilterProp='title',
@@ -343,10 +342,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'dept_name',
-                                            },
+                                            name='dept_name',
                                             placeholder='请输入部门名称',
                                             allowClear=True,
                                             style={'width': '100%'},
@@ -364,10 +360,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInputNumber(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'order_num',
-                                            },
+                                            name='order_num',
                                             min=0,
                                             style={'width': '100%'},
                                         ),
@@ -389,10 +382,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'leader',
-                                            },
+                                            name='leader',
                                             placeholder='请输入负责人',
                                             allowClear=True,
                                             style={'width': '100%'},
@@ -409,10 +399,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'phone',
-                                            },
+                                            name='phone',
                                             placeholder='请输入联系电话',
                                             allowClear=True,
                                             style={'width': '100%'},
@@ -434,10 +421,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'email',
-                                            },
+                                            name='email',
                                             placeholder='请输入邮箱',
                                             allowClear=True,
                                             style={'width': '100%'},
@@ -454,10 +438,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'dept-form-value',
-                                                'index': 'status',
-                                            },
+                                            name='status',
                                             options=[
                                                 {'label': '正常', 'value': '0'},
                                                 {'label': '停用', 'value': '1'},
@@ -478,6 +459,8 @@ def render(*args, **kwargs):
                             gutter=5,
                         ),
                     ],
+                    id='dept-form',
+                    enableBatchControl=True,
                     labelCol={'span': 8},
                     wrapperCol={'span': 16},
                     style={'marginRight': '15px'},
