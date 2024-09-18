@@ -230,187 +230,49 @@ def change_user_delete_button_status(table_rows_selected):
 
 
 @app.callback(
-    output=dict(
-        modal_visible=Output('user-add-modal', 'visible', allow_duplicate=True),
-        dept_tree=Output(
-            {'type': 'user_add-form-value', 'index': 'dept_id'}, 'treeData'
-        ),
-        form_value=Output(
-            {'type': 'user_add-form-value', 'index': ALL}, 'value'
-        ),
-        form_label_validate_status=Output(
-            {'type': 'user_add-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
-        ),
-        form_label_validate_info=Output(
-            {'type': 'user_add-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
-        ),
-        user_post=Output('user-add-post', 'value'),
-        user_role=Output('user-add-role', 'value'),
-        post_option=Output('user-add-post', 'options'),
-        role_option=Output('user-add-role', 'options'),
-    ),
-    inputs=dict(add_click=Input('user-add', 'nClicks')),
+    [
+        Output('user-form-store', 'data', allow_duplicate=True),
+        Output('user-form', 'values'),
+    ],
+    [
+        Input('user-form-store', 'data'),
+        Input('user-form', 'values'),
+    ],
     prevent_initial_call=True,
 )
-def add_user_modal(add_click):
+def show_user_form(row_data, form_value):
     """
-    显示新增用户弹窗回调
+    用户表单数据双向绑定回调
     """
-    if add_click:
-        # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
-        # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
-        tree_info = UserApi.dept_tree_select()
-        detail_info = UserApi.get_user(user_id='')
-        tree_data = tree_info['data']
-        post_option = detail_info['posts']
-        role_option = detail_info['roles']
-        user_info = dict(
-            nick_name=None,
-            dept_id=None,
-            phonenumber=None,
-            email=None,
-            user_name=None,
-            password=None,
-            sex=None,
-            status='0',
-            remark=None,
-        )
-
-        return dict(
-            modal_visible=True,
-            dept_tree=tree_data,
-            form_value=[user_info.get(k) for k in form_value_list],
-            form_label_validate_status=[None] * len(form_label_list),
-            form_label_validate_info=[None] * len(form_label_list),
-            user_post=None,
-            user_role=None,
-            post_option=[
-                dict(label=item['post_name'], value=item['post_id'])
-                for item in post_option
-            ],
-            role_option=[
-                dict(label=item['role_name'], value=item['role_id'])
-                for item in role_option
-            ],
-        )
-
+    trigger_id = ctx.triggered_id
+    if trigger_id == 'user-form-store':
+        return no_update, row_data
+    if trigger_id == 'user-form':
+        row_data.update(form_value)
+        return row_data, no_update
     raise PreventUpdate
 
 
 @app.callback(
     output=dict(
+        modal_visible=Output('user-modal', 'visible', allow_duplicate=True),
+        modal_title=Output('user-modal', 'title'),
+        dept_tree=Output('user-dpet-tree', 'treeData'),
+        post_option=Output('user-post', 'options'),
+        role_option=Output('user-role', 'options'),
+        user_name_disabled=Output('user-form-user_name', 'disabled'),
+        password_disabled=Output('user-form-password', 'disabled'),
+        user_name_password_container=Output(
+            'user-user_name-password-container', 'hidden'
+        ),
+        form_value=Output('user-form-store', 'data', allow_duplicate=True),
         form_label_validate_status=Output(
-            {'type': 'user_add-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'user-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'user_add-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'user-form', 'helps', allow_duplicate=True
         ),
-        modal_visible=Output('user-add-modal', 'visible', allow_duplicate=True),
-        operations=Output(
-            'user-operations-store', 'data', allow_duplicate=True
-        ),
-    ),
-    inputs=dict(add_confirm=Input('user-add-modal', 'okCounts')),
-    state=dict(
-        post=State('user-add-post', 'value'),
-        role=State('user-add-role', 'value'),
-        form_value=State(
-            {'type': 'user_add-form-value', 'index': ALL}, 'value'
-        ),
-        form_label=State(
-            {'type': 'user_add-form-label', 'index': ALL, 'required': True},
-            'label',
-        ),
-    ),
-    prevent_initial_call=True,
-)
-def usr_add_confirm(add_confirm, post, role, form_value, form_label):
-    if add_confirm:
-        # 获取所有输出表单项对应label的index
-        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
-        # 获取所有输入表单项对应的value及label
-        form_value_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
-        }
-        form_label_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-1]
-        }
-
-        if all(
-            validate_data_not_empty(item)
-            for item in [
-                form_value_state.get(k) for k in form_label_output_list
-            ]
-        ):
-            params = form_value_state
-            params['post_ids'] = [int(item) for item in post] if post else []
-            params['role_ids'] = [int(item) for item in role] if role else []
-            UserApi.add_user(params)
-            MessageManager.success(content='新增成功')
-
-            return dict(
-                form_label_validate_status=[None] * len(form_label_output_list),
-                form_label_validate_info=[None] * len(form_label_output_list),
-                modal_visible=False,
-                operations={'type': 'add'},
-            )
-
-        return dict(
-            form_label_validate_status=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
-                else 'error'
-                for k in form_label_output_list
-            ],
-            form_label_validate_info=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
-                else f'{form_label_state.get(k)}不能为空!'
-                for k in form_label_output_list
-            ],
-            modal_visible=no_update,
-            operations=no_update,
-        )
-
-    raise PreventUpdate
-
-
-@app.callback(
-    output=dict(
-        modal_visible=Output(
-            'user-edit-modal', 'visible', allow_duplicate=True
-        ),
-        dept_tree=Output(
-            {'type': 'user_edit-form-value', 'index': 'dept_id'}, 'treeData'
-        ),
-        form_value=Output(
-            {'type': 'user_edit-form-value', 'index': ALL}, 'value'
-        ),
-        form_label_validate_status=Output(
-            {'type': 'user_edit-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
-        ),
-        form_label_validate_info=Output(
-            {'type': 'user_edit-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
-        ),
-        user_post=Output('user-edit-post', 'value'),
-        user_role=Output('user-edit-role', 'value'),
-        post_option=Output('user-edit-post', 'options'),
-        role_option=Output('user-edit-role', 'options'),
-        edit_row_info=Output('user-edit-id-store', 'data'),
+        modal_type=Output('user-modal_type-store', 'data'),
     ),
     inputs=dict(
         operation_click=Input(
@@ -429,7 +291,7 @@ def usr_add_confirm(add_confirm, post, role, form_value, form_label):
     ),
     prevent_initial_call=True,
 )
-def user_edit_modal(
+def add_edit_user_modal(
     operation_click,
     dropdown_click,
     selected_row_keys,
@@ -437,61 +299,107 @@ def user_edit_modal(
     recently_dropdown_item_clicked_row,
 ):
     """
-    显示编辑用户弹窗回调
+    显示新增或编辑用户弹窗回调
     """
     trigger_id = ctx.triggered_id
-    if trigger_id == {'index': 'edit', 'type': 'user-operation-button'} or (
-        trigger_id == 'user-list-table'
-        and recently_clicked_dropdown_item_title == '修改'
-    ):
-        # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
-        # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
-
-        tree_data = UserApi.dept_tree_select()['data']
-
-        if trigger_id == {'index': 'edit', 'type': 'user-operation-button'}:
-            user_id = int(selected_row_keys[0])
-        else:
-            if recently_clicked_dropdown_item_title == '修改':
-                user_id = int(recently_dropdown_item_clicked_row['key'])
-            else:
-                raise PreventUpdate
-
-        edit_button_info = UserApi.get_user(user_id)
-        edit_button_result = edit_button_info['data']
-        post_option = edit_button_info['posts']
-        role_option = edit_button_info['roles']
-        role_ids = edit_button_result['role_ids']
-        post_ids = edit_button_result['post_ids']
-
-        return dict(
-            modal_visible=True,
-            dept_tree=tree_data,
-            form_value=[edit_button_result.get(k) for k in form_value_list],
-            form_label_validate_status=[None] * len(form_label_list),
-            form_label_validate_info=[None] * len(form_label_list),
-            user_post=[int(item) for item in post_ids.split(',')]
-            if post_ids
-            else [],
-            user_role=[int(item) for item in role_ids.split(',')]
-            if role_ids
-            else [],
-            post_option=[
-                dict(label=item['post_name'], value=item['post_id'])
-                for item in post_option
-                if item
-            ]
-            or [],
-            role_option=[
-                dict(label=item['role_name'], value=item['role_id'])
-                for item in role_option
-                if item
-            ]
-            or [],
-            edit_row_info={'user_id': user_id},
+    if (
+        trigger_id == {'index': 'add', 'type': 'user-operation-button'}
+        or trigger_id == {'index': 'edit', 'type': 'user-operation-button'}
+        or (
+            trigger_id == 'user-list-table'
+            and recently_clicked_dropdown_item_title == '修改'
         )
+    ):
+        tree_info = UserApi.dept_tree_select()
+        tree_data = tree_info['data']
+        if trigger_id == {'index': 'add', 'type': 'user-operation-button'}:
+            detail_info = UserApi.get_user(user_id='')
+            post_option = detail_info['posts']
+            role_option = detail_info['roles']
+            user_info = dict(
+                nick_name=None,
+                dept_id=None,
+                phonenumber=None,
+                email=None,
+                user_name=None,
+                password=None,
+                post_ids=None,
+                user_ids=None,
+                sex=None,
+                status='0',
+                remark=None,
+            )
+            return dict(
+                modal_visible=True,
+                modal_title='新增用户',
+                dept_tree=tree_data,
+                post_option=[
+                    dict(label=item['post_name'], value=item['post_id'])
+                    for item in post_option
+                    if item
+                ]
+                or [],
+                role_option=[
+                    dict(label=item['role_name'], value=item['role_id'])
+                    for item in role_option
+                    if item
+                ]
+                or [],
+                user_name_disabled=False,
+                password_disabled=False,
+                user_name_password_container=False,
+                form_value=user_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
+                modal_type={'type': 'add'},
+            )
+        elif trigger_id == {
+            'index': 'edit',
+            'type': 'user-operation-button',
+        } or (
+            trigger_id == 'user-list-table'
+            and recently_clicked_dropdown_item_title == '修改'
+        ):
+            if trigger_id == {'index': 'edit', 'type': 'user-operation-button'}:
+                user_id = int(','.join(selected_row_keys))
+            else:
+                user_id = int(recently_dropdown_item_clicked_row['key'])
+            user_info_res = UserApi.get_user(user_id=user_id)
+            user_info = user_info_res['data']
+            post_option = user_info_res['posts']
+            role_option = user_info_res['roles']
+            post_ids = user_info['post_ids']
+            role_ids = user_info['role_ids']
+            user_info['post_ids'] = (
+                [int(item) for item in post_ids.split(',')] if post_ids else []
+            )
+            user_info['role_ids'] = (
+                [int(item) for item in role_ids.split(',')] if role_ids else []
+            )
+            return dict(
+                modal_visible=True,
+                modal_title='编辑用户',
+                dept_tree=tree_data,
+                post_option=[
+                    dict(label=item['post_name'], value=item['post_id'])
+                    for item in post_option
+                    if item
+                ]
+                or [],
+                role_option=[
+                    dict(label=item['role_name'], value=item['role_id'])
+                    for item in role_option
+                    if item
+                ]
+                or [],
+                user_name_disabled=True,
+                password_disabled=True,
+                user_name_password_container=True,
+                form_value=user_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
+                modal_type={'type': 'edit'},
+            )
 
     raise PreventUpdate
 
@@ -499,87 +407,98 @@ def user_edit_modal(
 @app.callback(
     output=dict(
         form_label_validate_status=Output(
-            {'type': 'user_edit-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'user-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'user_edit-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'user-form', 'helps', allow_duplicate=True
         ),
-        modal_visible=Output(
-            'user-edit-modal', 'visible', allow_duplicate=True
-        ),
+        modal_visible=Output('user-modal', 'visible'),
         operations=Output(
             'user-operations-store', 'data', allow_duplicate=True
         ),
     ),
-    inputs=dict(edit_confirm=Input('user-edit-modal', 'okCounts')),
+    inputs=dict(confirm_trigger=Input('user-modal', 'okCounts')),
     state=dict(
-        post=State('user-edit-post', 'value'),
-        role=State('user-edit-role', 'value'),
-        edit_row_info=State('user-edit-id-store', 'data'),
-        form_value=State(
-            {'type': 'user_edit-form-value', 'index': ALL}, 'value'
-        ),
+        modal_type=State('user-modal_type-store', 'data'),
+        form_value=State('user-form-store', 'data'),
         form_label=State(
-            {'type': 'user_edit-form-label', 'index': ALL, 'required': True},
-            'label',
+            {'type': 'user-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
     prevent_initial_call=True,
 )
-def usr_edit_confirm(
-    edit_confirm, edit_row_info, post, role, form_value, form_label
-):
-    if edit_confirm:
-        # 获取所有输出表单项对应label的index
-        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
-        # 获取所有输入表单项对应的value及label
-        form_value_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
-        }
+def user_confirm(confirm_trigger, modal_type, form_value, form_label):
+    """
+    新增或编辑用户弹窗确认回调，实现新增或编辑操作
+    """
+    if confirm_trigger:
+        # 获取所有必填表单项对应label的index
+        form_label_list = [x['id']['index'] for x in ctx.states_list[-1]]
+        # 获取所有输入必填表单项对应的label
         form_label_state = {
             x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
-
         if all(
             validate_data_not_empty(item)
-            for item in [
-                form_value_state.get(k) for k in form_label_output_list
-            ]
+            for item in [form_value.get(k) for k in form_label_list]
         ):
-            params = form_value_state
-            params['user_id'] = (
-                edit_row_info.get('user_id') if edit_row_info else None
+            params_add = form_value
+            params_add['post_ids'] = (
+                [int(item) for item in params_add['post_ids']]
+                if params_add['post_ids']
+                else []
             )
-            params['post_ids'] = [int(item) for item in post] if post else []
-            params['role_ids'] = [int(item) for item in role] if role else []
-            params['role'] = []
-            UserApi.update_user(params)
-            MessageManager.success(content='编辑成功')
+            params_add['role_ids'] = (
+                [int(item) for item in params_add['role_ids']]
+                if params_add['role_ids']
+                else []
+            )
+            params_edit = params_add.copy()
+            params_edit['role'] = []
+            modal_type = modal_type.get('type')
+            if modal_type == 'add':
+                UserApi.add_user(params_add)
+            if modal_type == 'edit':
+                UserApi.update_user(params_edit)
+            if modal_type == 'add':
+                MessageManager.success(content='新增成功')
+
+                return dict(
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
+                    modal_visible=False,
+                    operations={'type': 'add'},
+                )
+            if modal_type == 'edit':
+                MessageManager.success(content='编辑成功')
+
+                return dict(
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
+                    modal_visible=False,
+                    operations={'type': 'edit'},
+                )
 
             return dict(
-                form_label_validate_status=[None] * len(form_label_output_list),
-                form_label_validate_info=[None] * len(form_label_output_list),
-                modal_visible=False,
-                operations={'type': 'edit'},
+                form_label_validate_status=None,
+                form_label_validate_info=None,
+                modal_visible=no_update,
+                operations=no_update,
             )
 
         return dict(
-            form_label_validate_status=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+            form_label_validate_status={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else 'error'
-                for k in form_label_output_list
-            ],
-            form_label_validate_info=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+                for k in form_label_list
+            },
+            form_label_validate_info={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
-                for k in form_label_output_list
-            ],
+                for k in form_label_list
+            },
             modal_visible=no_update,
             operations=no_update,
         )
