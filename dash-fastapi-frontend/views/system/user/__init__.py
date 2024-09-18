@@ -3,6 +3,8 @@ from dash import dcc, html
 from api.system.user import UserApi
 from callbacks.system_c.user_c import user_c  # noqa: F401
 from components import ManuallyUpload
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
 from . import allocate_role, profile  # noqa: F401
 
@@ -111,19 +113,10 @@ def render(*args, **kwargs):
                                                                 label='手机号码',
                                                             ),
                                                             fac.AntdFormItem(
-                                                                fac.AntdSelect(
+                                                                ApiSelect(
+                                                                    dict_type='sys_normal_disable',
                                                                     id='user-status-select',
                                                                     placeholder='用户状态',
-                                                                    options=[
-                                                                        {
-                                                                            'label': '正常',
-                                                                            'value': '0',
-                                                                        },
-                                                                        {
-                                                                            'label': '停用',
-                                                                            'value': '1',
-                                                                        },
-                                                                    ],
                                                                     style={
                                                                         'width': 240
                                                                     },
@@ -564,14 +557,10 @@ def render(*args, **kwargs):
                         fac.AntdSpace(
                             [
                                 fac.AntdFormItem(
-                                    fac.AntdSelect(
+                                    ApiSelect(
+                                        dict_type='sys_user_sex',
                                         name='sex',
                                         placeholder='请选择性别',
-                                        options=[
-                                            {'label': '男', 'value': '0'},
-                                            {'label': '女', 'value': '1'},
-                                            {'label': '未知', 'value': '2'},
-                                        ],
                                         style={'width': 200},
                                     ),
                                     label='用户性别',
@@ -583,12 +572,9 @@ def render(*args, **kwargs):
                                     labelCol={'offset': 1},
                                 ),
                                 fac.AntdFormItem(
-                                    fac.AntdRadioGroup(
+                                    ApiRadioGroup(
+                                        dict_type='sys_normal_disable',
                                         name='status',
-                                        options=[
-                                            {'label': '正常', 'value': '0'},
-                                            {'label': '停用', 'value': '1'},
-                                        ],
                                         defaultValue='0',
                                         style={'width': 200},
                                     ),
