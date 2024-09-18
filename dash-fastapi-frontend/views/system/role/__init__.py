@@ -2,6 +2,8 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from api.system.role import RoleApi
 from callbacks.system_c.role_c import role_c  # noqa: F401
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
 from . import data_scope, allocate_user
 
@@ -153,19 +155,10 @@ def render(*args, **kwargs):
                                                         },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_normal_disable',
                                                             id='role-status-select',
                                                             placeholder='角色状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0',
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1',
-                                                                },
-                                                            ],
                                                             style={
                                                                 'width': 220
                                                             },
@@ -532,16 +525,13 @@ def render(*args, **kwargs):
                             wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
-                            fac.AntdRadioGroup(
+                            ApiRadioGroup(
+                                dict_type='sys_normal_disable',
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'status',
                                     'required': False,
                                 },
-                                options=[
-                                    {'label': '正常', 'value': '0'},
-                                    {'label': '停用', 'value': '1'},
-                                ],
                                 style={'width': 350},
                             ),
                             label='状态',
