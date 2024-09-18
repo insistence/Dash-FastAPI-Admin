@@ -173,10 +173,9 @@ app.clientside_callback(
         Input('dept-form-store', 'data'),
         Input('dept-form', 'values'),
     ],
-    State('dept-modal_type-store', 'data'),
     prevent_initial_call=True,
 )
-def show_dept_form(row_data, form_value, modal_type):
+def show_dept_form(row_data, form_value):
     """
     部门表单数据双向绑定回调
     """
@@ -184,10 +183,7 @@ def show_dept_form(row_data, form_value, modal_type):
     if trigger_id == 'dept-form-store':
         return no_update, row_data
     if trigger_id == 'dept-form':
-        if modal_type == 'add':
-            row_data = form_value
-        else:
-            row_data.update(form_value)
+        row_data.update(form_value)
         return row_data, no_update
     raise PreventUpdate
 
