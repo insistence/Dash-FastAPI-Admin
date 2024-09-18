@@ -189,10 +189,9 @@ def change_post_delete_button_status(table_rows_selected):
         Input('post-form-store', 'data'),
         Input('post-form', 'values'),
     ],
-    State('post-modal_type-store', 'data'),
     prevent_initial_call=True,
 )
-def show_post_form(row_data, form_value, modal_type):
+def show_post_form(row_data, form_value):
     """
     岗位表单数据双向绑定回调
     """
@@ -200,10 +199,7 @@ def show_post_form(row_data, form_value, modal_type):
     if trigger_id == 'post-form-store':
         return no_update, row_data
     if trigger_id == 'post-form':
-        if modal_type == 'add':
-            row_data = form_value
-        else:
-            row_data.update(form_value)
+        row_data.update(form_value)
         return row_data, no_update
     raise PreventUpdate
 
