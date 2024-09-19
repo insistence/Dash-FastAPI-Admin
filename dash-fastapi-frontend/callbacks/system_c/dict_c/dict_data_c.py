@@ -328,6 +328,7 @@ def add_edit_dict_data_modal(
             'label',
         ),
     ),
+    running=[[Output('dict_data-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
