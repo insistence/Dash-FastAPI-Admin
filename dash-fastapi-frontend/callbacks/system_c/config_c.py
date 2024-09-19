@@ -154,45 +154,44 @@ app.clientside_callback(
 )
 
 
-@app.callback(
+# 根据选择的表格数据行数控制修改按钮状态回调
+app.clientside_callback(
+    """
+    (table_rows_selected) => {
+        outputs_list = window.dash_clientside.callback_context.outputs_list;
+        if (outputs_list) {
+            if (table_rows_selected?.length === 1) {
+                return false;
+            }
+            return true;
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     Output({'type': 'config-operation-button', 'index': 'edit'}, 'disabled'),
     Input('config-list-table', 'selectedRowKeys'),
     prevent_initial_call=True,
 )
-def change_config_edit_button_status(table_rows_selected):
+
+
+# 根据选择的表格数据行数控制删除按钮状态回调
+app.clientside_callback(
     """
-    根据选择的表格数据行数控制编辑按钮状态回调
-    """
-    outputs_list = ctx.outputs_list
-    if outputs_list:
-        if table_rows_selected:
-            if len(table_rows_selected) > 1:
-                return True
-
-            return False
-
-        return True
-
-    raise PreventUpdate
-
-
-@app.callback(
+    (table_rows_selected) => {
+        outputs_list = window.dash_clientside.callback_context.outputs_list;
+        if (outputs_list) {
+            if (table_rows_selected?.length > 0) {
+                return false;
+            }
+            return true;
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     Output({'type': 'config-operation-button', 'index': 'delete'}, 'disabled'),
     Input('config-list-table', 'selectedRowKeys'),
     prevent_initial_call=True,
 )
-def change_config_delete_button_status(table_rows_selected):
-    """
-    根据选择的表格数据行数控制删除按钮状态回调
-    """
-    outputs_list = ctx.outputs_list
-    if outputs_list:
-        if table_rows_selected:
-            return False
-
-        return True
-
-    raise PreventUpdate
 
 
 # 参数配置表单数据双向绑定回调
