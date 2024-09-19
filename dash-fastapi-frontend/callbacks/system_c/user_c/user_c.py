@@ -424,6 +424,7 @@ def add_edit_user_modal(
             {'type': 'user-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
+    running=[[Output('user-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def user_confirm(confirm_trigger, modal_type, form_value, form_label):
