@@ -201,7 +201,21 @@ def change_dict_type_delete_button_status(table_rows_selected):
     raise PreventUpdate
 
 
-@app.callback(
+# 字典类型表单数据双向绑定回调
+app.clientside_callback(
+    """
+    (row_data, form_value) => {
+        trigger_id = window.dash_clientside.callback_context.triggered_id;
+        if (trigger_id === 'dict_type-form-store') {
+            return [window.dash_clientside.no_update, row_data];
+        }
+        if (trigger_id === 'dict_type-form') {
+            Object.assign(row_data, form_value);
+            return [row_data, window.dash_clientside.no_update];
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     [
         Output('dict_type-form-store', 'data', allow_duplicate=True),
         Output('dict_type-form', 'values'),
@@ -212,17 +226,6 @@ def change_dict_type_delete_button_status(table_rows_selected):
     ],
     prevent_initial_call=True,
 )
-def show_dict_type_form(row_data, form_value):
-    """
-    字典类型表单数据双向绑定回调
-    """
-    trigger_id = ctx.triggered_id
-    if trigger_id == 'dict_type-form-store':
-        return no_update, row_data
-    if trigger_id == 'dict_type-form':
-        row_data.update(form_value)
-        return row_data, no_update
-    raise PreventUpdate
 
 
 @app.callback(
