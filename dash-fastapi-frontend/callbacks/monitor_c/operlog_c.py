@@ -93,10 +93,10 @@ def get_operation_log_table_data(
                 total=table_info['total'],
             )
             for item in table_data:
-                item['status'] = DictManager.get_dict_tag(
+                item['status_tag'] = DictManager.get_dict_tag(
                     dict_type='sys_common_status', dict_value=item.get('status')
                 )
-                item['business_type'] = DictManager.get_dict_tag(
+                item['business_type_tag'] = DictManager.get_dict_tag(
                     dict_type='sys_oper_type',
                     dict_value=item.get('business_type'),
                 )
@@ -213,11 +213,9 @@ def add_edit_operation_log_modal(
         operation_log_info['login_info'] = (
             f'{oper_name} / {oper_ip} / {oper_location}'
         )
-        operation_log_info['status'] = (
-            '正常' if operation_log_info.get('status') == 0 else '失败'
-        )
-        operation_log_info['cost_time'] = (
-            f"{operation_log_info.get('cost_time')}毫秒"
+        operation_log_info['status'] = DictManager.get_dict_label(
+            dict_type='sys_common_status',
+            dict_value=operation_log_info.get('status'),
         )
         return dict(
             modal_visible=True,
