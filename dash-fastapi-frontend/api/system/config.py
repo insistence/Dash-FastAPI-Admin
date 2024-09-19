@@ -34,7 +34,7 @@ class ConfigApi:
         )
 
     @classmethod
-    def get_config_key(config_key: str):
+    def get_config_key(cls, config_key: str):
         """
         根据参数配置键名查询参数配置值接口
 
