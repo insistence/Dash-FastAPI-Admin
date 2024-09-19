@@ -229,7 +229,21 @@ def change_user_delete_button_status(table_rows_selected):
     raise PreventUpdate
 
 
-@app.callback(
+# 用户表单数据双向绑定回调
+app.clientside_callback(
+    """
+    (row_data, form_value) => {
+        trigger_id = window.dash_clientside.callback_context.triggered_id;
+        if (trigger_id === 'user-form-store') {
+            return [window.dash_clientside.no_update, row_data];
+        }
+        if (trigger_id === 'user-form') {
+            Object.assign(row_data, form_value);
+            return [row_data, window.dash_clientside.no_update];
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     [
         Output('user-form-store', 'data', allow_duplicate=True),
         Output('user-form', 'values'),
@@ -240,17 +254,6 @@ def change_user_delete_button_status(table_rows_selected):
     ],
     prevent_initial_call=True,
 )
-def show_user_form(row_data, form_value):
-    """
-    用户表单数据双向绑定回调
-    """
-    trigger_id = ctx.triggered_id
-    if trigger_id == 'user-form-store':
-        return no_update, row_data
-    if trigger_id == 'user-form':
-        row_data.update(form_value)
-        return row_data, no_update
-    raise PreventUpdate
 
 
 @app.callback(
