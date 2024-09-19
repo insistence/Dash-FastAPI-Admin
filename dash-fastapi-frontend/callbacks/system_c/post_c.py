@@ -308,6 +308,7 @@ def add_edit_post_modal(
             {'type': 'post-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
+    running=[[Output('post-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def post_confirm(confirm_trigger, modal_type, form_value, form_label):
