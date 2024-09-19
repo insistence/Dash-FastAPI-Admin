@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from api.monitor.logininfor import LogininforApi
 from server import app
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 
 
@@ -87,10 +88,9 @@ def get_login_log_table_data(
             total=table_info['total'],
         )
         for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='成功', color='blue')
-            else:
-                item['status'] = dict(tag='失败', color='volcano')
+            item['status_tag'] = DictManager.get_dict_tag(
+                dict_type='sys_common_status', dict_value=item.get('status')
+            )
             item['key'] = str(item['info_id'])
 
         return dict(

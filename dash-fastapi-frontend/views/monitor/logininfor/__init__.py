@@ -15,7 +15,7 @@ def render(*args, **kwargs):
     page_size = table_info['page_size']
     total = table_info['total']
     for item in table_data:
-        item['status'] = DictManager.get_dict_tag(
+        item['status_tag'] = DictManager.get_dict_tag(
             dict_type='sys_common_status', dict_value=item.get('status')
         )
         item['key'] = str(item['info_id'])
@@ -316,7 +316,7 @@ def render(*args, **kwargs):
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'status',
+                                                    'dataIndex': 'status_tag',
                                                     'title': '登录状态',
                                                     'renderOptions': {
                                                         'renderType': 'tags'
