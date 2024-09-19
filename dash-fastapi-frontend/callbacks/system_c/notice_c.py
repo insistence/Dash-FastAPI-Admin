@@ -363,6 +363,7 @@ def add_edit_notice_modal(
         status=State('notice-status', 'value'),
         notice_content=State('notice-content', 'htmlValue'),
     ),
+    running=[[Output('notice-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def notice_confirm(
