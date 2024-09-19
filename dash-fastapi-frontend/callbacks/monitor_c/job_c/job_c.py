@@ -332,6 +332,7 @@ def add_edit_job_modal(
             {'type': 'job-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
+    running=[[Output('job-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def job_confirm(confirm_trigger, modal_type, form_value, form_label):
