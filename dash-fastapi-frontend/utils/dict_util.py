@@ -42,8 +42,8 @@ class DictManager:
             return ''
 
         for option in options:
-            if option.get('value') == dict_value:
-                return option.get('label', '')
+            if option.get('value') == str(dict_value):
+                return option.get('label')
         return str(dict_value)
 
     @classmethod
