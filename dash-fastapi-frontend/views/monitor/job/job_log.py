@@ -259,7 +259,7 @@ def render():
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'job_group',
+                                                    'dataIndex': 'job_group_tag',
                                                     'title': '任务组名',
                                                     'renderOptions': {
                                                         'renderType': 'tags'
@@ -280,7 +280,7 @@ def render():
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'status',
+                                                    'dataIndex': 'status_tag',
                                                     'title': '执行状态',
                                                     'renderOptions': {
                                                         'renderType': 'tags'

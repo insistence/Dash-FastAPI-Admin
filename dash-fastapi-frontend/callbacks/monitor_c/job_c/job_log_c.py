@@ -85,11 +85,10 @@ def get_job_log_table_data(
             total=table_info['total'],
         )
         for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='成功', color='blue')
-            else:
-                item['status'] = dict(tag='失败', color='volcano')
-            item['job_group'] = DictManager.get_dict_tag(
+            item['status_tag'] = DictManager.get_dict_tag(
+                dict_type='sys_job_status', dict_value=item.get('status')
+            )
+            item['job_group_tag'] = DictManager.get_dict_tag(
                 dict_type='sys_job_group', dict_value=item.get('job_group')
             )
             item['key'] = str(item['job_log_id'])
@@ -178,8 +177,13 @@ def add_edit_job_log_modal(
         # 获取所有输出表单项对应value的index
         form_value_list = [x['id']['index'] for x in ctx.outputs_list[-1]]
         job_log_info = recently_button_clicked_row
-        job_log_info['status'] = (
-            '成功' if job_log_info.get('status') == '0' else '失败'
+        job_log_info['job_group'] = DictManager.get_dict_label(
+            dict_type='sys_job_group',
+            dict_value=job_log_info.get('job_group'),
+        )
+        job_log_info['status'] = DictManager.get_dict_label(
+            dict_type='sys_job_status',
+            dict_value=job_log_info.get('status'),
         )
         return dict(
             modal_visible=True,

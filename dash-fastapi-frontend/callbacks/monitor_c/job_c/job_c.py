@@ -194,22 +194,41 @@ def change_job_delete_button_status(table_rows_selected):
 
 
 @app.callback(
+    [
+        Output('job-form-store', 'data', allow_duplicate=True),
+        Output('job-form', 'values'),
+    ],
+    [
+        Input('job-form-store', 'data'),
+        Input('job-form', 'values'),
+    ],
+    prevent_initial_call=True,
+)
+def show_job_form(row_data, form_value):
+    """
+    定时任务表单数据双向绑定回调
+    """
+    trigger_id = ctx.triggered_id
+    if trigger_id == 'job-form-store':
+        return no_update, row_data
+    if trigger_id == 'job-form':
+        row_data.update(form_value)
+        return row_data, no_update
+    raise PreventUpdate
+
+
+@app.callback(
     output=dict(
         modal_visible=Output('job-modal', 'visible', allow_duplicate=True),
         modal_title=Output('job-modal', 'title'),
-        form_value=Output({'type': 'job-form-value', 'index': ALL}, 'value'),
+        form_value=Output('job-form-store', 'data', allow_duplicate=True),
         form_label_validate_status=Output(
-            {'type': 'job-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'job-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'job-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'job-form', 'helps', allow_duplicate=True
         ),
-        edit_row_info=Output('job-edit-id-store', 'data'),
-        modal_type=Output('job-operations-store-bk', 'data'),
+        modal_type=Output('job-modal_type-store', 'data'),
     ),
     inputs=dict(
         operation_click=Input(
@@ -247,10 +266,6 @@ def add_edit_job_modal(
             and recently_clicked_dropdown_item_title == '修改'
         )
     ):
-        # 获取所有输出表单项对应value的index
-        form_value_list = [x['id']['index'] for x in ctx.outputs_list[2]]
-        # 获取所有输出表单项对应label的index
-        form_label_list = [x['id']['index'] for x in ctx.outputs_list[3]]
         if trigger_id == {'index': 'add', 'type': 'job-operation-button'}:
             job_info = dict(
                 job_name=None,
@@ -266,10 +281,9 @@ def add_edit_job_modal(
             return dict(
                 modal_visible=True,
                 modal_title='新增任务',
-                form_value=[job_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=None,
+                form_value=job_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'add'},
             )
         elif trigger_id == {
@@ -288,22 +302,11 @@ def add_edit_job_modal(
             return dict(
                 modal_visible=True,
                 modal_title='编辑任务',
-                form_value=[job_info.get(k) for k in form_value_list],
-                form_label_validate_status=[None] * len(form_label_list),
-                form_label_validate_info=[None] * len(form_label_list),
-                edit_row_info=job_info if job_info else None,
+                form_value=job_info,
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_type={'type': 'edit'},
             )
-
-        return dict(
-            modal_visible=no_update,
-            modal_title=no_update,
-            form_value=[no_update] * len(form_value_list),
-            form_label_validate_status=[no_update] * len(form_label_list),
-            form_label_validate_info=[no_update] * len(form_label_list),
-            edit_row_info=None,
-            modal_type=None,
-        )
 
     raise PreventUpdate
 
@@ -311,56 +314,41 @@ def add_edit_job_modal(
 @app.callback(
     output=dict(
         form_label_validate_status=Output(
-            {'type': 'job-form-label', 'index': ALL, 'required': True},
-            'validateStatus',
-            allow_duplicate=True,
+            'job-form', 'validateStatuses', allow_duplicate=True
         ),
         form_label_validate_info=Output(
-            {'type': 'job-form-label', 'index': ALL, 'required': True},
-            'help',
-            allow_duplicate=True,
+            'job-form', 'helps', allow_duplicate=True
         ),
         modal_visible=Output('job-modal', 'visible'),
         operations=Output('job-operations-store', 'data', allow_duplicate=True),
     ),
     inputs=dict(confirm_trigger=Input('job-modal', 'okCounts')),
     state=dict(
-        modal_type=State('job-operations-store-bk', 'data'),
-        edit_row_info=State('job-edit-id-store', 'data'),
-        form_value=State({'type': 'job-form-value', 'index': ALL}, 'value'),
+        modal_type=State('job-modal_type-store', 'data'),
+        form_value=State('job-form-store', 'data'),
         form_label=State(
             {'type': 'job-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
     prevent_initial_call=True,
 )
-def job_confirm(
-    confirm_trigger, modal_type, edit_row_info, form_value, form_label
-):
+def job_confirm(confirm_trigger, modal_type, form_value, form_label):
     """
     新增或编定时任务弹窗确认回调，实现新增或编辑操作
     """
     if confirm_trigger:
-        # 获取所有输出表单项对应label的index
-        form_label_output_list = [x['id']['index'] for x in ctx.outputs_list[0]]
-        # 获取所有输入表单项对应的value及label
-        form_value_state = {
-            x['id']['index']: x.get('value') for x in ctx.states_list[-2]
-        }
+        # 获取所有必填表单项对应label的index
+        form_label_list = [x['id']['index'] for x in ctx.states_list[-1]]
+        # 获取所有输入必填表单项对应的label
         form_label_state = {
             x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
         if all(
             validate_data_not_empty(item)
-            for item in [
-                form_value_state.get(k) for k in form_label_output_list
-            ]
+            for item in [form_value.get(k) for k in form_label_list]
         ):
-            params_add = form_value_state
+            params_add = form_value
             params_edit = params_add.copy()
-            params_edit['job_id'] = (
-                edit_row_info.get('job_id') if edit_row_info else None
-            )
             modal_type = modal_type.get('type')
             if modal_type == 'add':
                 JobApi.add_job(params_add)
@@ -370,10 +358,8 @@ def job_confirm(
                 MessageManager.success(content='新增成功')
 
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'add'},
                 )
@@ -381,34 +367,32 @@ def job_confirm(
                 MessageManager.success(content='编辑成功')
 
                 return dict(
-                    form_label_validate_status=[None]
-                    * len(form_label_output_list),
-                    form_label_validate_info=[None]
-                    * len(form_label_output_list),
+                    form_label_validate_status=None,
+                    form_label_validate_info=None,
                     modal_visible=False,
                     operations={'type': 'edit'},
                 )
 
             return dict(
-                form_label_validate_status=[None] * len(form_label_output_list),
-                form_label_validate_info=[None] * len(form_label_output_list),
+                form_label_validate_status=None,
+                form_label_validate_info=None,
                 modal_visible=no_update,
                 operations=no_update,
             )
 
         return dict(
-            form_label_validate_status=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+            form_label_validate_status={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else 'error'
-                for k in form_label_output_list
-            ],
-            form_label_validate_info=[
-                None
-                if validate_data_not_empty(form_value_state.get(k))
+                for k in form_label_list
+            },
+            form_label_validate_info={
+                form_label_state.get(k): None
+                if validate_data_not_empty(form_value.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
-                for k in form_label_output_list
-            ],
+                for k in form_label_list
+            },
             modal_visible=no_update,
             operations=no_update,
         )
@@ -488,7 +472,14 @@ def get_job_detail_modal(
         job_info['concurrent'] = (
             '是' if job_info.get('concurrent') == '0' else '否'
         )
-        job_info['status'] = '正常' if job_info.get('status') == '0' else '停用'
+        job_info['job_group'] = DictManager.get_dict_label(
+            dict_type='sys_job_group',
+            dict_value=job_info.get('job_group'),
+        )
+        job_info['status'] = DictManager.get_dict_label(
+            dict_type='sys_job_status',
+            dict_value=job_info.get('status'),
+        )
         return dict(
             modal_visible=True,
             modal_title='任务详情',

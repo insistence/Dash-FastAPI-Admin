@@ -50,9 +50,10 @@ def render(*args, **kwargs):
         dcc.Download(id='job-export-container'),
         # 定时任务模块操作类型存储容器
         dcc.Store(id='job-operations-store'),
-        dcc.Store(id='job-operations-store-bk'),
-        # 定时任务模块修改操作行key存储容器
-        dcc.Store(id='job-edit-id-store'),
+        # 定时任务模块弹窗类型存储容器
+        dcc.Store(id='job-modal_type-store'),
+        # 定时任务模块表单数据存储容器
+        dcc.Store(id='job-form-store'),
         # 定时任务模块删除操作行key存储容器
         dcc.Store(id='job-delete-ids-store'),
         # 定时任务日志管理模块操作类型存储容器
@@ -402,10 +403,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'job_name',
-                                            },
+                                            name='job_name',
                                             placeholder='请输入任务名称',
                                             style={'width': '100%'},
                                         ),
@@ -425,10 +423,7 @@ def render(*args, **kwargs):
                                     fac.AntdFormItem(
                                         ApiSelect(
                                             dict_type='sys_job_group',
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'job_group',
-                                            },
+                                            name='job_group',
                                             placeholder='请选择任务分组',
                                             style={'width': '100%'},
                                         ),
@@ -451,10 +446,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'invoke_target',
-                                            },
+                                            name='invoke_target',
                                             placeholder='请输入调用目标字符串',
                                             style={'width': '100%'},
                                         ),
@@ -478,10 +470,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'job_args',
-                                            },
+                                            name='job_args',
                                             placeholder='请输入位置参数',
                                             style={'width': '100%'},
                                         ),
@@ -499,10 +488,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'job_kwargs',
-                                            },
+                                            name='job_kwargs',
                                             placeholder='请输入关键字参数',
                                             style={'width': '100%'},
                                         ),
@@ -525,10 +511,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'cron_expression',
-                                            },
+                                            name='cron_expression',
                                             placeholder='请输入cron执行表达式',
                                             addonAfter=html.Div(
                                                 [
@@ -567,10 +550,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'misfire_policy',
-                                            },
+                                            name='misfire_policy',
                                             options=[
                                                 {
                                                     'label': '立即执行',
@@ -608,10 +588,7 @@ def render(*args, **kwargs):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'concurrent',
-                                            },
+                                            name='concurrent',
                                             options=[
                                                 {'label': '允许', 'value': '0'},
                                                 {'label': '禁止', 'value': '1'},
@@ -635,10 +612,7 @@ def render(*args, **kwargs):
                                     fac.AntdFormItem(
                                         ApiRadioGroup(
                                             dict_type='sys_job_status',
-                                            id={
-                                                'type': 'job-form-value',
-                                                'index': 'status',
-                                            },
+                                            name='status',
                                             defaultValue='0',
                                         ),
                                         id={
@@ -656,6 +630,8 @@ def render(*args, **kwargs):
                             gutter=5,
                         ),
                     ],
+                    id='job-form',
+                    enableBatchControl=True,
                     style={'marginRight': '30px'},
                 )
             ],
