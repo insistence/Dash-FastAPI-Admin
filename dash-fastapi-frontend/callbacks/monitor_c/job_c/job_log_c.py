@@ -194,23 +194,24 @@ def add_edit_job_log_modal(
     raise PreventUpdate
 
 
-@app.callback(
+# 根据选择的表格数据行数控制删除按钮状态回调
+app.clientside_callback(
+    """
+    (table_rows_selected) => {
+        outputs_list = window.dash_clientside.callback_context.outputs_list;
+        if (outputs_list) {
+            if (table_rows_selected?.length > 0) {
+                return false;
+            }
+            return true;
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     Output({'type': 'job_log-operation-button', 'index': 'delete'}, 'disabled'),
     Input('job_log-list-table', 'selectedRowKeys'),
     prevent_initial_call=True,
 )
-def change_job_log_delete_button_status(table_rows_selected):
-    """
-    根据选择的表格数据行数控制删除按钮状态回调
-    """
-    outputs_list = ctx.outputs_list
-    if outputs_list:
-        if table_rows_selected:
-            return False
-
-        return True
-
-    raise PreventUpdate
 
 
 @app.callback(
