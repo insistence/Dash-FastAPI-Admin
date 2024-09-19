@@ -50,6 +50,7 @@ from utils.feedback_util import MessageManager
         visible=State('content-menu-visible', 'value'),
         status=State('content-menu-status', 'value'),
     ),
+    running=[[Output('menu-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def menu_confirm_content(
