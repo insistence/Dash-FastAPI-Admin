@@ -173,6 +173,7 @@ def edit_role_datascope_modal(button_click):
             'role-dept-perms-radio-parent-children', 'checked'
         ),
     ),
+    running=[[Output('role-datascope-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def role_datascope_confirm(

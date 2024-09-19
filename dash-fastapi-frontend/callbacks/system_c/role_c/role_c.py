@@ -477,6 +477,7 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             'role-menu-perms-radio-parent-children', 'checked'
         ),
     ),
+    running=[[Output('role-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def role_confirm(
