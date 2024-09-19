@@ -310,6 +310,7 @@ def add_edit_dept_modal(
             {'type': 'dept-form-label', 'index': ALL, 'required': True}, 'label'
         ),
     ),
+    running=[[Output('dept-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def dept_confirm(confirm_trigger, modal_type, form_value, form_label):
