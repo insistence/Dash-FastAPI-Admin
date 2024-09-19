@@ -328,6 +328,7 @@ def add_edit_config_modal(
             'label',
         ),
     ),
+    running=[[Output('config-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def config_confirm(confirm_trigger, modal_type, form_value, form_label):
