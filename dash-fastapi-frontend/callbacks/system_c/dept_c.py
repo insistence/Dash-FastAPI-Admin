@@ -164,7 +164,21 @@ app.clientside_callback(
 )
 
 
-@app.callback(
+# 部门表单数据双向绑定回调
+app.clientside_callback(
+    """
+    (row_data, form_value) => {
+        trigger_id = window.dash_clientside.callback_context.triggered_id;
+        if (trigger_id === 'dept-form-store') {
+            return [window.dash_clientside.no_update, row_data];
+        }
+        if (trigger_id === 'dept-form') {
+            Object.assign(row_data, form_value);
+            return [row_data, window.dash_clientside.no_update];
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     [
         Output('dept-form-store', 'data', allow_duplicate=True),
         Output('dept-form', 'values'),
@@ -175,17 +189,6 @@ app.clientside_callback(
     ],
     prevent_initial_call=True,
 )
-def show_dept_form(row_data, form_value):
-    """
-    部门表单数据双向绑定回调
-    """
-    trigger_id = ctx.triggered_id
-    if trigger_id == 'dept-form-store':
-        return no_update, row_data
-    if trigger_id == 'dept-form':
-        row_data.update(form_value)
-        return row_data, no_update
-    raise PreventUpdate
 
 
 @app.callback(
