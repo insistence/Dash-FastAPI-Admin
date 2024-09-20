@@ -248,8 +248,8 @@ class LoginService:
                 roles=roles,
                 user=UserInfoModel(
                     **SqlalchemyUtil.serialize_result(query_user.get('user_basic_info')),
-                    postIds=post_ids,
-                    roleIds=role_ids,
+                    post_ids=post_ids,
+                    role_ids=role_ids,
                     dept=SqlalchemyUtil.serialize_result(query_user.get('user_dept_info')),
                     role=SqlalchemyUtil.serialize_result(query_user.get('user_role_info')),
                 ),
