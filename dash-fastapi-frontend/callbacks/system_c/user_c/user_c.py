@@ -5,11 +5,57 @@ from io import BytesIO
 from dash import ctx, dcc, no_update
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.system.user import UserApi
 from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_user_table(query_params: Dict):
+    """
+    根据查询参数获取用户表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 用户表格数据及分页信息
+    """
+    table_info = UserApi.list_user(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
+        else:
+            item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
+        item['dept_name'] = item.get('dept', {}).get('dept_name')
+        item['key'] = str(item['user_id'])
+        if item['user_id'] == 1:
+            item['operation'] = []
+        else:
+            item['operation'] = [
+                {'title': '修改', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:user:edit')
+                else None,
+                {'title': '删除', 'icon': 'antd-delete'}
+                if PermissionManager.check_perms('system:user:remove')
+                else None,
+                {'title': '重置密码', 'icon': 'antd-key'}
+                if PermissionManager.check_perms('system:user:resetPwd')
+                else None,
+                {'title': '分配角色', 'icon': 'antd-check-circle'}
+                if PermissionManager.check_perms('system:user:edit')
+                else None,
+            ]
+
+    return [table_data, table_pagination]
 
 
 app.clientside_callback(
@@ -91,44 +137,7 @@ def get_user_table_data_by_dept_tree(
         or pagination
         or operations
     ):
-        table_info = UserApi.list_user(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(
-                    checked=True, disabled=item['user_id'] == 1
-                )
-            else:
-                item['status'] = dict(
-                    checked=False, disabled=item['user_id'] == 1
-                )
-            item['dept_name'] = item.get('dept', {}).get('dept_name')
-            item['key'] = str(item['user_id'])
-            if item['user_id'] == 1:
-                item['operation'] = []
-            else:
-                item['operation'] = [
-                    {'title': '修改', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:user:edit')
-                    else None,
-                    {'title': '删除', 'icon': 'antd-delete'}
-                    if PermissionManager.check_perms('system:user:remove')
-                    else None,
-                    {'title': '重置密码', 'icon': 'antd-key'}
-                    if PermissionManager.check_perms('system:user:resetPwd')
-                    else None,
-                    {'title': '分配角色', 'icon': 'antd-check-circle'}
-                    if PermissionManager.check_perms('system:user:edit')
-                    else None,
-                ]
+        table_data, table_pagination = generate_user_table(query_params)
 
         return dict(
             user_table_data=table_data,

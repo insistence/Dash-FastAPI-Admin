@@ -1,7 +1,7 @@
 import feffery_antd_components as fac
 from dash import dcc, html
 from api.system.user import UserApi
-from callbacks.system_c.user_c import user_c  # noqa: F401
+from callbacks.system_c.user_c import user_c
 from components import ManuallyUpload
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
@@ -10,38 +10,10 @@ from . import allocate_role, profile  # noqa: F401
 
 
 def render(*args, **kwargs):
-    user_params = dict(page_num=1, page_size=10)
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = user_c.generate_user_table(query_params)
     tree_info = UserApi.dept_tree_select()
-    table_info = UserApi.list_user(user_params)
     tree_data = tree_info['data']
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
-        else:
-            item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
-        item['dept_name'] = item.get('dept', {}).get('dept_name')
-        item['key'] = str(item['user_id'])
-        if item['user_id'] == 1:
-            item['operation'] = []
-        else:
-            item['operation'] = [
-                {'title': '修改', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:user:edit')
-                else None,
-                {'title': '删除', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:user:remove')
-                else None,
-                {'title': '重置密码', 'icon': 'antd-key'}
-                if PermissionManager.check_perms('system:user:resetPwd')
-                else None,
-                {'title': '分配角色', 'icon': 'antd-check-circle'}
-                if PermissionManager.check_perms('system:user:edit')
-                else None,
-            ]
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -407,19 +379,7 @@ def render(*args, **kwargs):
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
