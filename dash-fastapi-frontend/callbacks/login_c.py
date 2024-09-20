@@ -1,5 +1,7 @@
+import feffery_antd_components as fac
 from dash import dcc, get_asset_url, no_update
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 from flask import session
 from api.login import LoginApi
 from server import app
@@ -19,7 +21,6 @@ from utils.feedback_util import MessageManager
         username_form_help=Output('login-username-form-item', 'help'),
         password_form_help=Output('login-password-form-item', 'help'),
         captcha_form_help=Output('login-captcha-form-item', 'help'),
-        image_click=Output('login-captcha-image-container', 'n_clicks'),
         token=Output('token-container', 'data'),
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
@@ -31,10 +32,12 @@ from utils.feedback_util import MessageManager
         password=State('login-password', 'value'),
         input_captcha=State('login-captcha', 'value'),
         session_id=State('captcha_image-session_id-container', 'data'),
-        image_click=State('login-captcha-image-container', 'n_clicks'),
         captcha_hidden=State('captcha-row-container', 'hidden'),
     ),
-    running=[[Output('login-submit', 'loading'), True, False]],
+    running=[
+        [Output('login-submit', 'loading'), True, False],
+        [Output('login-captcha-image-container', 'n_clicks'), 0, 1],
+    ],
     prevent_initial_call=True,
 )
 def login_auth(
@@ -43,17 +46,14 @@ def login_auth(
     password,
     input_captcha,
     session_id,
-    image_click,
     captcha_hidden,
 ):
     if nClicks:
+        validate_list = [username, password, input_captcha]
         if captcha_hidden:
-            input_captcha = 'hidden'
+            validate_list = [username, password]
         # 校验全部输入值是否不为空
-        if all(
-            validate_data_not_empty(item)
-            for item in [username, password, input_captcha]
-        ):
+        if all(validate_data_not_empty(item) for item in validate_list):
             user_params = dict(
                 username=username,
                 password=password,
@@ -71,7 +71,6 @@ def login_auth(
                 username_form_help=None,
                 password_form_help=None,
                 captcha_form_help=None,
-                image_click=no_update,
                 token=token,
                 redirect_container=dcc.Location(
                     pathname='/', id='login-redirect'
@@ -97,7 +96,6 @@ def login_auth(
             captcha_form_help=None
             if validate_data_not_empty(input_captcha)
             else '请输入验证码！',
-            image_click=no_update,
             token=None,
             redirect_container=None,
         )
@@ -109,7 +107,6 @@ def login_auth(
         username_form_help=no_update,
         password_form_help=no_update,
         captcha_form_help=no_update,
-        image_click=image_click + 1,
         token=no_update,
         redirect_container=no_update,
     )
@@ -117,24 +114,52 @@ def login_auth(
 
 @app.callback(
     [
+        Output('captcha-row-container', 'hidden'),
+        Output('register-user-link-container', 'children'),
+        Output('forget-password-link-container', 'children'),
         Output('login-captcha-image', 'src'),
         Output('captcha_image-session_id-container', 'data'),
     ],
     Input('login-captcha-image-container', 'n_clicks'),
+    State('redirect-container', 'children'),
     prevent_initial_call=True,
 )
-def change_login_captcha_image(captcha_click):
-    if captcha_click:
+def change_login_captcha_image(captcha_click, redirect):
+    if captcha_click and not redirect:
         captcha_image_info = LoginApi.get_code_img()
+        captcha_enabled = captcha_image_info.get('captcha_enabled')
+        forget_enabled = captcha_image_info.get('forget_enabled')
+        register_enabled = captcha_image_info.get('register_enabled')
         captcha_image = f"data:image/gif;base64,{captcha_image_info.get('img')}"
         session_id = captcha_image_info.get('uuid')
 
         return [
+            not captcha_enabled,
+            fac.AntdButton(
+                '用户注册',
+                id='register-user-link',
+                type='link',
+                href='/register',
+                target='_self',
+                style={'padding': 0},
+            )
+            if register_enabled
+            else [],
+            fac.AntdButton(
+                '忘记密码',
+                id='forget-password-link',
+                type='link',
+                href='/forget',
+                target='_self',
+                style={'padding': 0},
+            )
+            if forget_enabled
+            else [],
             captcha_image,
             session_id,
         ]
 
-    return [no_update] * 2
+    raise PreventUpdate
 
 
 @app.callback(

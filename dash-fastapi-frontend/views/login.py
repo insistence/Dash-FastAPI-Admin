@@ -1,21 +1,9 @@
-from dash import html, dcc
 import feffery_antd_components as fac
-
-import callbacks.login_c
+from dash import dcc, html
+from callbacks import login_c  # noqa: F401
 
 
 def render_content():
-    # captcha_enabled_info = query_config_list_api(
-    #     config_key="sys.account.captchaEnabled"
-    # )
-    # forget_enabled_info = query_config_list_api(config_key="sys.account.forgetUser")
-    captcha_hidden = False
-    forget_show = True
-    # if captcha_enabled_info.get("code") == 200:
-    #     captcha_hidden = False if captcha_enabled_info.get("data") == "true" else True
-    # if forget_enabled_info.get("code") == 200:
-    #     forget_show = False if forget_enabled_info.get("data") == "false" else True
-
     return html.Div(
         [
             dcc.Store(id='captcha_image-session_id-container'),
@@ -120,7 +108,6 @@ def render_content():
                                                         )
                                                     ],
                                                     id='login-captcha-image-container',
-                                                    n_clicks=1,
                                                     style={
                                                         'border': '1px solid #ccc'
                                                     },
@@ -132,24 +119,7 @@ def render_content():
                                     ),
                                 ],
                                 id='captcha-row-container',
-                                hidden=captcha_hidden,
                             ),
-                            fac.AntdSpace(
-                                [
-                                    html.Div(id='test'),
-                                    fac.AntdButton(
-                                        '忘记密码',
-                                        id='forget-password-link',
-                                        type='link',
-                                        href='/forget',
-                                        target='_self',
-                                    ),
-                                ],
-                                align='center',
-                                size=240,
-                            )
-                            if forget_show
-                            else [],
                             fac.AntdFormItem(
                                 fac.AntdButton(
                                     '登录',
@@ -161,6 +131,22 @@ def render_content():
                                     size='large',
                                 ),
                                 style={'marginTop': '20px'},
+                            ),
+                            fac.AntdFormItem(
+                                html.Div(
+                                    [
+                                        html.Div(
+                                            id='register-user-link-container'
+                                        ),
+                                        html.Div(
+                                            id='forget-password-link-container'
+                                        ),
+                                    ],
+                                    style={
+                                        'display': 'flex',
+                                        'justifyContent': 'space-between',
+                                    },
+                                )
                             ),
                         ],
                         layout='vertical',
