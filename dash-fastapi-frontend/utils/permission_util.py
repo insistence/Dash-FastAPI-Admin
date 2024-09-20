@@ -16,7 +16,11 @@ class PermissionManager:
         :param is_strict: 当传入的权限标识是list类型时，是否开启严格模式，开启表示会校验列表中的每一个权限标识，所有的校验结果都需要为True才会通过
         :return: 校验结果
         """
-        user_perm_list = CacheManager.get('permissions').get('perms')
+        user_perm_list = (
+            CacheManager.get('permissions').get('perms')
+            if CacheManager.get('permissions')
+            else []
+        )
         if '*:*:*' in user_perm_list:
             return True
         if isinstance(perm, str):
@@ -40,7 +44,11 @@ class PermissionManager:
         :param is_strict: 当传入的角色标识是list类型时，是否开启严格模式，开启表示会校验列表中的每一个角色标识，所有的校验结果都需要为True才会通过
         :return: 校验结果
         """
-        user_role_list = CacheManager.get('permissions').get('roles')
+        user_role_list = (
+            CacheManager.get('permissions').get('roles')
+            if CacheManager.get('permissions')
+            else []
+        )
         user_role_key_list = [role.role_key for role in user_role_list]
         if isinstance(role_key, str):
             if role_key in user_role_key_list:
