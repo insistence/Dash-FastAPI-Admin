@@ -1,55 +1,16 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.system.dept import DeptApi
-from callbacks.system_c import dept_c  # noqa: F401
+from callbacks.system_c import dept_c
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
-from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
-from utils.tree_tool import list_to_tree
 
 
 def render(*args, **kwargs):
-    default_expanded_row_keys = []
-    table_info = DeptApi.list_dept({})
-    table_data = table_info['data']
-    for item in table_data:
-        default_expanded_row_keys.append(str(item['dept_id']))
-        item['key'] = str(item['dept_id'])
-        if item['parent_id'] == 0:
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:dept:edit')
-                else {},
-                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                if PermissionManager.check_perms('system:dept:add')
-                else {},
-            ]
-        elif item['status'] == '1':
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:dept:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:dept:remove')
-                else {},
-            ]
-        else:
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:dept:edit')
-                else {},
-                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                if PermissionManager.check_perms('system:dept:add')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:dept:remove')
-                else {},
-            ]
-        item['status'] = DictManager.get_dict_tag(
-            dict_type='sys_normal_disable', dict_value=item.get('status')
-        )
-    table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
+    query_params = {}
+    table_data, default_expanded_row_keys = dept_c.generate_dept_table(
+        query_params
+    )
 
     return [
         # 部门管理模块操作类型存储容器
@@ -225,7 +186,7 @@ def render(*args, **kwargs):
                                     fac.AntdSpin(
                                         fac.AntdTable(
                                             id='dept-list-table',
-                                            data=table_data_new,
+                                            data=table_data,
                                             columns=[
                                                 {
                                                     'dataIndex': 'dept_id',

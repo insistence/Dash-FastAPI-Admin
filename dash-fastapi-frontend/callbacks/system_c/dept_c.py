@@ -2,6 +2,7 @@ import uuid
 from dash import ctx, no_update
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.system.dept import DeptApi
 from server import app
 from utils.common import validate_data_not_empty
@@ -9,6 +10,65 @@ from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree, list_to_tree_select
+
+
+def generate_dept_table(query_params: Dict):
+    """
+    根据查询参数获取部门表格数据及展开信息
+
+    :param query_params: 查询参数
+    :return: 部门表格数据及展开信息
+    """
+    table_info = DeptApi.list_dept(query_params)
+    default_expanded_row_keys = []
+    table_data = table_info['data']
+    for item in table_data:
+        default_expanded_row_keys.append(str(item['dept_id']))
+        item['key'] = str(item['dept_id'])
+        if item['parent_id'] == 0:
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                if PermissionManager.check_perms('system:dept:add')
+                else {},
+            ]
+        elif item['status'] == '1':
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {
+                    'content': '删除',
+                    'type': 'link',
+                    'icon': 'antd-delete',
+                }
+                if PermissionManager.check_perms('system:dept:remove')
+                else {},
+            ]
+        else:
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:dept:edit')
+                else {},
+                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                if PermissionManager.check_perms('system:dept:add')
+                else {},
+                {
+                    'content': '删除',
+                    'type': 'link',
+                    'icon': 'antd-delete',
+                }
+                if PermissionManager.check_perms('system:dept:remove')
+                else {},
+            ]
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_normal_disable', dict_value=item.get('status')
+        )
+    table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
+
+    return [table_data_new, default_expanded_row_keys]
 
 
 @app.callback(
@@ -49,66 +109,20 @@ def get_dept_table_data(
     """
     query_params = dict(dept_name=dept_name, status=status_select)
     if search_click or refresh_click or operations or fold_click:
-        table_info = DeptApi.list_dept(query_params)
-        default_expanded_row_keys = []
-        table_data = table_info['data']
-        for item in table_data:
-            default_expanded_row_keys.append(str(item['dept_id']))
-            item['key'] = str(item['dept_id'])
-            if item['parent_id'] == 0:
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                    if PermissionManager.check_perms('system:dept:add')
-                    else {},
-                ]
-            elif item['status'] == '1':
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete',
-                    }
-                    if PermissionManager.check_perms('system:dept:remove')
-                    else {},
-                ]
-            else:
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:dept:edit')
-                    else {},
-                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                    if PermissionManager.check_perms('system:dept:add')
-                    else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete',
-                    }
-                    if PermissionManager.check_perms('system:dept:remove')
-                    else {},
-                ]
-            item['status'] = DictManager.get_dict_tag(
-                dict_type='sys_normal_disable', dict_value=item.get('status')
-            )
-        table_data_new = list_to_tree(table_data, 'dept_id', 'parent_id')
-
+        table_data, default_expanded_row_keys = generate_dept_table(
+            query_params
+        )
         if fold_click:
             if in_default_expanded_row_keys:
                 return dict(
-                    dept_table_data=table_data_new,
+                    dept_table_data=table_data,
                     dept_table_key=str(uuid.uuid4()),
                     dept_table_defaultexpandedrowkeys=[],
                     fold_click=None,
                 )
 
         return dict(
-            dept_table_data=table_data_new,
+            dept_table_data=table_data,
             dept_table_key=str(uuid.uuid4()),
             dept_table_defaultexpandedrowkeys=default_expanded_row_keys,
             fold_click=None,
