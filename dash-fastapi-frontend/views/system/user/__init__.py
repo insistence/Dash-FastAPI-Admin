@@ -23,6 +23,7 @@ def render(*args, **kwargs):
             item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
         else:
             item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
+        item['dept_name'] = item.get('dept', {}).get('dept_name')
         item['key'] = str(item['user_id'])
         if item['user_id'] == 1:
             item['operation'] = []
