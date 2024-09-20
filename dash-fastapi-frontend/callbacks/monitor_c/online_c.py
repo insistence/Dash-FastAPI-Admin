@@ -2,10 +2,39 @@ import uuid
 from dash import ctx
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.monitor.online import OnlineApi
 from server import app
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_online_table(query_params: Dict):
+    """
+    根据查询参数获取在线用户表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 在线用户表格数据及分页信息
+    """
+    table_info = OnlineApi.list_online(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        item['key'] = str(item['token_id'])
+        item['operation'] = [
+            {'content': '强退', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('monitor:online:forceLogout')
+            else {},
+        ]
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -56,24 +85,7 @@ def get_online_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = OnlineApi.list_online(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            item['key'] = str(item['token_id'])
-            item['operation'] = [
-                {'content': '强退', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('monitor:online:forceLogout')
-                else {},
-            ]
-
+        table_data, table_pagination = generate_online_table(query_params)
         return dict(
             online_table_data=table_data,
             online_table_pagination=table_pagination,
