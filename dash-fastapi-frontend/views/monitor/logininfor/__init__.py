@@ -1,24 +1,15 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.monitor.logininfor import LogininforApi
-from callbacks.monitor_c import logininfor_c  # noqa: F401
+from callbacks.monitor_c import logininfor_c
 from components.ApiSelect import ApiSelect
-from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
-    login_log_params = dict(page_num=1, page_size=10)
-    table_info = LogininforApi.list_logininfor(login_log_params)
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        item['status_tag'] = DictManager.get_dict_tag(
-            dict_type='sys_common_status', dict_value=item.get('status')
-        )
-        item['key'] = str(item['info_id'])
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = logininfor_c.generate_logininfor_table(
+        query_params
+    )
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -347,19 +338,7 @@ def render(*args, **kwargs):
                                                 ],
                                                 'multiple': False,
                                             },
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',

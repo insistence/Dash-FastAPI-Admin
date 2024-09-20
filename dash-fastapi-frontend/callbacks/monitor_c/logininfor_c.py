@@ -3,10 +3,37 @@ import uuid
 from dash import ctx, dcc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.monitor.logininfor import LogininforApi
 from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
+
+
+def generate_logininfor_table(query_params: Dict):
+    """
+    根据查询参数获取登录日志表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 登录日志表格数据及分页信息
+    """
+    table_info = LogininforApi.list_logininfor(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        item['status_tag'] = DictManager.get_dict_tag(
+            dict_type='sys_common_status', dict_value=item.get('status')
+        )
+        item['key'] = str(item['info_id'])
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -77,22 +104,7 @@ def get_login_log_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = LogininforApi.list_logininfor(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            item['status_tag'] = DictManager.get_dict_tag(
-                dict_type='sys_common_status', dict_value=item.get('status')
-            )
-            item['key'] = str(item['info_id'])
-
+        table_data, table_pagination = generate_logininfor_table(query_params)
         return dict(
             login_log_table_data=table_data,
             login_log_table_pagination=table_pagination,
