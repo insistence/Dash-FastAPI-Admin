@@ -26,7 +26,10 @@ from utils.feedback_util import MessageManager
             'redirect-container', 'children', allow_duplicate=True
         ),
     ),
-    inputs=dict(nClicks=Input('login-submit', 'nClicks')),
+    inputs=dict(
+        button_click=Input('login-submit', 'nClicks'),
+        keyboard_enter_press=Input('keyboard-enter-submit', 'pressedCounts'),
+    ),
     state=dict(
         username=State('login-username', 'value'),
         password=State('login-password', 'value'),
@@ -41,14 +44,15 @@ from utils.feedback_util import MessageManager
     prevent_initial_call=True,
 )
 def login_auth(
-    nClicks,
+    button_click,
+    keyboard_enter_press,
     username,
     password,
     input_captcha,
     session_id,
     captcha_hidden,
 ):
-    if nClicks:
+    if button_click or keyboard_enter_press:
         validate_list = [username, password, input_captcha]
         if captcha_hidden:
             validate_list = [username, password]

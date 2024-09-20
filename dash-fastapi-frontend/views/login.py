@@ -1,4 +1,5 @@
 import feffery_antd_components as fac
+import feffery_utils_components as fuc
 from dash import dcc, html
 from callbacks import login_c  # noqa: F401
 
@@ -119,6 +120,9 @@ def render_content():
                                     ),
                                 ],
                                 id='captcha-row-container',
+                            ),
+                            fuc.FefferyKeyPress(
+                                id='keyboard-enter-submit', keys='enter'
                             ),
                             fac.AntdFormItem(
                                 fac.AntdButton(
