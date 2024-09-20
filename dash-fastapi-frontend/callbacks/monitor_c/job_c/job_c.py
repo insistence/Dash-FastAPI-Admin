@@ -31,10 +31,10 @@ def generate_job_table(query_params: Dict):
     )
     for item in table_data:
         if item['status'] == '0':
-            item['status'] = dict(checked=True)
+            item['status_checked'] = dict(checked=True)
         else:
-            item['status'] = dict(checked=False)
-        item['job_group'] = DictManager.get_dict_tag(
+            item['status_checked'] = dict(checked=False)
+        item['job_group_tag'] = DictManager.get_dict_tag(
             dict_type='sys_job_group', dict_value=item.get('job_group')
         )
         item['key'] = str(item['job_id'])

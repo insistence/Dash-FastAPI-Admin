@@ -290,7 +290,7 @@ def render(*args, **kwargs):
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'job_group',
+                                                    'dataIndex': 'job_group_tag',
                                                     'title': '任务组名',
                                                     'renderOptions': {
                                                         'renderType': 'tags'
@@ -311,7 +311,7 @@ def render(*args, **kwargs):
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'status',
+                                                    'dataIndex': 'status_checked',
                                                     'title': '状态',
                                                     'renderOptions': {
                                                         'renderType': 'switch'
