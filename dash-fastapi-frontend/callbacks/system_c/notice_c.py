@@ -2,13 +2,50 @@ import uuid
 from dash import ctx, no_update
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
-from api.system.dict.data import DictDataApi
+from typing import Dict
 from api.system.notice import NoticeApi
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_notice_table(query_params: Dict):
+    """
+    根据查询参数获取通知公告表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 通知公告表格数据及分页信息
+    """
+    table_info = NoticeApi.list_notice(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_notice_status', dict_value=item.get('status')
+        )
+        item['notice_type'] = DictManager.get_dict_tag(
+            dict_type='sys_notice_type', dict_value=item.get('notice_type')
+        )
+        item['key'] = str(item['notice_id'])
+        item['operation'] = [
+            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('system:notice:edit')
+            else {},
+            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('system:notice:remove')
+            else {},
+        ]
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -75,33 +112,7 @@ def get_notice_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = NoticeApi.list_notice(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='关闭', color='volcano')
-            item['notice_type'] = DictManager.get_dict_tag(
-                dict_type='sys_notice_type', dict_value=item.get('notice_type')
-            )
-            item['key'] = str(item['notice_id'])
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:notice:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:notice:remove')
-                else {},
-            ]
+        table_data, table_pagination = generate_notice_table(query_params)
 
         return dict(
             notice_table_data=table_data,
