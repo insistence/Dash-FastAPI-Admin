@@ -20,7 +20,6 @@ from utils.feedback_util import MessageManager
         password_form_help=Output('login-password-form-item', 'help'),
         captcha_form_help=Output('login-captcha-form-item', 'help'),
         image_click=Output('login-captcha-image-container', 'n_clicks'),
-        submit_loading=Output('login-submit', 'loading'),
         token=Output('token-container', 'data'),
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
@@ -35,6 +34,7 @@ from utils.feedback_util import MessageManager
         image_click=State('login-captcha-image-container', 'n_clicks'),
         captcha_hidden=State('captcha-row-container', 'hidden'),
     ),
+    running=[[Output('login-submit', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def login_auth(
@@ -72,7 +72,6 @@ def login_auth(
                 password_form_help=None,
                 captcha_form_help=None,
                 image_click=no_update,
-                submit_loading=False,
                 token=token,
                 redirect_container=dcc.Location(
                     pathname='/', id='login-redirect'
@@ -99,7 +98,6 @@ def login_auth(
             if validate_data_not_empty(input_captcha)
             else '请输入验证码！',
             image_click=no_update,
-            submit_loading=False,
             token=None,
             redirect_container=None,
         )
@@ -112,7 +110,6 @@ def login_auth(
         password_form_help=no_update,
         captcha_form_help=no_update,
         image_click=image_click + 1,
-        submit_loading=no_update,
         token=no_update,
         redirect_container=no_update,
     )
