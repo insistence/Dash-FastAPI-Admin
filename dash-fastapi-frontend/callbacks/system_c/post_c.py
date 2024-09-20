@@ -3,12 +3,47 @@ import uuid
 from dash import ctx, dcc, no_update
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.system.post import PostApi
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_post_table(query_params: Dict):
+    """
+    根据查询参数获取岗位表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 岗位表格数据及分页信息
+    """
+    table_info = PostApi.list_post(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_normal_disable', dict_value=item.get('status')
+        )
+        item['key'] = str(item['post_id'])
+        item['operation'] = [
+            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('system:post:edit')
+            else {},
+            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('system:post:remove')
+            else {},
+        ]
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -62,29 +97,7 @@ def get_post_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = PostApi.list_post(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            item['status'] = DictManager.get_dict_tag(
-                dict_type='sys_normal_disable', dict_value=item.get('status')
-            )
-            item['key'] = str(item['post_id'])
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:post:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:post:remove')
-                else {},
-            ]
+        table_data, table_pagination = generate_post_table(query_params)
         return dict(
             post_table_data=table_data,
             post_table_pagination=table_pagination,

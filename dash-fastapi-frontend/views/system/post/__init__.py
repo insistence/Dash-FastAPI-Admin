@@ -1,33 +1,14 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.system.post import PostApi
-from callbacks.system_c import post_c  # noqa: F401
+from callbacks.system_c import post_c
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
-from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
-    post_params = dict(page_num=1, page_size=10)
-    table_info = PostApi.list_post(post_params)
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        item['status'] = DictManager.get_dict_tag(
-            dict_type='sys_normal_disable', dict_value=item.get('status')
-        )
-        item['key'] = str(item['post_id'])
-        item['operation'] = [
-            {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-            if PermissionManager.check_perms('system:post:edit')
-            else {},
-            {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-            if PermissionManager.check_perms('system:post:remove')
-            else {},
-        ]
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = post_c.generate_post_table(query_params)
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -324,19 +305,7 @@ def render(*args, **kwargs):
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
