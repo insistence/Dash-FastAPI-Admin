@@ -230,50 +230,46 @@ app.clientside_callback(
 )
 
 
-@app.callback(
+# 根据选择的表格数据行数控制修改按钮状态回调
+app.clientside_callback(
+    """
+    (table_rows_selected) => {
+        outputs_list = window.dash_clientside.callback_context.outputs_list;
+        if (outputs_list) {
+            if (table_rows_selected?.length === 1) {
+                return false;
+            }
+            return true;
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     Output({'type': 'role-operation-button', 'operation': 'edit'}, 'disabled'),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True,
 )
-def change_role_edit_button_status(table_rows_selected):
+
+
+# 根据选择的表格数据行数控制删除按钮状态回调
+app.clientside_callback(
     """
-    根据选择的表格数据行数控制编辑按钮状态回调
-    """
-    outputs_list = ctx.outputs_list
-    if outputs_list:
-        if table_rows_selected:
-            if len(table_rows_selected) > 1 or '1' in table_rows_selected:
-                return True
-
-            return False
-
-        return True
-
-    return no_update
-
-
-@app.callback(
+    (table_rows_selected) => {
+        outputs_list = window.dash_clientside.callback_context.outputs_list;
+        if (outputs_list) {
+            if (table_rows_selected?.length > 0) {
+                return false;
+            }
+            return true;
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
     Output(
         {'type': 'role-operation-button', 'operation': 'delete'}, 'disabled'
     ),
     Input('role-list-table', 'selectedRowKeys'),
     prevent_initial_call=True,
 )
-def change_role_delete_button_status(table_rows_selected):
-    """
-    根据选择的表格数据行数控制删除按钮状态回调
-    """
-    outputs_list = ctx.outputs_list
-    if outputs_list:
-        if table_rows_selected:
-            if '1' in table_rows_selected:
-                return True
-
-            return False
-
-        return True
-
-    return no_update
 
 
 @app.callback(
@@ -487,6 +483,7 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             'role-menu-perms-radio-parent-children', 'checked'
         ),
     ),
+    running=[[Output('role-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def role_confirm(

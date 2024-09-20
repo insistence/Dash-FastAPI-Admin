@@ -248,6 +248,7 @@ def allocate_user_modal(add_click, unallocated_user):
         ),
         State('allocate_user-role_id-container', 'data'),
     ],
+    running=[[Output('allocate_user-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def allocate_user_add_confirm(add_confirm, selected_row_keys, role_id):

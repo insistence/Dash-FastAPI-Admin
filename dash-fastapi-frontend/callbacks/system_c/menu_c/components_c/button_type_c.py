@@ -47,6 +47,7 @@ from utils.feedback_util import MessageManager
         order_num=State('menu-order_num', 'value'),
         perms=State('button-menu-perms', 'value'),
     ),
+    running=[[Output('menu-modal', 'confirmLoading'), True, False]],
     prevent_initial_call=True,
 )
 def menu_confirm_button(
