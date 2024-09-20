@@ -1,7 +1,6 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.system.role import RoleApi
-from callbacks.system_c.role_c import role_c  # noqa: F401
+from callbacks.system_c.role_c import role_c
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
@@ -9,91 +8,8 @@ from . import data_scope, allocate_user
 
 
 def render(*args, **kwargs):
-    role_params = dict(page_num=1, page_size=10)
-    table_info = RoleApi.list_role(role_params)
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(checked=True, disabled=item['role_id'] == 1)
-        else:
-            item['status'] = dict(checked=False, disabled=item['role_id'] == 1)
-        item['key'] = str(item['role_id'])
-        if item['role_id'] == 1:
-            item['operation'] = []
-        else:
-            item['operation'] = fac.AntdSpace(
-                [
-                    fac.AntdButton(
-                        '修改',
-                        id={
-                            'type': 'role-operation-table',
-                            'operation': 'edit',
-                            'index': str(item['role_id']),
-                        },
-                        type='link',
-                        icon=fac.AntdIcon(icon='antd-edit'),
-                        style={'padding': 0},
-                    )
-                    if PermissionManager.check_perms('system:role:edit')
-                    else [],
-                    fac.AntdButton(
-                        '删除',
-                        id={
-                            'type': 'role-operation-table',
-                            'operation': 'delete',
-                            'index': str(item['role_id']),
-                        },
-                        type='link',
-                        icon=fac.AntdIcon(icon='antd-delete'),
-                        style={'padding': 0},
-                    )
-                    if PermissionManager.check_perms('system:role:remove')
-                    else [],
-                    fac.AntdPopover(
-                        fac.AntdButton(
-                            '更多',
-                            type='link',
-                            icon=fac.AntdIcon(icon='antd-more'),
-                            style={'padding': 0},
-                        ),
-                        content=fac.AntdSpace(
-                            [
-                                fac.AntdButton(
-                                    '数据权限',
-                                    id={
-                                        'type': 'role-operation-table',
-                                        'operation': 'datascope',
-                                        'index': str(item['role_id']),
-                                    },
-                                    type='text',
-                                    block=True,
-                                    icon=fac.AntdIcon(icon='antd-check-circle'),
-                                    style={'padding': 0},
-                                ),
-                                fac.AntdButton(
-                                    '分配用户',
-                                    id={
-                                        'type': 'role-operation-table',
-                                        'operation': 'allocation',
-                                        'index': str(item['role_id']),
-                                    },
-                                    type='text',
-                                    block=True,
-                                    icon=fac.AntdIcon(icon='antd-user'),
-                                    style={'padding': 0},
-                                ),
-                            ],
-                            direction='vertical',
-                        ),
-                        placement='bottomRight',
-                    )
-                    if PermissionManager.check_perms('system:role:edit')
-                    else [],
-                ]
-            )
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = role_c.generate_role_table(query_params)
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -415,19 +331,7 @@ def render(*args, **kwargs):
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
