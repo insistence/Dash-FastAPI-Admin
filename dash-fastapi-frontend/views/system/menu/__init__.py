@@ -1,51 +1,13 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.system.menu import MenuApi
-from callbacks.system_c.menu_c import menu_c  # noqa: F401
+from callbacks.system_c.menu_c import menu_c
 from utils.permission_util import PermissionManager
-from utils.tree_tool import list_to_tree
 from views.system.menu.components.icon_category import render_icon
 
 
 def render(*args, **kwargs):
-    table_info = MenuApi.list_menu({})
-    table_data = table_info['data']
-    for item in table_data:
-        item['key'] = str(item['menu_id'])
-        item['icon'] = [
-            {
-                'type': 'link',
-                'icon': item['icon'],
-                'disabled': True,
-                'style': {'color': 'rgba(0, 0, 0, 0.8)'},
-            },
-        ]
-        if item['status'] == '1':
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:menu:edit')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:menu:remove')
-                else {},
-            ]
-        else:
-            item['operation'] = [
-                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('system:menu:edit')
-                else {},
-                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                if PermissionManager.check_perms('system:menu:add')
-                else {},
-                {'content': '删除', 'type': 'link', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('system:menu:remove')
-                else {},
-            ]
-        if item['status'] == '0':
-            item['status'] = dict(tag='正常', color='blue')
-        else:
-            item['status'] = dict(tag='停用', color='volcano')
-    table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
+    query_params = {}
+    table_data = menu_c.generate_menu_table(query_params)[0]
 
     return [
         # 菜单管理模块操作类型存储容器
@@ -235,7 +197,7 @@ def render(*args, **kwargs):
                                     fac.AntdSpin(
                                         fac.AntdTable(
                                             id='menu-list-table',
-                                            data=table_data_new,
+                                            data=table_data,
                                             columns=[
                                                 {
                                                     'dataIndex': 'menu_id',

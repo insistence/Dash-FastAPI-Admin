@@ -4,12 +4,72 @@ import uuid
 from dash import ctx, no_update
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.system.menu import MenuApi
 from server import app
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree, list_to_tree_select
 from views.system.menu.components import button_type, content_type, menu_type
+
+
+def generate_menu_table(query_params: Dict):
+    """
+    根据查询参数获取菜单表格数据及展开信息
+
+    :param query_params: 查询参数
+    :return: 菜单表格数据及展开信息
+    """
+    table_info = MenuApi.list_menu(query_params)
+    default_expanded_row_keys = []
+    table_data = table_info['data']
+    for item in table_data:
+        default_expanded_row_keys.append(str(item['menu_id']))
+        item['key'] = str(item['menu_id'])
+        item['icon'] = [
+            {
+                'type': 'link',
+                'icon': item['icon'],
+                'disabled': True,
+                'style': {'color': 'rgba(0, 0, 0, 0.8)'},
+            },
+        ]
+        if item['status'] == '1':
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:menu:edit')
+                else {},
+                {
+                    'content': '删除',
+                    'type': 'link',
+                    'icon': 'antd-delete',
+                }
+                if PermissionManager.check_perms('system:menu:remove')
+                else {},
+            ]
+        else:
+            item['operation'] = [
+                {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
+                if PermissionManager.check_perms('system:menu:edit')
+                else {},
+                {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
+                if PermissionManager.check_perms('system:menu:add')
+                else {},
+                {
+                    'content': '删除',
+                    'type': 'link',
+                    'icon': 'antd-delete',
+                }
+                if PermissionManager.check_perms('system:menu:remove')
+                else {},
+            ]
+        if item['status'] == '0':
+            item['status'] = dict(tag='正常', color='blue')
+        else:
+            item['status'] = dict(tag='停用', color='volcano')
+    table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
+
+    return [table_data_new, default_expanded_row_keys]
 
 
 @app.callback(
@@ -51,66 +111,20 @@ def get_menu_table_data(
 
     query_params = dict(menu_name=menu_name, status=status_select)
     if search_click or refresh_click or operations or fold_click:
-        table_info = MenuApi.list_menu(query_params)
-        default_expanded_row_keys = []
-        table_data = table_info['data']
-        for item in table_data:
-            default_expanded_row_keys.append(str(item['menu_id']))
-            item['key'] = str(item['menu_id'])
-            item['icon'] = [
-                {
-                    'type': 'link',
-                    'icon': item['icon'],
-                    'disabled': True,
-                    'style': {'color': 'rgba(0, 0, 0, 0.8)'},
-                },
-            ]
-            if item['status'] == '1':
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:menu:edit')
-                    else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete',
-                    }
-                    if PermissionManager.check_perms('system:menu:remove')
-                    else {},
-                ]
-            else:
-                item['operation'] = [
-                    {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
-                    if PermissionManager.check_perms('system:menu:edit')
-                    else {},
-                    {'content': '新增', 'type': 'link', 'icon': 'antd-plus'}
-                    if PermissionManager.check_perms('system:menu:add')
-                    else {},
-                    {
-                        'content': '删除',
-                        'type': 'link',
-                        'icon': 'antd-delete',
-                    }
-                    if PermissionManager.check_perms('system:menu:remove')
-                    else {},
-                ]
-            if item['status'] == '0':
-                item['status'] = dict(tag='正常', color='blue')
-            else:
-                item['status'] = dict(tag='停用', color='volcano')
-        table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
-
+        table_data, default_expanded_row_keys = generate_menu_table(
+            query_params
+        )
         if fold_click:
             if not in_default_expanded_row_keys:
                 return dict(
-                    menu_table_data=table_data_new,
+                    menu_table_data=table_data,
                     menu_table_key=str(uuid.uuid4()),
                     menu_table_defaultexpandedrowkeys=default_expanded_row_keys,
                     fold_click=None,
                 )
 
         return dict(
-            menu_table_data=table_data_new,
+            menu_table_data=table_data,
             menu_table_key=str(uuid.uuid4()),
             menu_table_defaultexpandedrowkeys=[],
             fold_click=None,
