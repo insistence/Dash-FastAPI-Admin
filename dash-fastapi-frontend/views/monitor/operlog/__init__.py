@@ -1,33 +1,15 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.monitor.operlog import OperlogApi
-from callbacks.monitor_c import operlog_c  # noqa: F401
+from callbacks.monitor_c import operlog_c
 from components.ApiSelect import ApiSelect
-from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
 
 
 def render(*args, **kwargs):
-    operation_log_params = dict(page_num=1, page_size=10)
-    table_info = OperlogApi.list_operlog(operation_log_params)
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        item['status_tag'] = DictManager.get_dict_tag(
-            dict_type='sys_common_status', dict_value=item.get('status')
-        )
-        item['business_type_tag'] = DictManager.get_dict_tag(
-            dict_type='sys_oper_type', dict_value=item.get('business_type')
-        )
-        item['key'] = str(item['oper_id'])
-        item['cost_time'] = f"{item['cost_time']}毫秒"
-        item['operation'] = [
-            {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
-            if PermissionManager.check_perms('monitor:operlog:query')
-            else {},
-        ]
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = operlog_c.generate_operlog_table(
+        query_params
+    )
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -358,19 +340,7 @@ def render(*args, **kwargs):
                                                 ],
                                                 'multiple': False,
                                             },
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',

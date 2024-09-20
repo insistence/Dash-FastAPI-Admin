@@ -3,11 +3,49 @@ import uuid
 from dash import ctx, dcc
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.monitor.operlog import OperlogApi
 from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_operlog_table(query_params: Dict):
+    """
+    根据查询参数获取操作日志表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 操作日志表格数据及分页信息
+    """
+    table_info = OperlogApi.list_operlog(query_params)
+    if table_info['code'] == 200:
+        table_data = table_info['rows']
+        table_pagination = dict(
+            pageSize=table_info['page_size'],
+            current=table_info['page_num'],
+            showSizeChanger=True,
+            pageSizeOptions=[10, 30, 50, 100],
+            showQuickJumper=True,
+            total=table_info['total'],
+        )
+        for item in table_data:
+            item['status_tag'] = DictManager.get_dict_tag(
+                dict_type='sys_common_status', dict_value=item.get('status')
+            )
+            item['business_type_tag'] = DictManager.get_dict_tag(
+                dict_type='sys_oper_type',
+                dict_value=item.get('business_type'),
+            )
+            item['key'] = str(item['oper_id'])
+            item['cost_time'] = f"{item['cost_time']}毫秒"
+            item['operation'] = [
+                {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
+                if PermissionManager.check_perms('monitor:operlog:query')
+                else {},
+            ]
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -81,33 +119,7 @@ def get_operation_log_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = OperlogApi.list_operlog(query_params)
-        if table_info['code'] == 200:
-            table_data = table_info['rows']
-            table_pagination = dict(
-                pageSize=table_info['page_size'],
-                current=table_info['page_num'],
-                showSizeChanger=True,
-                pageSizeOptions=[10, 30, 50, 100],
-                showQuickJumper=True,
-                total=table_info['total'],
-            )
-            for item in table_data:
-                item['status_tag'] = DictManager.get_dict_tag(
-                    dict_type='sys_common_status', dict_value=item.get('status')
-                )
-                item['business_type_tag'] = DictManager.get_dict_tag(
-                    dict_type='sys_oper_type',
-                    dict_value=item.get('business_type'),
-                )
-                item['key'] = str(item['oper_id'])
-                item['cost_time'] = f"{item['cost_time']}毫秒"
-                item['operation'] = [
-                    {'content': '详情', 'type': 'link', 'icon': 'antd-eye'}
-                    if PermissionManager.check_perms('monitor:operlog:query')
-                    else {},
-                ]
-
+        table_data, table_pagination = generate_operlog_table(query_params)
         return dict(
             operation_log_table_data=table_data,
             operation_log_table_pagination=table_pagination,
