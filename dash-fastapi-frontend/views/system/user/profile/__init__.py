@@ -180,7 +180,20 @@ def render(*args, **kwargs):
                                     {
                                         'key': '基本资料',
                                         'label': '基本资料',
-                                        'children': user_info.render(),
+                                        'children': user_info.render(
+                                            nick_name=user_profile.get(
+                                                'data'
+                                            ).get('nick_name'),
+                                            phonenumber=user_profile.get(
+                                                'data'
+                                            ).get('phonenumber'),
+                                            email=user_profile.get('data').get(
+                                                'email'
+                                            ),
+                                            sex=user_profile.get('data').get(
+                                                'sex'
+                                            ),
+                                        ),
                                     },
                                     {
                                         'key': '修改密码',
