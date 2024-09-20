@@ -1,47 +1,15 @@
 import feffery_antd_components as fac
 from dash import dcc, html
-from api.monitor.job import JobApi
-from callbacks.monitor_c.job_c import job_c  # noqa: F401
+from callbacks.monitor_c.job_c import job_c
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
-from utils.dict_util import DictManager
 from utils.permission_util import PermissionManager
 from . import job_log
 
 
 def render(*args, **kwargs):
-    job_params = dict(page_num=1, page_size=10)
-    table_info = JobApi.list_job(job_params)
-    table_data = table_info['rows']
-    page_num = table_info['page_num']
-    page_size = table_info['page_size']
-    total = table_info['total']
-    for item in table_data:
-        if item['status'] == '0':
-            item['status'] = dict(checked=True)
-        else:
-            item['status'] = dict(checked=False)
-        item['job_group'] = DictManager.get_dict_tag(
-            dict_type='sys_job_group', dict_value=item.get('job_group')
-        )
-        item['key'] = str(item['job_id'])
-        item['operation'] = [
-            {'title': '修改', 'icon': 'antd-edit'}
-            if PermissionManager.check_perms('monitor:job:edit')
-            else None,
-            {'title': '删除', 'icon': 'antd-delete'}
-            if PermissionManager.check_perms('monitor:job:remove')
-            else None,
-            {'title': '执行一次', 'icon': 'antd-rocket'}
-            if PermissionManager.check_perms('monitor:job:changeStatus')
-            else None,
-            {'title': '任务详细', 'icon': 'antd-eye'}
-            if PermissionManager.check_perms('monitor:job:query')
-            else None,
-            {'title': '调度日志', 'icon': 'antd-history'}
-            if PermissionManager.check_perms('monitor:job:query')
-            else None,
-        ]
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = job_c.generate_job_table(query_params)
 
     return [
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
@@ -363,19 +331,7 @@ def render(*args, **kwargs):
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [
-                                                    10,
-                                                    30,
-                                                    50,
-                                                    100,
-                                                ],
-                                                'showQuickJumper': True,
-                                                'total': total,
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',

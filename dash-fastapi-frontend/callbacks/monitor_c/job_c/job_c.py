@@ -3,12 +3,60 @@ import uuid
 from dash import ctx, dcc, no_update
 from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
+from typing import Dict
 from api.monitor.job import JobApi
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+
+
+def generate_job_table(query_params: Dict):
+    """
+    根据查询参数获取定时任务表格数据及分页信息
+
+    :param query_params: 查询参数
+    :return: 定时任务表格数据及分页信息
+    """
+    table_info = JobApi.list_job(query_params)
+    table_data = table_info['rows']
+    table_pagination = dict(
+        pageSize=table_info['page_size'],
+        current=table_info['page_num'],
+        showSizeChanger=True,
+        pageSizeOptions=[10, 30, 50, 100],
+        showQuickJumper=True,
+        total=table_info['total'],
+    )
+    for item in table_data:
+        if item['status'] == '0':
+            item['status'] = dict(checked=True)
+        else:
+            item['status'] = dict(checked=False)
+        item['job_group'] = DictManager.get_dict_tag(
+            dict_type='sys_job_group', dict_value=item.get('job_group')
+        )
+        item['key'] = str(item['job_id'])
+        item['operation'] = [
+            {'title': '修改', 'icon': 'antd-edit'}
+            if PermissionManager.check_perms('monitor:job:edit')
+            else None,
+            {'title': '删除', 'icon': 'antd-delete'}
+            if PermissionManager.check_perms('monitor:job:remove')
+            else None,
+            {'title': '执行一次', 'icon': 'antd-rocket'}
+            if PermissionManager.check_perms('monitor:job:changeStatus')
+            else None,
+            {'title': '任务详细', 'icon': 'antd-eye'}
+            if PermissionManager.check_perms('monitor:job:query')
+            else None,
+            {'title': '调度日志', 'icon': 'antd-history'}
+            if PermissionManager.check_perms('monitor:job:query')
+            else None,
+        ]
+
+    return [table_data, table_pagination]
 
 
 @app.callback(
@@ -61,43 +109,7 @@ def get_job_table_data(
             }
         )
     if search_click or refresh_click or pagination or operations:
-        table_info = JobApi.list_job(query_params)
-        table_data = table_info['rows']
-        table_pagination = dict(
-            pageSize=table_info['page_size'],
-            current=table_info['page_num'],
-            showSizeChanger=True,
-            pageSizeOptions=[10, 30, 50, 100],
-            showQuickJumper=True,
-            total=table_info['total'],
-        )
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(checked=True)
-            else:
-                item['status'] = dict(checked=False)
-            item['job_group'] = DictManager.get_dict_tag(
-                dict_type='sys_job_group', dict_value=item.get('job_group')
-            )
-            item['key'] = str(item['job_id'])
-            item['operation'] = [
-                {'title': '修改', 'icon': 'antd-edit'}
-                if PermissionManager.check_perms('monitor:job:edit')
-                else None,
-                {'title': '删除', 'icon': 'antd-delete'}
-                if PermissionManager.check_perms('monitor:job:remove')
-                else None,
-                {'title': '执行一次', 'icon': 'antd-rocket'}
-                if PermissionManager.check_perms('monitor:job:changeStatus')
-                else None,
-                {'title': '任务详细', 'icon': 'antd-eye'}
-                if PermissionManager.check_perms('monitor:job:query')
-                else None,
-                {'title': '调度日志', 'icon': 'antd-history'}
-                if PermissionManager.check_perms('monitor:job:query')
-                else None,
-            ]
-
+        table_data, table_pagination = generate_job_table(query_params)
         return dict(
             job_table_data=table_data,
             job_table_pagination=table_pagination,
