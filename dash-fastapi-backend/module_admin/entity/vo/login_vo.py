@@ -37,6 +37,7 @@ class Token(BaseModel):
 
 class CaptchaCode(BaseModel):
     captcha_enabled: bool = Field(description='是否启用验证码')
+    forget_enabled: bool = Field(description='是否启用忘记密码')
     register_enabled: bool = Field(description='是否启用注册')
     img: str = Field(description='验证码图片')
     uuid: str = Field(description='会话编号')

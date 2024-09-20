@@ -19,6 +19,11 @@ async def get_captcha_image(request: Request):
         == 'true'
         else False
     )
+    forget_enabled = (
+        True
+        if await request.app.state.redis.get(f'{RedisInitKeyConfig.SYS_CONFIG.key}:sys.account.forgetUser') == 'true'
+        else False
+    )
     register_enabled = (
         True
         if await request.app.state.redis.get(f'{RedisInitKeyConfig.SYS_CONFIG.key}:sys.account.registerUser') == 'true'
@@ -35,6 +40,10 @@ async def get_captcha_image(request: Request):
 
     return ResponseUtil.success(
         model_content=CaptchaCode(
-            captcha_enabled=captcha_enabled, register_enabled=register_enabled, img=image, uuid=session_id
+            captcha_enabled=captcha_enabled,
+            forget_enabled=forget_enabled,
+            register_enabled=register_enabled,
+            img=image,
+            uuid=session_id,
         )
     )
