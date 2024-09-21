@@ -8,7 +8,7 @@ from server import app
 from utils.cache_util import CacheManager
 from utils.router_util import RouterUtil
 from utils.tree_tool import find_key_by_href, find_node_values
-from views import forget, layout, login, page_404
+from views import forget, layout, login, page_404, register
 
 
 @app.callback(
@@ -120,6 +120,14 @@ def router(pathname, url_trigger, session_token):
         if pathname == '/forget':
             return dict(
                 app_mount=forget.render_forget_content(),
+                redirect_container=None,
+                menu_current_key=no_update,
+                search_panel_data=no_update,
+            )
+
+        if pathname == '/register':
+            return dict(
+                app_mount=register.render_register_content(),
                 redirect_container=None,
                 menu_current_key=no_update,
                 search_panel_data=no_update,
