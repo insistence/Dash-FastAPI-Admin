@@ -31,7 +31,6 @@ def generate_user_table(query_params: Dict):
         total=table_info['total'],
     )
     for item in table_data:
-        print(item)
         if item['status'] == '0':
             item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
         else:
