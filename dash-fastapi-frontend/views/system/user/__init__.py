@@ -671,8 +671,6 @@ def render(*args, **kwargs):
             renderFooter=True,
             centered=True,
             okText='导入',
-            confirmAutoSpin=True,
-            loadingOkText='导入中',
             okClickClose=False,
         ),
         fac.AntdModal(
@@ -707,6 +705,7 @@ def render(*args, **kwargs):
             title='重置密码',
             renderFooter=True,
             centered=True,
+            okClickClose=False,
         ),
         # 分配角色modal
         fac.AntdModal(

@@ -614,7 +614,9 @@ def user_delete_confirm(delete_confirm, user_ids_data):
 
 @app.callback(
     [
-        Output('user-reset-password-confirm-modal', 'visible'),
+        Output(
+            'user-reset-password-confirm-modal', 'visible', allow_duplicate=True
+        ),
         Output('reset-password-row-key-store', 'data'),
         Output('reset-password-input', 'value'),
     ],
@@ -645,11 +647,23 @@ def user_reset_password_modal(
 
 
 @app.callback(
-    Output('user-operations-store', 'data', allow_duplicate=True),
+    [
+        Output('user-operations-store', 'data', allow_duplicate=True),
+        Output(
+            'user-reset-password-confirm-modal', 'visible', allow_duplicate=True
+        ),
+    ],
     Input('user-reset-password-confirm-modal', 'okCounts'),
     [
         State('reset-password-row-key-store', 'data'),
         State('reset-password-input', 'value'),
+    ],
+    running=[
+        [
+            Output('user-reset-password-confirm-modal', 'confirmLoading'),
+            True,
+            False,
+        ]
     ],
     prevent_initial_call=True,
 )
@@ -663,7 +677,7 @@ def user_reset_password_confirm(reset_confirm, user_id_data, reset_password):
         )
         MessageManager.success(content='重置成功')
 
-        return {'type': 'reset-password'}
+        return [{'type': 'reset-password'}, False]
 
     raise PreventUpdate
 
@@ -734,14 +748,12 @@ app.clientside_callback(
         if (nClicks) {
             return [
                 true, 
-                [], 
-                [],
+                null, 
                 false
             ];
         }
         return [
             false,
-            window.dash_clientside.no_update,
             window.dash_clientside.no_update,
             window.dash_clientside.no_update
         ];
@@ -749,8 +761,7 @@ app.clientside_callback(
     """,
     [
         Output('user-import-confirm-modal', 'visible'),
-        Output('user-upload-choose', 'listUploadTaskRecord'),
-        Output('user-upload-choose', 'defaultFileList'),
+        Output('user-upload-choose', 'contents'),
         Output('user-import-update-check', 'checked'),
     ],
     Input('user-import', 'nClicks'),
@@ -760,7 +771,6 @@ app.clientside_callback(
 
 @app.callback(
     output=dict(
-        confirm_loading=Output('user-import-confirm-modal', 'confirmLoading'),
         modal_visible=Output('batch-result-modal', 'visible'),
         batch_result=Output('batch-result-content', 'children'),
         operations=Output(
@@ -772,6 +782,10 @@ app.clientside_callback(
         contents=State('user-upload-choose', 'contents'),
         is_update=State('user-import-update-check', 'checked'),
     ),
+    running=[
+        [Output('user-import-confirm-modal', 'confirmLoading'), True, False],
+        [Output('user-import-confirm-modal', 'okText'), '导入中', '导入'],
+    ],
     prevent_initial_call=True,
 )
 def user_import_confirm(import_confirm, contents, is_update):
@@ -789,7 +803,6 @@ def user_import_confirm(import_confirm, contents, is_update):
             MessageManager.success(content='导入成功')
 
             return dict(
-                confirm_loading=False,
                 modal_visible=True if batch_import_result.get('msg') else False,
                 batch_result=batch_import_result.get('msg'),
                 operations={'type': 'batch-import'},
@@ -798,7 +811,6 @@ def user_import_confirm(import_confirm, contents, is_update):
             MessageManager.warning(content='请上传需要导入的文件')
 
             return dict(
-                confirm_loading=False,
                 modal_visible=no_update,
                 batch_result=no_update,
                 operations=no_update,
@@ -810,46 +822,61 @@ def user_import_confirm(import_confirm, contents, is_update):
 @app.callback(
     [
         Output('user-export-container', 'data', allow_duplicate=True),
-        Output('user-export-complete-judge-container', 'data'),
+        Output(
+            'user-export-complete-judge-container', 'data', allow_duplicate=True
+        ),
     ],
-    [
-        Input('user-export', 'nClicks'),
-        Input('download-user-import-template', 'nClicks'),
-    ],
+    Input('download-user-import-template', 'nClicks'),
     prevent_initial_call=True,
 )
-def export_user_list(export_click, download_click):
+def download_user_template(download_click):
+    """
+    下载导入用户模板回调
+    """
+    if download_click:
+        download_template_res = UserApi.download_template()
+        download_template = download_template_res.content
+        MessageManager.success(content='下载成功')
+
+        return [
+            dcc.send_bytes(
+                download_template,
+                f'用户导入模板_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
+            ),
+            {'timestamp': time.time()},
+        ]
+
+    raise PreventUpdate
+
+
+@app.callback(
+    [
+        Output('user-export-container', 'data', allow_duplicate=True),
+        Output(
+            'user-export-complete-judge-container', 'data', allow_duplicate=True
+        ),
+    ],
+    Input('user-export', 'nClicks'),
+    running=[[Output('user-export', 'loading'), True, False]],
+    prevent_initial_call=True,
+)
+def export_user_list(export_click):
     """
     导出用户信息回调
     """
-    trigger_id = ctx.triggered_id
-    if export_click or download_click:
-        if trigger_id == 'user-export':
-            export_user_res = UserApi.export_user({})
-            MessageManager.success(content='导出成功')
+    if export_click:
+        export_user_res = UserApi.export_user({})
+        MessageManager.success(content='导出成功')
 
-            export_user = export_user_res.content
+        export_user = export_user_res.content
 
-            return [
-                dcc.send_bytes(
-                    export_user,
-                    f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
-                ),
-                {'timestamp': time.time()},
-            ]
-
-        if trigger_id == 'download-user-import-template':
-            download_template_res = UserApi.download_template()
-            download_template = download_template_res.content
-            MessageManager.success(content='下载成功')
-
-            return [
-                dcc.send_bytes(
-                    download_template,
-                    f'用户导入模板_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
-                ),
-                {'timestamp': time.time()},
-            ]
+        return [
+            dcc.send_bytes(
+                export_user,
+                f'用户信息_{time.strftime("%Y%m%d%H%M%S", time.localtime())}.xlsx',
+            ),
+            {'timestamp': time.time()},
+        ]
 
     raise PreventUpdate
 
