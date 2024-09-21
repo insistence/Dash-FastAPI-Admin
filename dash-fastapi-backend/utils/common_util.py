@@ -72,6 +72,8 @@ class SqlalchemyUtil:
         elif isinstance(result, Row):
             if all([isinstance(row, Base) for row in result]):
                 return [cls.base_to_dict(row) for row in result]
+            elif any([isinstance(row, Base) for row in result]):
+                return [cls.serialize_result(row) for row in result]
             else:
                 return result._asdict()
         return result
