@@ -15,7 +15,6 @@ from exceptions.exception import LoginException, AuthException, ServiceException
 from module_admin.dao.login_dao import login_by_account
 from module_admin.dao.user_dao import UserDao
 from module_admin.entity.do.menu_do import SysMenu
-from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.login_vo import MenuTreeModel, MetaModel, RouterModel, SmsCode, UserLogin, UserRegister
 from module_admin.entity.vo.user_vo import AddUserModel, CurrentUserModel, ResetUserModel, TokenData, UserInfoModel
 from module_admin.service.user_service import UserService
@@ -424,7 +423,7 @@ class LoginService:
         """
         redis_sms_result = await request.app.state.redis.get(f'{RedisInitKeyConfig.SMS_CODE.key}:{user.session_id}')
         if redis_sms_result:
-            return SmsCode(**dict(is_success=False, sms_code='', session_id='', message='短信验证码仍在有效期内'))
+            raise ServiceException(message='短信验证码仍在有效期内')
         is_user = await UserDao.get_user_by_name(query_db, user.user_name)
         if is_user:
             sms_code = str(random.randint(100000, 999999))
@@ -435,9 +434,9 @@ class LoginService:
             # 此处模拟调用短信服务
             message_service(sms_code)
 
-            return SmsCode(**dict(is_success=True, sms_code=sms_code, session_id=session_id, message='获取成功'))
+            return SmsCode(is_success=True, sms_code=sms_code, session_id=session_id, message='获取成功')
 
-        return SmsCode(**dict(is_success=False, sms_code='', session_id='', message='用户不存在'))
+        raise ServiceException(message='用户不存在')
 
     @classmethod
     async def forget_user_services(cls, request: Request, query_db: AsyncSession, forget_user: ResetUserModel):
@@ -453,17 +452,14 @@ class LoginService:
             f'{RedisInitKeyConfig.SMS_CODE.key}:{forget_user.session_id}'
         )
         if forget_user.sms_code == redis_sms_result:
-            forget_user.password = PwdUtil.get_password_hash(forget_user.password)
             forget_user.user_id = (await UserDao.get_user_by_name(query_db, forget_user.user_name)).user_id
             edit_result = await UserService.reset_user_services(query_db, forget_user)
-            result = edit_result.dict()
+            return edit_result
         elif not redis_sms_result:
-            result = dict(is_success=False, message='短信验证码已过期')
+            raise ServiceException(message='短信验证码已过期')
         else:
             await request.app.state.redis.delete(f'{RedisInitKeyConfig.SMS_CODE.key}:{forget_user.session_id}')
-            result = dict(is_success=False, message='短信验证码不正确')
-
-        return CrudResponseModel(**result)
+            raise ServiceException(message='短信验证码不正确')
 
     @classmethod
     async def logout_services(cls, request: Request, session_id: str):

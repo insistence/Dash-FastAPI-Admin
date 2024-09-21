@@ -9,8 +9,8 @@ from config.env import AppConfig, JwtConfig
 from config.get_db import get_db
 from module_admin.annotation.log_annotation import Log
 from module_admin.entity.vo.common_vo import CrudResponseModel
-from module_admin.entity.vo.login_vo import UserLogin, UserRegister, Token
-from module_admin.entity.vo.user_vo import CurrentUserModel, EditUserModel
+from module_admin.entity.vo.login_vo import UserLogin, UserRegister, SmsCode, Token
+from module_admin.entity.vo.user_vo import CurrentUserModel, EditUserModel, ResetUserModel
 from module_admin.service.login_service import CustomOAuth2PasswordRequestForm, LoginService, oauth2_scheme
 from module_admin.service.user_service import UserService
 from utils.log_util import logger
@@ -106,34 +106,20 @@ async def register_user(request: Request, user_register: UserRegister, query_db:
     return ResponseUtil.success(data=user_register_result, msg=user_register_result.message)
 
 
-# @loginController.post("/getSmsCode", response_model=SmsCode)
-# async def get_sms_code(request: Request, user: ResetUserModel, query_db: AsyncSession = Depends(get_db)):
-#     try:
-#         sms_result = await LoginService.get_sms_code_services(request, query_db, user)
-#         if sms_result.is_success:
-#             logger.info('获取成功')
-#             return ResponseUtil.success(data=sms_result)
-#         else:
-#             logger.warning(sms_result.message)
-#             return ResponseUtil.failure(msg=sms_result.message)
-#     except Exception as e:
-#         logger.exception(e)
-#         return ResponseUtil.error(msg=str(e))
-#
-#
-# @loginController.post("/forgetPwd", response_model=CrudResponseModel)
-# async def forget_user_pwd(request: Request, forget_user: ResetUserModel, query_db: AsyncSession = Depends(get_db)):
-#     try:
-#         forget_user_result = await LoginService.forget_user_services(request, query_db, forget_user)
-#         if forget_user_result.is_success:
-#             logger.info(forget_user_result.message)
-#             return ResponseUtil.success(data=forget_user_result, msg=forget_user_result.message)
-#         else:
-#             logger.warning(forget_user_result.message)
-#             return ResponseUtil.failure(msg=forget_user_result.message)
-#     except Exception as e:
-#         logger.exception(e)
-#         return ResponseUtil.error(msg=str(e))
+@loginController.post('/getSmsCode', response_model=SmsCode)
+async def get_sms_code(request: Request, user: ResetUserModel, query_db: AsyncSession = Depends(get_db)):
+    sms_result = await LoginService.get_sms_code_services(request, query_db, user)
+    logger.info('获取成功')
+
+    return ResponseUtil.success(data=sms_result)
+
+
+@loginController.post('/forgetPwd', response_model=CrudResponseModel)
+async def forget_user_pwd(request: Request, forget_user: ResetUserModel, query_db: AsyncSession = Depends(get_db)):
+    forget_user_result = await LoginService.forget_user_services(request, query_db, forget_user)
+    logger.info(forget_user_result.message)
+
+    return ResponseUtil.success(data=forget_user_result, msg=forget_user_result.message)
 
 
 @loginController.post('/logout')

@@ -1,17 +1,18 @@
-from dash import html, dcc
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-
-import callbacks.forget_c
+from dash import dcc, html
+from callbacks import forget_c  # noqa: F401
 
 
 def render_forget_content():
     return html.Div(
         [
-
             fac.AntdCard(
                 [
-                    dcc.Store(id='sms_code-session_id-container', storage_type='session'),
+                    dcc.Store(
+                        id='sms_code-session_id-container',
+                        storage_type='session',
+                    ),
                     fac.AntdForm(
                         [
                             fac.AntdFormItem(
@@ -19,11 +20,9 @@ def render_forget_content():
                                     placeholder='请输入用户名',
                                     id='forget-username',
                                     size='large',
-                                    prefix=fac.AntdIcon(
-                                        icon='antd-user'
-                                    ),
+                                    prefix=fac.AntdIcon(icon='antd-user'),
                                 ),
-                                id='forget-username-form-item'
+                                id='forget-username-form-item',
                             ),
                             fac.AntdFormItem(
                                 fac.AntdInput(
@@ -32,11 +31,9 @@ def render_forget_content():
                                     mode='password',
                                     passwordUseMd5=True,
                                     size='large',
-                                    prefix=fac.AntdIcon(
-                                        icon='antd-lock'
-                                    ),
+                                    prefix=fac.AntdIcon(icon='antd-lock'),
                                 ),
-                                id='forget-password-form-item'
+                                id='forget-password-form-item',
                             ),
                             fac.AntdFormItem(
                                 fac.AntdInput(
@@ -45,11 +42,9 @@ def render_forget_content():
                                     mode='password',
                                     passwordUseMd5=True,
                                     size='large',
-                                    prefix=fac.AntdIcon(
-                                        icon='antd-lock'
-                                    ),
+                                    prefix=fac.AntdIcon(icon='antd-lock'),
                                 ),
-                                id='forget-password-again-form-item'
+                                id='forget-password-again-form-item',
                             ),
                             fac.AntdSpace(
                                 [
@@ -61,23 +56,21 @@ def render_forget_content():
                                             prefix=fac.AntdIcon(
                                                 icon='antd-check-circle'
                                             ),
-                                            style={
-                                                'width': '270px'
-                                            }
+                                            style={'width': '270px'},
                                         ),
-                                        id='forget-captcha-form-item'
+                                        id='forget-captcha-form-item',
                                     ),
                                     fac.AntdFormItem(
                                         fac.AntdButton(
                                             '获取验证码',
                                             id='get-message-code',
                                             type='primary',
-                                            size='large'
+                                            size='large',
                                         )
                                     ),
                                 ],
                                 align='end',
-                                size=10
+                                size=10,
                             ),
                             fac.AntdFormItem(
                                 fac.AntdButton(
@@ -89,18 +82,13 @@ def render_forget_content():
                                     block=True,
                                     size='large',
                                 ),
-                                style={
-                                    'marginTop': '20px'
-                                }
-                            )
+                                style={'marginTop': '20px'},
+                            ),
                         ],
                         layout='vertical',
-                        style={
-                            'width': '100%'
-                        }
+                        style={'width': '100%'},
                     ),
-
-                    fuc.FefferyCountDown(id='message-code-count-down')
+                    fuc.FefferyCountDown(id='message-code-count-down'),
                 ],
                 id='forget-form-container',
                 title='重置密码',
@@ -109,14 +97,12 @@ def render_forget_content():
                     'content': '返回登录',
                     'href': '/login',
                     'target': '_self',
-                    'style': {
-                        'font-size': '16px'
-                    }
+                    'style': {'font-size': '16px'},
                 },
                 headStyle={
                     'font-weight': 'bold',
                     'text-align': 'center',
-                    'font-size': '30px'
+                    'font-size': '30px',
                 },
                 style={
                     'position': 'fixed',
@@ -124,9 +110,8 @@ def render_forget_content():
                     'left': '50%',
                     'width': '500px',
                     'padding': '0px 30px',
-                    'transform': 'translateX(-50%)'
-                }
+                    'transform': 'translateX(-50%)',
+                },
             ),
         ]
     )
-

@@ -1,12 +1,10 @@
-import dash
-from dash import dcc
-import feffery_utils_components as fuc
+from dash import dcc, no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-
+from api.forget import ForgetApi
 from server import app
 from utils.common import validate_data_not_empty
-from api.message import send_message_api
+from utils.feedback_util import MessageManager
 
 
 @app.callback(
@@ -29,12 +27,8 @@ from api.message import send_message_api
             'forget-password-again-form-item', 'help'
         ),
         captcha_form_help=Output('forget-captcha-form-item', 'help'),
-        submit_loading=Output('forget-submit', 'loading'),
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
-        ),
-        global_message_container=Output(
-            'global-message-container', 'children', allow_duplicate=True
         ),
     ),
     inputs=dict(nClicks=Input('forget-submit', 'nClicks')),
@@ -45,6 +39,7 @@ from api.message import send_message_api
         input_captcha=State('forget-input-captcha', 'value'),
         session_id=State('sms_code-session_id-container', 'data'),
     ),
+    running=[[Output('forget-submit', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def forget_auth(
@@ -57,65 +52,27 @@ def forget_auth(
             for item in [username, password, password_again, input_captcha]
         ):
             if password == password_again:
-                try:
-                    forget_params = dict(
-                        user_name=username,
-                        password=password,
-                        sms_code=input_captcha,
-                        session_id=session_id,
-                    )
-                    change_result = forget_user_pwd_api(forget_params)
-                    if change_result.get('code') == 200:
-                        return dict(
-                            username_form_status=None,
-                            password_form_status=None,
-                            password_again_form_status=None,
-                            captcha_form_status=None,
-                            username_form_help=None,
-                            password_form_help=None,
-                            password_again_form_help=None,
-                            captcha_form_help=None,
-                            submit_loading=False,
-                            redirect_container=dcc.Location(
-                                pathname='/login', id='forget-redirect'
-                            ),
-                            global_message_container=fuc.FefferyFancyMessage(
-                                change_result.get('message'), type='success'
-                            ),
-                        )
-
-                    else:
-                        return dict(
-                            username_form_status=None,
-                            password_form_status=None,
-                            password_again_form_status=None,
-                            captcha_form_status=None,
-                            username_form_help=None,
-                            password_form_help=None,
-                            password_again_form_help=None,
-                            captcha_form_help=None,
-                            submit_loading=False,
-                            redirect_container=None,
-                            global_message_container=fuc.FefferyFancyMessage(
-                                change_result.get('message'), type='error'
-                            ),
-                        )
-                except Exception as e:
-                    return dict(
-                        username_form_status=None,
-                        password_form_status=None,
-                        password_again_form_status=None,
-                        captcha_form_status=None,
-                        username_form_help=None,
-                        password_form_help=None,
-                        password_again_form_help=None,
-                        captcha_form_help=None,
-                        submit_loading=False,
-                        redirect_container=None,
-                        global_message_container=fuc.FefferyFancyMessage(
-                            str(e), type='error'
-                        ),
-                    )
+                forget_params = dict(
+                    user_name=username,
+                    password=password,
+                    sms_code=input_captcha,
+                    session_id=session_id,
+                )
+                ForgetApi.forget_password(forget_params)
+                MessageManager.success(content='重置成功')
+                return dict(
+                    username_form_status=None,
+                    password_form_status=None,
+                    password_again_form_status=None,
+                    captcha_form_status=None,
+                    username_form_help=None,
+                    password_form_help=None,
+                    password_again_form_help=None,
+                    captcha_form_help=None,
+                    redirect_container=dcc.Location(
+                        pathname='/login', id='forget-redirect'
+                    ),
+                )
 
             else:
                 return dict(
@@ -127,9 +84,7 @@ def forget_auth(
                     password_form_help='两次密码不一致',
                     password_again_form_help='两次密码不一致',
                     captcha_form_help=None,
-                    submit_loading=False,
                     redirect_container=None,
-                    global_message_container=None,
                 )
 
         return dict(
@@ -157,9 +112,7 @@ def forget_auth(
             captcha_form_help=None
             if validate_data_not_empty(input_captcha)
             else '请输入短信验证码！',
-            submit_loading=False,
             redirect_container=None,
-            global_message_container=None,
         )
 
     raise PreventUpdate
@@ -170,7 +123,6 @@ def forget_auth(
         Output('message-code-count-down', 'delay'),
         Output('get-message-code', 'disabled', allow_duplicate=True),
         Output('sms_code-session_id-container', 'data'),
-        Output('global-message-container', 'children', allow_duplicate=True),
     ],
     Input('get-message-code', 'nClicks'),
     [
@@ -181,47 +133,26 @@ def forget_auth(
 )
 def message_countdown(nClicks, username, session_id):
     if nClicks:
-        try:
-            if username:
-                send_result = send_message_api(
-                    dict(user_name=username, session_id=session_id)
-                )
-                if send_result.get('code') == 200:
-                    return [
-                        120,
-                        True,
-                        send_result.get('data').get('session_id'),
-                        fuc.FefferyFancyMessage(
-                            send_result.get('message'), type='success'
-                        ),
-                    ]
-                else:
-                    return [
-                        dash.no_update,
-                        False,
-                        dash.no_update,
-                        fuc.FefferyFancyMessage(
-                            send_result.get('message'), type='error'
-                        ),
-                    ]
-
-            else:
-                return [
-                    dash.no_update,
-                    False,
-                    dash.no_update,
-                    fuc.FefferyFancyMessage('请输入用户名', type='error'),
-                ]
-
-        except Exception as e:
+        if username:
+            send_result = ForgetApi.send_message(
+                dict(user_name=username, session_id=session_id)
+            )
+            MessageManager.success(content='获取成功')
             return [
-                dash.no_update,
-                False,
-                dash.no_update,
-                fuc.FefferyFancyMessage(str(e), type='error'),
+                120,
+                True,
+                send_result.get('data').get('session_id'),
             ]
 
-    return [dash.no_update] * 4
+        else:
+            MessageManager.error(content='请输入用户名')
+            return [
+                no_update,
+                False,
+                no_update,
+            ]
+
+    raise PreventUpdate
 
 
 app.clientside_callback(
