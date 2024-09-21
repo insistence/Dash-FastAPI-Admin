@@ -270,6 +270,7 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
         Output('login_log-export-complete-judge-container', 'data'),
     ],
     Input('login_log-export', 'nClicks'),
+    running=[[Output('login_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_login_log_list(export_click):
