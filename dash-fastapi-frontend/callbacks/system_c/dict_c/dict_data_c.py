@@ -478,6 +478,7 @@ def dict_data_delete_confirm(delete_confirm, dict_codes_data):
     ],
     Input('dict_data-export', 'nClicks'),
     State('dict_data-dict_type-select', 'value'),
+    running=[[Output('dict_data-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_dict_data_list(export_click, dict_type):

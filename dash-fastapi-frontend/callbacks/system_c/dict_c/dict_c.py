@@ -557,6 +557,7 @@ def dict_type_to_dict_data_modal(
         Output('dict_type-export-complete-judge-container', 'data'),
     ],
     Input('dict_type-export', 'nClicks'),
+    running=[[Output('dict_type-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_dict_type_list(export_click):
@@ -597,6 +598,7 @@ def reset_dict_type_export_status(data):
 
 @app.callback(
     Input('dict_type-refresh-cache', 'nClicks'),
+    running=[[Output('dict_type-refresh-cache', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def refresh_dict_cache(refresh_click):
