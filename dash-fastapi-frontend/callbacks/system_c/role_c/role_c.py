@@ -711,6 +711,7 @@ def role_to_allocated_user_modal(allocated_click, allocated_user_search_nclick):
         Output('role-export-complete-judge-container', 'data'),
     ],
     Input('role-export', 'nClicks'),
+    running=[[Output('role-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_role_list(export_click):
