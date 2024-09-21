@@ -98,7 +98,7 @@ def render_register_content():
                                     block=True,
                                     size='large',
                                 ),
-                                style={'marginBottom': '10px'},
+                                style={'marginTop': '20px'},
                             ),
                         ],
                         layout='vertical',
