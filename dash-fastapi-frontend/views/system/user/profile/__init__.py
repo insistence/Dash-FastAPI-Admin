@@ -87,6 +87,10 @@ def render(*args, **kwargs):
                                                         user_profile.get('data')
                                                         .get('dept')
                                                         .get('dept_name')
+                                                        if user_profile.get(
+                                                            'data'
+                                                        ).get('dept')
+                                                        else ''
                                                         + ' / '
                                                         + user_profile.get(
                                                             'post_group'

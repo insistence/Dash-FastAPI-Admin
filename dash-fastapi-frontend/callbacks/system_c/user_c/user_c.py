@@ -31,11 +31,14 @@ def generate_user_table(query_params: Dict):
         total=table_info['total'],
     )
     for item in table_data:
+        print(item)
         if item['status'] == '0':
             item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
         else:
             item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
-        item['dept_name'] = item.get('dept', {}).get('dept_name')
+        item['dept_name'] = (
+            item.get('dept').get('dept_name') if item.get('dept') else None
+        )
         item['key'] = str(item['user_id'])
         if item['user_id'] == 1:
             item['operation'] = []
