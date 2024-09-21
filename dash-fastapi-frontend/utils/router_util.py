@@ -40,30 +40,30 @@ class RouterUtil:
                 and (
                     copy_router.get('path').startswith('/')
                     or cls.is_http(copy_router.get('path'))
+                    or copy_router.get('component') == 'InnerLink'
                 )
                 else '/' + copy_router.get('path')
             )
+            meta = copy_router.get('meta') if copy_router.get('meta') else {}
             copy_router['props'] = {
-                **copy_router.get('meta'),
-                'key': copy_router.get('name'),
+                **meta,
+                'key': copy_router.get('name') + copy_router.get('path'),
                 'href': path + copy_router.get('path'),
             }
             if copy_router.get('component') in ['Layout', 'ParentView']:
                 copy_router['component'] = 'SubMenu'
+                if cls.is_http(copy_router.get('path')):
+                    copy_router['props']['target'] = '_blank'
             elif copy_router.get('component') == 'InnerLink':
                 if copy_router.get('path') == '/':
                     copy_router = copy_router['children']
                     copy_router['props']['href'] = '/' + copy_router.get('path')
-                    cls.__genrate_item_menu(
-                        copy_router, 'components.inner_link'
-                    )
+                    cls.__genrate_item_menu(copy_router, 'innerlink')
                 else:
                     if copy_router.get('children'):
                         copy_router['component'] = 'SubMenu'
                     else:
-                        cls.__genrate_item_menu(
-                            copy_router, 'components.inner_link'
-                        )
+                        cls.__genrate_item_menu(copy_router, 'innerlink')
             else:
                 cls.__genrate_item_menu(
                     copy_router, copy_router.get('component')

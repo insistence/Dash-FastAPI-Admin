@@ -6,6 +6,7 @@ from dash.exceptions import PreventUpdate
 from jsonpath_ng import parse
 from server import app
 from utils.cache_util import CacheManager
+from utils.router_util import RouterUtil
 from utils.tree_tool import find_href_by_key
 import views  # noqa: F401
 
@@ -130,22 +131,21 @@ def handle_tab_switch_and_create(
                     'icon': 'antd-arrow-left',
                 },
             )
+        if RouterUtil.is_http(currentItem.get('path')):
+            raise PreventUpdate
         if menu_modules:
-            if menu_modules == 'link':
-                raise PreventUpdate
-            else:
-                # 否则追加子项返回
-                # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
-                new_items.append(
-                    {
-                        'label': menu_title,
-                        'key': currentKey,
-                        'children': importlib.import_module(
-                            'views.' + menu_modules
-                        ).render(),
-                        'contextMenu': context_menu,
-                    }
-                )
+            # 否则追加子项返回
+            # 其中若各标签页内元素类似，则推荐配合模式匹配构建交互逻辑
+            new_items.append(
+                {
+                    'label': menu_title,
+                    'key': currentKey,
+                    'children': importlib.import_module(
+                        'views.' + menu_modules
+                    ).render(),
+                    'contextMenu': context_menu,
+                }
+            )
         else:
             new_items.append(
                 {
