@@ -193,14 +193,11 @@ app.clientside_callback(
         let username = Cookies.get("username");
         let password = Cookies.get("password");
         let remember = Cookies.get("remember");
-        if (remember && username && password) {
-            return [
-                remember === undefined ? false : Boolean(remember), 
-                username === undefined ? '' : username, 
-                password === undefined ? '' : decrypt(password)
-            ];
-        }
-        throw window.dash_clientside.PreventUpdate;
+        return [
+            remember === undefined ? false : Boolean(remember), 
+            username === undefined ? '' : username, 
+            password === undefined ? '' : decrypt(password)
+        ];
     }
     """,
     [
@@ -216,7 +213,7 @@ app.clientside_callback(
     """
     (login_success, remember, username, password) => {
         if (login_success) {
-            if (remember && username && password) {
+            if (remember) {
             Cookies.set("username", username, { expires: 30 });
             Cookies.set("password", encrypt(password), { expires: 30 });
             Cookies.set("remember", remember, { expires: 30 });
