@@ -83,6 +83,7 @@ app.clientside_callback(
     ],
     Input('change-avatar-submit', 'nClicks'),
     State('avatar-cropper', 'croppedImageData'),
+    running=[[Output('change-avatar-submit', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def change_user_avatar_callback(submit_click, avatar_data):

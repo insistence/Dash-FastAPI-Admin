@@ -21,6 +21,7 @@ from utils.feedback_util import MessageManager
         State('reset-user-email', 'value'),
         State('reset-user-sex', 'value'),
     ],
+    running=[[Output('reset-submit', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def reset_submit_user_info(reset_click, nick_name, phonenumber, email, sex):

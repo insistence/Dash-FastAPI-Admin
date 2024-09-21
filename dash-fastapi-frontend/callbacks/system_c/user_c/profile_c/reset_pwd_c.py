@@ -20,6 +20,7 @@ from utils.feedback_util import MessageManager
         State('reset-new-password', 'value'),
         State('reset-confirm-password', 'value'),
     ],
+    running=[[Output('reset-password-submit', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def reset_submit_user_info(
