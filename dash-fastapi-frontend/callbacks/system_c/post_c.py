@@ -462,6 +462,7 @@ def post_delete_confirm(delete_confirm, post_ids_data):
         Output('post-export-complete-judge-container', 'data'),
     ],
     Input('post-export', 'nClicks'),
+    running=[[Output('post-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_post_list(export_click):
