@@ -662,6 +662,7 @@ def job_to_job_log_modal(
         Output('job-export-complete-judge-container', 'data'),
     ],
     Input('job-export', 'nClicks'),
+    running=[[Output('job-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_job_list(export_click):

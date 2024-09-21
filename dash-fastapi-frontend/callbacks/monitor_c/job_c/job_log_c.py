@@ -283,6 +283,7 @@ def job_log_delete_confirm(delete_confirm, job_log_ids_data):
         Output('job_log-export-complete-judge-container', 'data'),
     ],
     Input('job_log-export', 'nClicks'),
+    running=[[Output('job_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_job_log_list(export_click):
