@@ -7,6 +7,7 @@ from callbacks import login_c  # noqa: F401
 def render_content():
     return html.Div(
         [
+            dcc.Store(id='login-success-container'),
             dcc.Store(id='captcha_image-session_id-container'),
             html.Div(
                 [
@@ -96,6 +97,7 @@ def render_content():
                                                     style={'width': '210px'},
                                                 ),
                                                 id='login-captcha-form-item',
+                                                style={'marginBottom': '10px'},
                                             ),
                                             fac.AntdFormItem(
                                                 html.Div(
@@ -112,7 +114,8 @@ def render_content():
                                                     style={
                                                         'border': '1px solid #ccc'
                                                     },
-                                                )
+                                                ),
+                                                style={'marginBottom': '10px'},
                                             ),
                                         ],
                                         align='end',
@@ -125,6 +128,12 @@ def render_content():
                                 id='keyboard-enter-submit', keys='enter'
                             ),
                             fac.AntdFormItem(
+                                fac.AntdCheckbox(
+                                    id='login-remember-me', label='记住我'
+                                ),
+                                style={'marginBottom': '10px'},
+                            ),
+                            fac.AntdFormItem(
                                 fac.AntdButton(
                                     '登录',
                                     id='login-submit',
@@ -134,7 +143,7 @@ def render_content():
                                     block=True,
                                     size='large',
                                 ),
-                                style={'marginTop': '20px'},
+                                style={'marginBottom': '10px'},
                             ),
                             fac.AntdFormItem(
                                 html.Div(

@@ -1,4 +1,5 @@
 import feffery_antd_components as fac
+import time
 from dash import dcc, get_asset_url, no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
@@ -25,6 +26,7 @@ from utils.feedback_util import MessageManager
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
         ),
+        login_success=Output('login-success-container', 'data'),
     ),
     inputs=dict(
         button_click=Input('login-submit', 'nClicks'),
@@ -79,6 +81,7 @@ def login_auth(
                 redirect_container=dcc.Location(
                     pathname='/', id='login-redirect'
                 ),
+                login_success={'timestamp': time.time()},
             )
 
         return dict(
@@ -102,6 +105,7 @@ def login_auth(
             else '请输入验证码！',
             token=None,
             redirect_container=None,
+            login_success=None,
         )
 
     return dict(
@@ -113,6 +117,7 @@ def login_auth(
         captcha_form_help=no_update,
         token=no_update,
         redirect_container=no_update,
+        login_success=None,
     )
 
 
@@ -125,11 +130,11 @@ def login_auth(
         Output('captcha_image-session_id-container', 'data'),
     ],
     Input('login-captcha-image-container', 'n_clicks'),
-    State('redirect-container', 'children'),
+    State('login-success-container', 'data'),
     prevent_initial_call=True,
 )
-def change_login_captcha_image(captcha_click, redirect):
-    if captcha_click and not redirect:
+def change_login_captcha_image(captcha_click, login_success):
+    if captcha_click and not login_success:
         captcha_image_info = LoginApi.get_code_img()
         captcha_enabled = captcha_image_info.get('captcha_enabled')
         forget_enabled = captcha_image_info.get('forget_enabled')
@@ -180,3 +185,56 @@ def random_bg(pathname, old_style):
         'backgroundRepeat': 'no-repeat',
         'backgroundSize': 'cover',
     }
+
+
+app.clientside_callback(
+    """
+    (_) => {
+        let username = Cookies.get("username");
+        let password = Cookies.get("password");
+        let remember = Cookies.get("remember");
+        if (remember && username && password) {
+            return [
+                remember === undefined ? false : Boolean(remember), 
+                username === undefined ? '' : username, 
+                password === undefined ? '' : decrypt(password)
+            ];
+        }
+        throw window.dash_clientside.PreventUpdate;
+    }
+    """,
+    [
+        Output('login-remember-me', 'checked'),
+        Output('login-username', 'value'),
+        Output('login-password', 'value'),
+    ],
+    Input('container', 'id'),
+)
+
+
+app.clientside_callback(
+    """
+    (login_success, remember, username, password) => {
+        if (login_success) {
+            if (remember && username && password) {
+            Cookies.set("username", username, { expires: 30 });
+            Cookies.set("password", encrypt(password), { expires: 30 });
+            Cookies.set("remember", remember, { expires: 30 });
+            } else {
+                Cookies.remove("username");
+                Cookies.remove("password");
+                Cookies.remove("remember");
+            }
+        } else {
+            throw window.dash_clientside.PreventUpdate;
+        }
+    }
+    """,
+    Input('login-success-container', 'data'),
+    [
+        State('login-remember-me', 'checked'),
+        State('login-username', 'value'),
+        State('login-password', 'value'),
+    ],
+    prevent_initial_call=True,
+)
