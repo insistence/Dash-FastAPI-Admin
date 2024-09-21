@@ -486,6 +486,7 @@ def config_delete_confirm(delete_confirm, config_ids_data):
         Output('config-export-complete-judge-container', 'data'),
     ],
     Input('config-export', 'nClicks'),
+    running=[[Output('config-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_config_list(export_click):
@@ -526,6 +527,7 @@ def reset_config_export_status(data):
 
 @app.callback(
     Input('config-refresh-cache', 'nClicks'),
+    running=[[Output('config-refresh-cache', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def refresh_config_cache(refresh_click):
