@@ -329,6 +329,7 @@ def operation_log_delete_confirm(delete_confirm, oper_ids_data):
         Output('operation_log-export-complete-judge-container', 'data'),
     ],
     Input('operation_log-export', 'nClicks'),
+    running=[[Output('operation_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
 def export_operation_log_list(export_click):
