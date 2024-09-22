@@ -1,4 +1,5 @@
 from typing import Union
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -17,7 +18,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -31,7 +32,7 @@ class UserApi:
         """
         return api_request(
             url=f'/system/user/{user_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -44,7 +45,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -58,7 +59,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -72,7 +73,7 @@ class UserApi:
         """
         return api_request(
             url=f'/system/user/{user_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -84,7 +85,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/importTemplate',
-            method='post',
+            method=ApiMethod.POST,
             stream=True,
         )
 
@@ -99,7 +100,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/importData',
-            method='post',
+            method=ApiMethod.POST,
             files={'file': file},
             params={'update_support': update_support},
         )
@@ -114,7 +115,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )
@@ -130,7 +131,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/resetPwd',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(user_id=user_id, password=password),
         )
 
@@ -145,7 +146,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/changeStatus',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(user_id=user_id, status=status),
         )
 
@@ -158,7 +159,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/profile',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -171,7 +172,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/profile',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -186,7 +187,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/profile/updatePwd',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(old_password=old_password, new_password=new_password),
         )
 
@@ -200,7 +201,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/profile/avatar',
-            method='post',
+            method=ApiMethod.POST,
             files=files,
         )
 
@@ -211,7 +212,7 @@ class UserApi:
         """
         return api_request(
             url=f'/system/user/authRole/{user_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -224,7 +225,7 @@ class UserApi:
         """
         return api_request(
             url='/system/user/authRole',
-            method='put',
+            method=ApiMethod.PUT,
             params=params,
         )
 
@@ -237,5 +238,5 @@ class UserApi:
         """
         return api_request(
             url='/system/user/deptTree',
-            method='get',
+            method=ApiMethod.GET,
         )

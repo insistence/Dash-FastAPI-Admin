@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class JobApi:
         """
         return api_request(
             url=f'/monitor/job/{job_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -57,7 +58,7 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -71,7 +72,7 @@ class JobApi:
         """
         return api_request(
             url=f'/monitor/job/{job_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -84,7 +85,7 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )
@@ -100,7 +101,7 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job/changeStatus',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(job_id=job_id, status=status),
         )
 
@@ -115,6 +116,6 @@ class JobApi:
         """
         return api_request(
             url='/monitor/job/run',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(job_id=job_id, job_group=job_group),
         )

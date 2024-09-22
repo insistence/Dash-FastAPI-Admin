@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class PostApi:
         """
         return api_request(
             url='/system/post/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class PostApi:
         """
         return api_request(
             url=f'/system/post/{post_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class PostApi:
         """
         return api_request(
             url='/system/post',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -57,7 +58,7 @@ class PostApi:
         """
         return api_request(
             url='/system/post',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -71,7 +72,7 @@ class PostApi:
         """
         return api_request(
             url=f'/system/post/{post_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -84,7 +85,7 @@ class PostApi:
         """
         return api_request(
             url='/system/post/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

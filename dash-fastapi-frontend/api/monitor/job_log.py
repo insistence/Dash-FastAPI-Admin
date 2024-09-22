@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class JobLogApi:
         """
         return api_request(
             url='/monitor/jobLog/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class JobLogApi:
         """
         return api_request(
             url=f'/monitor/jobLog/{job_log_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -42,9 +43,9 @@ class JobLogApi:
         """
         return api_request(
             url='/monitor/jobLog/clean',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
-        
+
     @classmethod
     def export_job_log(cls, data: dict):
         """
@@ -55,7 +56,7 @@ class JobLogApi:
         """
         return api_request(
             url='/monitor/jobLog/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

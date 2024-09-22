@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class LogininforApi:
         """
         return api_request(
             url='/monitor/logininfor/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class LogininforApi:
         """
         return api_request(
             url=f'/monitor/logininfor/{info_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class LogininforApi:
         """
         return api_request(
             url=f'/monitor/logininfor/unlock/{user_name}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -55,7 +56,7 @@ class LogininforApi:
         """
         return api_request(
             url='/monitor/logininfor/clean',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -68,7 +69,7 @@ class LogininforApi:
         """
         return api_request(
             url='/monitor/logininfor/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

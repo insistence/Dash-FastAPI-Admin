@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -15,5 +16,5 @@ class RouterApi:
         """
         return api_request(
             url='/getRouters',
-            method='get',
+            method=ApiMethod.GET,
         )

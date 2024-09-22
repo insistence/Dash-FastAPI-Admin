@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class ConfigApi:
         """
         return api_request(
             url='/system/config/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class ConfigApi:
         """
         return api_request(
             url=f'/system/config/{config_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class ConfigApi:
         """
         return api_request(
             url=f'/system/config/configKey/{config_key}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -56,7 +57,7 @@ class ConfigApi:
         """
         return api_request(
             url='/system/config',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -70,7 +71,7 @@ class ConfigApi:
         """
         return api_request(
             url='/system/config',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -84,7 +85,7 @@ class ConfigApi:
         """
         return api_request(
             url=f'/system/config/{config_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -96,7 +97,7 @@ class ConfigApi:
         """
         return api_request(
             url='/system/config/refreshCache',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -109,7 +110,7 @@ class ConfigApi:
         """
         return api_request(
             url='/system/config/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class MenuApi:
         """
         return api_request(
             url='/system/menu/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class MenuApi:
         """
         return api_request(
             url=f'/system/menu/{menu_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -42,7 +43,7 @@ class MenuApi:
         """
         return api_request(
             url='/system/menu/treeselect',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -55,7 +56,7 @@ class MenuApi:
         """
         return api_request(
             url=f'/system/menu/roleMenuTreeselect/{role_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -68,7 +69,7 @@ class MenuApi:
         """
         return api_request(
             url='/system/menu',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -82,7 +83,7 @@ class MenuApi:
         """
         return api_request(
             url='/system/menu',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -96,5 +97,5 @@ class MenuApi:
         """
         return api_request(
             url=f'/system/menu/{menu_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )

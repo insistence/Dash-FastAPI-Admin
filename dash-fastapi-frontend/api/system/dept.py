@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class DeptApi:
         """
         return api_request(
             url='/system/dept/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class DeptApi:
         """
         return api_request(
             url=f'/system/dept/list/exclude/{dept_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class DeptApi:
         """
         return api_request(
             url=f'/system/dept/{dept_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -56,7 +57,7 @@ class DeptApi:
         """
         return api_request(
             url='/system/dept',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -70,7 +71,7 @@ class DeptApi:
         """
         return api_request(
             url='/system/dept',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -84,5 +85,5 @@ class DeptApi:
         """
         return api_request(
             url=f'/system/dept/{dept_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )

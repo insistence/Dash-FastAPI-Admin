@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class LoginApi:
         """
         return api_request(
             url='/login',
-            method='post',
+            method=ApiMethod.POST,
             headers={'is_token': False},
             data=data,
         )
@@ -31,7 +32,7 @@ class LoginApi:
         """
         return api_request(
             url='/register',
-            method='post',
+            method=ApiMethod.POST,
             headers={'is_token': False},
             json=json,
         )
@@ -45,7 +46,7 @@ class LoginApi:
         """
         return api_request(
             url='/getInfo',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -57,7 +58,7 @@ class LoginApi:
         """
         return api_request(
             url='/logout',
-            method='post',
+            method=ApiMethod.POST,
         )
 
     @classmethod
@@ -69,6 +70,6 @@ class LoginApi:
         """
         return api_request(
             url='/captchaImage',
-            method='get',
+            method=ApiMethod.GET,
             headers={'is_token': False},
         )

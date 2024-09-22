@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class OperlogApi:
         """
         return api_request(
             url='/monitor/operlog/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class OperlogApi:
         """
         return api_request(
             url=f'/monitor/operlog/{oper_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -42,7 +43,7 @@ class OperlogApi:
         """
         return api_request(
             url='/monitor/operlog/clean',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -55,7 +56,7 @@ class OperlogApi:
         """
         return api_request(
             url='/monitor/operlog/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

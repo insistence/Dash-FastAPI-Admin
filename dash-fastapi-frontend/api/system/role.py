@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class RoleApi:
         """
         return api_request(
             url=f'/system/role/{role_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -57,7 +58,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -71,7 +72,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/dataScope',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -86,7 +87,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/changeStatus',
-            method='put',
+            method=ApiMethod.PUT,
             json=dict(role_id=role_id, status=status),
         )
 
@@ -100,7 +101,7 @@ class RoleApi:
         """
         return api_request(
             url=f'/system/role/{role_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -113,7 +114,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )
@@ -128,7 +129,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/authUser/allocatedList',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -142,7 +143,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/authUser/unallocatedList',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -156,7 +157,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/authUser/cancel',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -170,7 +171,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/authUser/cancelAll',
-            method='put',
+            method=ApiMethod.PUT,
             params=params,
         )
 
@@ -184,7 +185,7 @@ class RoleApi:
         """
         return api_request(
             url='/system/role/authUser/selectAll',
-            method='put',
+            method=ApiMethod.PUT,
             params=params,
         )
 
@@ -198,5 +199,5 @@ class RoleApi:
         """
         return api_request(
             url=f'/system/role/deptTree/{role_id}',
-            method='get',
+            method=ApiMethod.GET,
         )

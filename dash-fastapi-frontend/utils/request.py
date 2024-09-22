@@ -1,5 +1,5 @@
 import requests
-from typing import Dict, Literal, Optional
+from typing import Dict, Optional
 from flask import session, request
 from config.env import AppConfig
 from config.exception import (
@@ -9,6 +9,7 @@ from config.exception import (
     ServiceWarning,
 )
 from config.constant import HttpStatusConstant
+from config.enums import ApiMethod
 from config.global_config import ApiBaseUrlConfig
 from utils.cache_util import CacheManager
 from utils.log_util import logger
@@ -16,7 +17,7 @@ from utils.log_util import logger
 
 def api_request(
     url: str,
-    method: Literal['get', 'post', 'delete', 'put', 'patch'],
+    method: ApiMethod,
     headers: Optional[Dict] = {},
     params: Optional[Dict] = None,
     data: Optional[Dict] = None,
@@ -40,7 +41,7 @@ def api_request(
     :return: 请求结果
     """
     api_url = ApiBaseUrlConfig.BaseUrl + url
-    api_method = method.lower().strip()
+    api_method = method.value
     user_agent = request.headers.get('User-Agent')
     authorization = (
         session.get('Authorization') if session.get('Authorization') else ''

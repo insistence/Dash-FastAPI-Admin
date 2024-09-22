@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class OnlineApi:
         """
         return api_request(
             url='/monitor/online/list/page',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,5 +31,5 @@ class OnlineApi:
         """
         return api_request(
             url=f'/monitor/online/{token_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )

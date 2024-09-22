@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class ForgetApi:
         """
         return api_request(
             url='/forgetPwd',
-            method='post',
+            method=ApiMethod.POST,
             headers={'is_token': False},
             json=json,
         )
@@ -31,7 +32,7 @@ class ForgetApi:
         """
         return api_request(
             url='/getSmsCode',
-            method='post',
+            method=ApiMethod.POST,
             headers={'is_token': False},
             json=json,
         )

@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class RegisterApi:
         """
         return api_request(
             url='/register',
-            method='post',
+            method=ApiMethod.POST,
             headers={'is_token': False},
             json=json,
         )

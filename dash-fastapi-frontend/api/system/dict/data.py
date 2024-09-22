@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class DictDataApi:
         """
         return api_request(
             url='/system/dict/data/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class DictDataApi:
         """
         return api_request(
             url=f'/system/dict/data/{dict_code}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class DictDataApi:
         """
         return api_request(
             url=f'/system/dict/data/type/{dict_type}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -56,7 +57,7 @@ class DictDataApi:
         """
         return api_request(
             url='/system/dict/data',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -70,7 +71,7 @@ class DictDataApi:
         """
         return api_request(
             url='/system/dict/data',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -84,9 +85,9 @@ class DictDataApi:
         """
         return api_request(
             url=f'/system/dict/data/{dict_code}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
-        
+
     @classmethod
     def export_data(cls, data: dict):
         """
@@ -97,7 +98,7 @@ class DictDataApi:
         """
         return api_request(
             url='/system/dict/data/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )

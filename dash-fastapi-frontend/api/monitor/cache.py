@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -15,7 +16,7 @@ class CacheApi:
         """
         return api_request(
             url='/monitor/cache',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -27,7 +28,7 @@ class CacheApi:
         """
         return api_request(
             url='/monitor/cache/getNames',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -40,7 +41,7 @@ class CacheApi:
         """
         return api_request(
             url=f'/monitor/cache/getKeys/{cache_name}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -54,7 +55,7 @@ class CacheApi:
         """
         return api_request(
             url=f'/monitor/cache/getValue/{cache_name}/{cache_key}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -67,7 +68,7 @@ class CacheApi:
         """
         return api_request(
             url=f'/monitor/cache/clearCacheName/{cache_name}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -80,7 +81,7 @@ class CacheApi:
         """
         return api_request(
             url=f'/monitor/cache/clearCacheKey/{cache_key}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -92,5 +93,5 @@ class CacheApi:
         """
         return api_request(
             url='/monitor/cache/clearCacheAll',
-            method='delete',
+            method=ApiMethod.DELETE,
         )

@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class NoticeApi:
         """
         return api_request(
             url='/system/notice/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class NoticeApi:
         """
         return api_request(
             url=f'/system/notice/{notice_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class NoticeApi:
         """
         return api_request(
             url='/system/notice',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -57,7 +58,7 @@ class NoticeApi:
         """
         return api_request(
             url='/system/notice',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -71,5 +72,5 @@ class NoticeApi:
         """
         return api_request(
             url=f'/system/notice/{notice_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )

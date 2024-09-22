@@ -1,3 +1,4 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
@@ -16,7 +17,7 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type/list',
-            method='get',
+            method=ApiMethod.GET,
             params=query,
         )
 
@@ -30,7 +31,7 @@ class DictTypeApi:
         """
         return api_request(
             url=f'/system/dict/type/{dict_id}',
-            method='get',
+            method=ApiMethod.GET,
         )
 
     @classmethod
@@ -43,7 +44,7 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type',
-            method='post',
+            method=ApiMethod.POST,
             json=json,
         )
 
@@ -57,7 +58,7 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type',
-            method='put',
+            method=ApiMethod.PUT,
             json=json,
         )
 
@@ -71,7 +72,7 @@ class DictTypeApi:
         """
         return api_request(
             url=f'/system/dict/type/{dict_id}',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -84,7 +85,7 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type/export',
-            method='post',
+            method=ApiMethod.POST,
             data=data,
             stream=True,
         )
@@ -98,7 +99,7 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type/refreshCache',
-            method='delete',
+            method=ApiMethod.DELETE,
         )
 
     @classmethod
@@ -110,5 +111,5 @@ class DictTypeApi:
         """
         return api_request(
             url='/system/dict/type/optionselect',
-            method='get',
+            method=ApiMethod.GET,
         )
