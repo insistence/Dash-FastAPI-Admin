@@ -2,6 +2,7 @@ import feffery_antd_components as fac
 from dash import dcc, html
 from callbacks.system_c.menu_c import menu_c
 from components.ApiSelect import ApiSelect
+from config.constant import MenuConstant
 from utils.permission_util import PermissionManager
 from views.system.menu.components.icon_category import render_icon
 
@@ -314,9 +315,18 @@ def render(*args, **kwargs):
                                     fac.AntdRadioGroup(
                                         id='menu-menu_type',
                                         options=[
-                                            {'label': '目录', 'value': 'M'},
-                                            {'label': '菜单', 'value': 'C'},
-                                            {'label': '按钮', 'value': 'F'},
+                                            {
+                                                'label': '目录',
+                                                'value': MenuConstant.TYPE_DIR,
+                                            },
+                                            {
+                                                'label': '菜单',
+                                                'value': MenuConstant.TYPE_MENU,
+                                            },
+                                            {
+                                                'label': '按钮',
+                                                'value': MenuConstant.TYPE_BUTTON,
+                                            },
                                         ],
                                         defaultValue='M',
                                         style={'width': 495},

@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.menu import MenuApi
 from api.system.role import RoleApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
@@ -32,7 +33,7 @@ def generate_role_table(query_params: Dict):
         total=table_info['total'],
     )
     for item in table_data:
-        if item['status'] == '0':
+        if item['status'] == SysNormalDisableConstant.NORMAL:
             item['status'] = dict(checked=True, disabled=item['role_id'] == 1)
         else:
             item['status'] = dict(checked=False, disabled=item['role_id'] == 1)
@@ -388,7 +389,7 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
                 role_name=None,
                 role_key=None,
                 role_sort=None,
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
             return dict(

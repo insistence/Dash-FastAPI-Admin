@@ -4,6 +4,7 @@ from dash import ctx, dcc, no_update
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from api.system.dict.data import DictDataApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -268,7 +269,7 @@ def add_edit_dict_data_modal(
                 css_class=None,
                 dict_sort=0,
                 list_class='default',
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
             return dict(

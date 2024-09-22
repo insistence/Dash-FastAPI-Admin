@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.dict.type import DictTypeApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -289,7 +290,7 @@ def add_edit_dict_type_modal(
             dict_type_info = dict(
                 dict_name=None,
                 dict_type=None,
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
             return dict(

@@ -8,6 +8,7 @@ from config.exception import (
     ServiceException,
     ServiceWarning,
 )
+from config.constant import HttpStatusConstant
 from config.global_config import ApiBaseUrlConfig
 from utils.cache_util import CacheManager
 from utils.log_util import logger
@@ -134,7 +135,7 @@ def api_request(
         url,
         request_params,
     )
-    if status_code == 200:
+    if status_code == HttpStatusConstant.SUCCESS:
         if stream:
             logger.info(log_message.generate('获取成功'))
             return response
@@ -142,16 +143,16 @@ def api_request(
             response_code = response.json().get('code')
             response_message = response.json().get('msg')
             response_log = log_message.generate(response_message)
-            if response_code == 200:
+            if response_code == HttpStatusConstant.SUCCESS:
                 logger.info(response_log)
                 return response.json()
-            elif response_code == 401:
+            elif response_code == HttpStatusConstant.UNAUTHORIZED:
                 logger.warning(response_log)
                 raise AuthException(message=response_message)
-            elif response_code == 500:
+            elif response_code == HttpStatusConstant.ERROR:
                 logger.error(response_log)
                 raise ServiceException(message=response_message)
-            elif response_code == 601:
+            elif response_code == HttpStatusConstant.WARN:
                 logger.warning(response_log)
                 raise ServiceWarning(message=response_message)
             else:

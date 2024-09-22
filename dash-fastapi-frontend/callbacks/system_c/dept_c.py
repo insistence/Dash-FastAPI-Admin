@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.dept import DeptApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -273,7 +274,7 @@ def add_edit_dept_modal(
                 leader=None,
                 phone=None,
                 email=None,
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
             )
             return dict(
                 modal_visible=True,

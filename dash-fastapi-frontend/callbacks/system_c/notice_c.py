@@ -4,6 +4,7 @@ from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.notice import NoticeApi
+from config.constant import SysNoticeStatusConstant, SysNoticeTypeConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -281,8 +282,8 @@ def add_edit_notice_modal(
                 modal=dict(visible=True, title='新增通知公告'),
                 form_value=dict(
                     notice_title=None,
-                    notice_type=None,
-                    status='0',
+                    notice_type=SysNoticeTypeConstant.NOTICE,
+                    status=SysNoticeStatusConstant.NORMAL,
                     notice_content=None,
                     editor_key=str(uuid.uuid4()),
                 ),

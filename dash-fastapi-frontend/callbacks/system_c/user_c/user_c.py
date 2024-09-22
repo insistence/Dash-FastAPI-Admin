@@ -7,6 +7,7 @@ from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.user import UserApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
@@ -31,7 +32,7 @@ def generate_user_table(query_params: Dict):
         total=table_info['total'],
     )
     for item in table_data:
-        if item['status'] == '0':
+        if item['status'] == SysNormalDisableConstant.NORMAL:
             item['status'] = dict(checked=True, disabled=item['user_id'] == 1)
         else:
             item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
@@ -337,7 +338,7 @@ def add_edit_user_modal(
                 post_ids=None,
                 user_ids=None,
                 sex=None,
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
             return dict(

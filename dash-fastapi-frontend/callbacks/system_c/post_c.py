@@ -5,6 +5,7 @@ from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.post import PostApi
+from config.constant import SysNormalDisableConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -267,7 +268,7 @@ def add_edit_post_modal(
                 post_name=None,
                 post_code=None,
                 post_sort=0,
-                status='0',
+                status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
             return dict(

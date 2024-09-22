@@ -6,6 +6,7 @@ from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.menu import MenuApi
+from config.constant import MenuConstant, SysNormalDisableConstant
 from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
@@ -35,7 +36,7 @@ def generate_menu_table(query_params: Dict):
                 'style': {'color': 'rgba(0, 0, 0, 0.8)'},
             },
         ]
-        if item['status'] == '1':
+        if item['status'] == SysNormalDisableConstant.DISABLE:
             item['operation'] = [
                 {'content': '修改', 'type': 'link', 'icon': 'antd-edit'}
                 if PermissionManager.check_perms('system:menu:edit')
@@ -278,7 +279,7 @@ def add_edit_menu_modal(
                 form_value=dict(
                     parent_tree=tree_data,
                     parent_id='0',
-                    menu_type='M',
+                    menu_type=MenuConstant.TYPE_DIR,
                     icon=None,
                     icon_prefix=None,
                     icon_category=None,
@@ -297,7 +298,7 @@ def add_edit_menu_modal(
                 form_value=dict(
                     parent_tree=tree_data,
                     parent_id=str(recently_button_clicked_row['key']),
-                    menu_type='M',
+                    menu_type=MenuConstant.TYPE_DIR,
                     icon=None,
                     icon_prefix=None,
                     icon_category=None,
@@ -369,14 +370,26 @@ def get_bottom_content(menu_value):
     """
     根据不同菜单类型渲染不同的子区域
     """
-    if menu_value == 'M':
-        return [content_type.render(), str(uuid.uuid4()), {'type': 'M'}]
+    if menu_value == MenuConstant.TYPE_DIR:
+        return [
+            content_type.render(),
+            str(uuid.uuid4()),
+            {'type': MenuConstant.TYPE_DIR},
+        ]
 
-    elif menu_value == 'C':
-        return [menu_type.render(), str(uuid.uuid4()), {'type': 'C'}]
+    elif menu_value == MenuConstant.TYPE_MENU:
+        return [
+            menu_type.render(),
+            str(uuid.uuid4()),
+            {'type': MenuConstant.TYPE_MENU},
+        ]
 
-    elif menu_value == 'F':
-        return [button_type.render(), str(uuid.uuid4()), {'type': 'F'}]
+    elif menu_value == MenuConstant.TYPE_BUTTON:
+        return [
+            button_type.render(),
+            str(uuid.uuid4()),
+            {'type': MenuConstant.TYPE_BUTTON},
+        ]
 
     raise PreventUpdate
 
@@ -395,12 +408,12 @@ def modal_confirm_trigger(confirm, menu_type):
     增加触发器，根据不同菜单类型触发不同的回调，解决组件不存在回调异常的问题
     """
     if confirm:
-        if menu_type.get('type') == 'M':
+        if menu_type.get('type') == MenuConstant.TYPE_DIR:
             return [{'timestamp': time.time()}, no_update, no_update]
-        if menu_type.get('type') == 'C':
+        if menu_type.get('type') == MenuConstant.TYPE_MENU:
             return [no_update, {'timestamp': time.time()}, no_update]
 
-        if menu_type.get('type') == 'F':
+        if menu_type.get('type') == MenuConstant.TYPE_BUTTON:
             return [no_update, no_update, {'timestamp': time.time()}]
 
     raise PreventUpdate

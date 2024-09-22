@@ -5,6 +5,7 @@ from dash.dependencies import ALL, Input, Output, State
 from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.config import ConfigApi
+from config.constant import SysYesNoConstant
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
@@ -283,7 +284,7 @@ def add_edit_config_modal(
                 config_name=None,
                 config_key=None,
                 config_value=None,
-                config_type='Y',
+                config_type=SysYesNoConstant.YES,
                 remark=None,
             )
             return dict(

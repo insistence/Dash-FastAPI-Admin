@@ -1,20 +1,7 @@
 import json
 from copy import deepcopy
 from typing import Dict, List
-
-
-class CommonConstant:
-    """
-    常用常量
-
-    WWW: www主域
-    HTTP: http请求
-    HTTPS: https请求
-    """
-
-    WWW = 'www.'
-    HTTP = 'http://'
-    HTTPS = 'https://'
+from config.constant import CommonConstant, MenuConstant
 
 
 class RouterUtil:
@@ -40,7 +27,7 @@ class RouterUtil:
                 and (
                     copy_router.get('path').startswith('/')
                     or cls.is_http(copy_router.get('path'))
-                    or copy_router.get('component') == 'InnerLink'
+                    or copy_router.get('component') == MenuConstant.INNER_LINK
                 )
                 else '/' + copy_router.get('path')
             )
@@ -50,18 +37,21 @@ class RouterUtil:
                 'key': copy_router.get('name') + copy_router.get('path'),
                 'href': path + copy_router.get('path'),
             }
-            if copy_router.get('component') in ['Layout', 'ParentView']:
-                copy_router['component'] = 'SubMenu'
+            if copy_router.get('component') in [
+                MenuConstant.LAYOUT,
+                MenuConstant.PARENT_VIEW,
+            ]:
+                copy_router['component'] = MenuConstant.SUB_MENU
                 if cls.is_http(copy_router.get('path')):
                     copy_router['props']['target'] = '_blank'
-            elif copy_router.get('component') == 'InnerLink':
+            elif copy_router.get('component') == MenuConstant.INNER_LINK:
                 if copy_router.get('path') == '/':
                     copy_router = copy_router['children']
                     copy_router['props']['href'] = '/' + copy_router.get('path')
                     cls.__genrate_item_menu(copy_router, 'innerlink')
                 else:
                     if copy_router.get('children'):
-                        copy_router['component'] = 'SubMenu'
+                        copy_router['component'] = MenuConstant.SUB_MENU
                     else:
                         cls.__genrate_item_menu(copy_router, 'innerlink')
             else:
@@ -129,7 +119,7 @@ class RouterUtil:
         :return: Item类型菜单
         """
         router['props']['modules'] = modules
-        router['component'] = 'Item'
+        router['component'] = MenuConstant.ITEM
 
         return router
 

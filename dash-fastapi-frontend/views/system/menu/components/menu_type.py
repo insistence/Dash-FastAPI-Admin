@@ -1,6 +1,11 @@
 import feffery_antd_components as fac
 from dash import html
 from callbacks.system_c.menu_c.components_c import menu_type_c  # noqa: F401
+from config.constant import (
+    MenuConstant,
+    SysNormalDisableConstant,
+    SysShowHideConstant,
+)
 from components.ApiRadioGroup import ApiRadioGroup
 
 
@@ -12,10 +17,10 @@ def render():
                     fac.AntdRadioGroup(
                         id='menu-menu-is_frame',
                         options=[
-                            {'label': '是', 'value': 0},
-                            {'label': '否', 'value': 1},
+                            {'label': '是', 'value': MenuConstant.YES_FRAME},
+                            {'label': '否', 'value': MenuConstant.NO_FRAME},
                         ],
-                        defaultValue=1,
+                        defaultValue=MenuConstant.NO_FRAME,
                         style={'width': 200},
                     ),
                     label=html.Div(
@@ -136,10 +141,10 @@ def render():
                     fac.AntdRadioGroup(
                         id='menu-menu-is_cache',
                         options=[
-                            {'label': '缓存', 'value': 0},
-                            {'label': '不缓存', 'value': 1},
+                            {'label': '缓存', 'value': MenuConstant.YES_CACHE},
+                            {'label': '不缓存', 'value': MenuConstant.NO_CACHE},
                         ],
-                        defaultValue=0,
+                        defaultValue=MenuConstant.YES_CACHE,
                         style={'width': 200},
                     ),
                     label=html.Div(
@@ -166,7 +171,7 @@ def render():
                     ApiRadioGroup(
                         dict_type='sys_show_hide',
                         id='menu-menu-visible',
-                        defaultValue='0',
+                        defaultValue=SysShowHideConstant.SHOW,
                         style={'width': 200},
                     ),
                     label=html.Div(
@@ -188,7 +193,7 @@ def render():
                     ApiRadioGroup(
                         dict_type='sys_normal_disable',
                         id='menu-menu-status',
-                        defaultValue='0',
+                        defaultValue=SysNormalDisableConstant.NORMAL,
                         style={'width': 200},
                     ),
                     label=html.Div(
