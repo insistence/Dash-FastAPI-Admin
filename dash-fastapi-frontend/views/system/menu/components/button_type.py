@@ -1,7 +1,6 @@
-from dash import html
 import feffery_antd_components as fac
-
-import callbacks.system_c.menu_c.components_c.button_type_c
+from dash import html
+from callbacks.system_c.menu_c.components_c import button_type_c  # noqa: F401
 
 
 def render():

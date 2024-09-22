@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.menu import MenuApi
 from server import app
+from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.tree_tool import list_to_tree, list_to_tree_select
@@ -63,10 +64,9 @@ def generate_menu_table(query_params: Dict):
                 if PermissionManager.check_perms('system:menu:remove')
                 else {},
             ]
-        if item['status'] == '0':
-            item['status'] = dict(tag='正常', color='blue')
-        else:
-            item['status'] = dict(tag='停用', color='volcano')
+        item['status'] = DictManager.get_dict_tag(
+            dict_type='sys_normal_disable', dict_value=item.get('status')
+        )
     table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
 
     return [table_data_new, default_expanded_row_keys]

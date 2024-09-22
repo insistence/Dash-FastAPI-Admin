@@ -1,5 +1,5 @@
 from . import (
-    content_type,
-    menu_type,
-    button_type
+    button_type,  # noqa: F401
+    content_type,  # noqa: F401
+    menu_type,  # noqa: F401
 )

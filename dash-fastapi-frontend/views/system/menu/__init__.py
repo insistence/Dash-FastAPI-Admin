@@ -1,6 +1,7 @@
 import feffery_antd_components as fac
 from dash import dcc, html
 from callbacks.system_c.menu_c import menu_c
+from components.ApiSelect import ApiSelect
 from utils.permission_util import PermissionManager
 from views.system.menu.components.icon_category import render_icon
 
@@ -49,19 +50,10 @@ def render(*args, **kwargs):
                                                                 label='菜单名称',
                                                             ),
                                                             fac.AntdFormItem(
-                                                                fac.AntdSelect(
+                                                                ApiSelect(
+                                                                    dict_type='sys_normal_disable',
                                                                     id='menu-status-select',
                                                                     placeholder='菜单状态',
-                                                                    options=[
-                                                                        {
-                                                                            'label': '正常',
-                                                                            'value': '0',
-                                                                        },
-                                                                        {
-                                                                            'label': '停用',
-                                                                            'value': '1',
-                                                                        },
-                                                                    ],
                                                                     style={
                                                                         'width': 240
                                                                     },
