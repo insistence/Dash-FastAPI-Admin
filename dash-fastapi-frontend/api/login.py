@@ -23,21 +23,6 @@ class LoginApi:
         )
 
     @classmethod
-    def register(json: dict):
-        """
-        注册接口
-
-        :param data: 注册参数
-        :return:
-        """
-        return api_request(
-            url='/register',
-            method=ApiMethod.POST,
-            headers={'is_token': False},
-            json=json,
-        )
-
-    @classmethod
     def get_info(cls):
         """
         获取登录用户信息接口
