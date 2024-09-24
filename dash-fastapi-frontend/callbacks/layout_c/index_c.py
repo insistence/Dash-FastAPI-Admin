@@ -131,7 +131,9 @@ def handle_tab_switch_and_create(
                     'icon': 'antd-arrow-left',
                 },
             )
-        if RouterUtil.is_http(currentItem.get('path')):
+        if currentKey not in ['首页', '个人资料'] and RouterUtil.is_http(
+            currentItem.get('path')
+        ):
             raise PreventUpdate
         if menu_modules:
             # 否则追加子项返回
