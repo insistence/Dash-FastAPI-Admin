@@ -41,6 +41,7 @@ from utils.feedback_util import MessageManager
     ),
     running=[
         [Output('login-submit', 'loading'), True, False],
+        [Output('login-submit', 'children'), '登录中', '登录'],
         [Output('login-captcha-image-container', 'n_clicks'), 0, 1],
     ],
     prevent_initial_call=True,
@@ -145,17 +146,17 @@ def change_login_captcha_image(captcha_click, login_success):
         return [
             not captcha_enabled,
             fac.AntdButton(
-                '用户注册',
+                '注册',
                 id='register-user-link',
-                type='link',
                 href='/register',
                 target='_self',
-                style={'padding': 0},
+                block=True,
+                size='large',
             )
             if register_enabled
             else [],
             fac.AntdButton(
-                '忘记密码',
+                '忘记密码？',
                 id='forget-password-link',
                 type='link',
                 href='/forget',
@@ -172,18 +173,14 @@ def change_login_captcha_image(captcha_click, login_success):
 
 
 @app.callback(
-    Output('container', 'style'),
+    Output('login-page', 'style'),
     Input('url-container', 'pathname'),
-    State('container', 'style'),
 )
-def random_bg(pathname, old_style):
+def random_login_bg(pathname):
     return {
-        **old_style,
         'backgroundImage': 'url({})'.format(
-            get_asset_url('imgs/login-background.jpg')
+            get_asset_url('imgs/background.png')
         ),
-        'backgroundRepeat': 'no-repeat',
-        'backgroundSize': 'cover',
     }
 
 
@@ -205,7 +202,7 @@ app.clientside_callback(
         Output('login-username', 'value'),
         Output('login-password', 'value'),
     ],
-    Input('container', 'id'),
+    Input('login-page', 'id'),
 )
 
 

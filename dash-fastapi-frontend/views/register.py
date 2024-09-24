@@ -11,44 +11,48 @@ def render_register_content():
                 [
                     dcc.Store(id='register-success-container'),
                     dcc.Store(id='register-captcha_image-session_id-container'),
+                    fuc.FefferyKeyPress(
+                        id='register-keyboard-enter-submit',
+                        keys='enter',
+                    ),
                     fac.AntdForm(
-                        [
-                            fac.AntdFormItem(
-                                fac.AntdInput(
-                                    placeholder='请输入用户名',
-                                    id='register-username',
-                                    size='large',
-                                    prefix=fac.AntdIcon(icon='antd-user'),
+                        fac.AntdFlex(
+                            [
+                                fac.AntdFormItem(
+                                    fac.AntdInput(
+                                        placeholder='请输入用户名',
+                                        id='register-username',
+                                        size='large',
+                                        prefix=fac.AntdIcon(icon='antd-user'),
+                                    ),
+                                    id='register-username-form-item',
                                 ),
-                                id='register-username-form-item',
-                            ),
-                            fac.AntdFormItem(
-                                fac.AntdInput(
-                                    placeholder='请输入密码',
-                                    id='register-password',
-                                    mode='password',
-                                    passwordUseMd5=True,
-                                    size='large',
-                                    prefix=fac.AntdIcon(icon='antd-lock'),
+                                fac.AntdFormItem(
+                                    fac.AntdInput(
+                                        placeholder='请输入密码',
+                                        id='register-password',
+                                        mode='password',
+                                        passwordUseMd5=True,
+                                        size='large',
+                                        prefix=fac.AntdIcon(icon='antd-lock'),
+                                    ),
+                                    id='register-password-form-item',
                                 ),
-                                id='register-password-form-item',
-                            ),
-                            fac.AntdFormItem(
-                                fac.AntdInput(
-                                    placeholder='请再次输入密码',
-                                    id='register-confirm_password',
-                                    mode='password',
-                                    passwordUseMd5=True,
-                                    size='large',
-                                    prefix=fac.AntdIcon(icon='antd-lock'),
+                                fac.AntdFormItem(
+                                    fac.AntdInput(
+                                        placeholder='请再次输入密码',
+                                        id='register-confirm_password',
+                                        mode='password',
+                                        passwordUseMd5=True,
+                                        size='large',
+                                        prefix=fac.AntdIcon(icon='antd-lock'),
+                                    ),
+                                    id='register-confirm_password-form-item',
                                 ),
-                                id='register-confirm_password-form-item',
-                            ),
-                            html.Div(
-                                [
-                                    fac.AntdSpace(
-                                        [
-                                            fac.AntdFormItem(
+                                html.Div(
+                                    fac.AntdFormItem(
+                                        fac.AntdFlex(
+                                            [
                                                 fac.AntdInput(
                                                     placeholder='请输入验证码',
                                                     id='register-captcha',
@@ -56,51 +60,44 @@ def render_register_content():
                                                     prefix=fac.AntdIcon(
                                                         icon='antd-check-circle'
                                                     ),
-                                                    style={'width': '280px'},
                                                 ),
-                                                id='register-captcha-form-item',
-                                            ),
-                                            fac.AntdFormItem(
                                                 html.Div(
                                                     [
                                                         fac.AntdImage(
                                                             id='register-captcha-image',
                                                             src='',
-                                                            height=37,
+                                                            height=39.6,
                                                             width=100,
                                                             preview=False,
+                                                            style={
+                                                                'border': '1px solid #d9d9d9',
+                                                                'borderRadius': '8px',
+                                                            },
                                                         )
                                                     ],
                                                     id='register-captcha-image-container',
-                                                    style={
-                                                        'border': '1px solid #ccc'
-                                                    },
                                                 ),
-                                            ),
-                                        ],
-                                        align='end',
-                                        size=10,
+                                            ],
+                                            align='center',
+                                            gap='small',
+                                        ),
+                                        id='register-captcha-form-item',
                                     ),
-                                ],
-                                id='register-captcha-row-container',
-                            ),
-                            fuc.FefferyKeyPress(
-                                id='register-keyboard-enter-submit',
-                                keys='enter',
-                            ),
-                            fac.AntdFormItem(
-                                fac.AntdButton(
-                                    '注册',
-                                    id='register-submit',
-                                    type='primary',
-                                    loadingChildren='注册中',
-                                    autoSpin=True,
-                                    block=True,
-                                    size='large',
+                                    id='register-captcha-row-container',
                                 ),
-                                style={'marginTop': '20px'},
-                            ),
-                        ],
+                                fac.AntdFormItem(
+                                    fac.AntdButton(
+                                        '注册',
+                                        id='register-submit',
+                                        type='primary',
+                                        block=True,
+                                        size='large',
+                                    ),
+                                    style={'marginTop': '20px'},
+                                ),
+                            ],
+                            vertical=True,
+                        ),
                         layout='vertical',
                         style={'width': '100%'},
                     ),
@@ -112,21 +109,24 @@ def render_register_content():
                     'content': '返回登录',
                     'href': '/login',
                     'target': '_self',
-                    'style': {'font-size': '16px'},
+                    'style': {'fontSize': '16px'},
                 },
                 headStyle={
-                    'font-weight': 'bold',
-                    'text-align': 'center',
-                    'font-size': '30px',
+                    'fontWeight': 'bold',
+                    'textAlign': 'center',
+                    'fontSize': '30px',
                 },
                 style={
                     'position': 'fixed',
                     'top': '16%',
                     'left': '50%',
-                    'width': '500px',
+                    'width': '480px',
+                    'minWidth': '420px',
+                    'maxWidth': '75vw',
                     'padding': '0px 30px',
                     'transform': 'translateX(-50%)',
                 },
             ),
-        ]
+        ],
+        id='register-page',
     )

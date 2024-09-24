@@ -1,4 +1,4 @@
-from dash import dcc, no_update
+from dash import dcc, get_asset_url, no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.forget import ForgetApi
@@ -39,7 +39,10 @@ from utils.feedback_util import MessageManager
         input_captcha=State('forget-input-captcha', 'value'),
         session_id=State('sms_code-session_id-container', 'data'),
     ),
-    running=[[Output('forget-submit', 'loading'), True, False]],
+    running=[
+        [Output('forget-submit', 'loading'), True, False],
+        [Output('forget-submit', 'children'), '保存中', '保存'],
+    ],
     prevent_initial_call=True,
 )
 def forget_auth(
@@ -155,6 +158,22 @@ def message_countdown(nClicks, username, session_id):
     raise PreventUpdate
 
 
+@app.callback(
+    Output('forget-page', 'style'),
+    Input('url-container', 'pathname'),
+)
+def random_forget_bg(pathname):
+    return {
+        'height': '100vh',
+        'overflow': 'auto',
+        'WebkitBackgroundSize': '100% 100%',
+        'backgroundSize': '100% 100',
+        'backgroundImage': 'url({})'.format(
+            get_asset_url('imgs/background.png')
+        ),
+    }
+
+
 app.clientside_callback(
     """
     (countdown) => {
@@ -174,7 +193,7 @@ app.clientside_callback(
     """
     (countdown) => {
          if (countdown) {
-            return `获取中${countdown}s`
+            return `${countdown}秒后重新获取`
          }
          return '获取验证码'
     }

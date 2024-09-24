@@ -1,5 +1,5 @@
 import time
-from dash import dcc, no_update
+from dash import dcc, get_asset_url, no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.login import LoginApi
@@ -50,6 +50,7 @@ from utils.feedback_util import MessageManager
     ),
     running=[
         [Output('register-submit', 'loading'), True, False],
+        [Output('register-submit', 'children'), '注册中', '注册'],
         [Output('register-captcha-image-container', 'n_clicks'), 0, 1],
     ],
     prevent_initial_call=True,
@@ -176,3 +177,19 @@ def change_register_captcha_image(captcha_click, login_success):
         ]
 
     raise PreventUpdate
+
+
+@app.callback(
+    Output('register-page', 'style'),
+    Input('url-container', 'pathname'),
+)
+def random_register_bg(pathname):
+    return {
+        'height': '100vh',
+        'overflow': 'auto',
+        'WebkitBackgroundSize': '100% 100%',
+        'backgroundSize': '100% 100',
+        'backgroundImage': 'url({})'.format(
+            get_asset_url('imgs/background.png')
+        ),
+    }
