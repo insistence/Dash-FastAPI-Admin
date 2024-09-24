@@ -172,7 +172,6 @@ def render_head_content():
                             },
                         ],
                         placement='bottomRight',
-                        overlayStyle={'width': '100px'},
                     ),
                 ],
                 style={
