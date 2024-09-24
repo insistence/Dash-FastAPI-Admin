@@ -40,8 +40,6 @@ def router(pathname, url_trigger, session_token):
             router_list_result = RouterApi.get_routers()
             router_list = router_list_result['data']
             menu_info = RouterUtil.generate_menu_tree(router_list)
-            # search_panel_data = get_search_panel_data(user_menu_list)
-            search_panel_data = []
             permissions = {
                 'perms': current_user['permissions'],
                 'roles': current_user['roles'],
@@ -50,11 +48,9 @@ def router(pathname, url_trigger, session_token):
                 user_info=current_user['user'],
                 permissions=permissions,
                 menu_info=menu_info,
-                search_panel_data=search_panel_data,
             )
             CacheManager.set(cache_obj)
         menu_info = CacheManager.get('menu_info')
-        search_panel_data = CacheManager.get('search_panel_data')
         dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
         valid_href_list = (
             dynamic_valid_pathname_list + RouterConfig.STATIC_VALID_PATHNAME
@@ -74,12 +70,15 @@ def router(pathname, url_trigger, session_token):
                         redirect_container=dcc.Location(
                             pathname='/', id='router-redirect'
                         ),
-                        menu_current_key=current_key,
-                        search_panel_data=search_panel_data,
+                        menu_current_key=no_update,
+                        search_panel_data=no_update,
                     )
 
                 user_menu_info = RouterUtil.generate_menu_tree(
                     RouterUtil.get_visible_routers(router_list)
+                )
+                search_panel_data = RouterUtil.generate_search_panel_data(
+                    user_menu_info
                 )
                 # 否则正常渲染主页面
                 return dict(
@@ -94,7 +93,7 @@ def router(pathname, url_trigger, session_token):
                     app_mount=no_update,
                     redirect_container=None,
                     menu_current_key=current_key,
-                    search_panel_data=search_panel_data,
+                    search_panel_data=no_update,
                 )
 
         else:

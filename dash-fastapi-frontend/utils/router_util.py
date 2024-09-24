@@ -109,6 +109,36 @@ class RouterUtil:
         return new_router_list
 
     @classmethod
+    def generate_search_panel_data(cls, menu_list: List):
+        """
+        生成搜索面板数据
+
+        :param menu_list: 菜单列表
+        :return: 搜索面板数据
+        """
+        search_panel_data = []
+        for item in menu_list:
+            if item.get('children'):
+                search_panel_data.extend(
+                    cls.generate_search_panel_data(item.get('children'))
+                )
+            else:
+                href = item.get('props').get('href')
+                target = (
+                    '_blank'
+                    if cls.is_http(item.get('props').get('href'))
+                    else '_self'
+                )
+                item_dict = dict(
+                    id=item.get('props').get('key'),
+                    title=item.get('props').get('title'),
+                    handler=f'() => window.open("{href}", "{target}")',
+                )
+                search_panel_data.append(item_dict)
+
+        return search_panel_data
+
+    @classmethod
     def __genrate_item_menu(cls, router: Dict, modules: str):
         """
         生成Item类型菜单
