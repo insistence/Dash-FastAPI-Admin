@@ -718,27 +718,13 @@ def role_to_allocated_user_modal(
             item['key'] = str(item['role_id'])
             if item.get('flag'):
                 selected_row_keys.append(str(item['role_id']))
-        new_table_data = [
-            {
-                k: v
-                for k, v in item.items()
-                if k
-                not in [
-                    'admin',
-                    'dept_check_strictly',
-                    'flag',
-                    'menu_check_strictly',
-                ]
-            }
-            for item in table_data
-        ]
         return [
             True,
             user_id,
             allocated_role_info.get('user').get('nick_name'),
             allocated_role_info.get('user').get('user_name'),
             selected_row_keys,
-            new_table_data,
+            table_data,
         ]
 
     raise PreventUpdate

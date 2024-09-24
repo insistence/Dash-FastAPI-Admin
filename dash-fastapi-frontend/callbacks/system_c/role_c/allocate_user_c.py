@@ -83,10 +83,6 @@ def get_allocate_user_table_data(
         if triggered_id.index == 'unallocated':
             table_info = RoleApi.unallocated_user_list(query_params)
         table_data = table_info['rows']
-        new_table_data = [
-            {k: v for k, v in item.items() if k != 'admin'}
-            for item in table_data
-        ]
         table_pagination = dict(
             pageSize=table_info['page_size'],
             current=table_info['page_num'],
@@ -95,7 +91,7 @@ def get_allocate_user_table_data(
             showQuickJumper=True,
             total=table_info['total'],
         )
-        for item in new_table_data:
+        for item in table_data:
             if item['status'] == '0':
                 item['status'] = dict(tag='正常', color='blue')
             else:
@@ -112,7 +108,7 @@ def get_allocate_user_table_data(
                     else {},
                 ]
 
-        return [new_table_data, table_pagination, str(uuid.uuid4()), None]
+        return [table_data, table_pagination, str(uuid.uuid4()), None]
 
     raise PreventUpdate
 
