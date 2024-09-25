@@ -65,7 +65,10 @@ def handle_tab_switch_and_create(
             pass
         else:
             breadcrumb_items = breadcrumb_items + [
-                {'title': item.get('props').get('title')}
+                {
+                    'title': item.get('props').get('title'),
+                    'icon': item.get('props').get('icon'),
+                }
                 for item in currentItemPath
             ]
         # 判断当前新选中的菜单栏项对应标签页是否已创建
