@@ -21,20 +21,24 @@ class RouterUtil:
         menu_list = []
         for router in router_list:
             copy_router = deepcopy(router)
+            if (
+                copy_router.get('path') in ['', '/']
+                and len(copy_router.get('children') or []) == 1
+            ):
+                copy_router = copy_router['children'][0]
             copy_router['path'] = (
                 copy_router.get('path')
                 if copy_router.get('path')
                 and (
                     copy_router.get('path').startswith('/')
                     or cls.is_http(copy_router.get('path'))
-                    or copy_router.get('component') == MenuConstant.INNER_LINK
                 )
                 else '/' + copy_router.get('path')
             )
             meta = copy_router.get('meta') if copy_router.get('meta') else {}
             copy_router['props'] = {
                 **meta,
-                'key': copy_router.get('name') + copy_router.get('path'),
+                'key': copy_router.get('name') + path + copy_router.get('path'),
                 'href': path + copy_router.get('path'),
             }
             if copy_router.get('component') in [
@@ -137,6 +141,26 @@ class RouterUtil:
                 search_panel_data.append(item_dict)
 
         return search_panel_data
+
+    @classmethod
+    def generate_validate_pathname_list(cls, menu_list: List):
+        """
+        生成合法路由列表
+
+        :param menu_list: 菜单列表
+        :return: 合法路由列表
+        """
+        validate_pathname_list = []
+        for item in menu_list:
+            if item.get('children'):
+                validate_pathname_list.extend(
+                    cls.generate_validate_pathname_list(item.get('children'))
+                )
+            else:
+                href = item.get('props').get('href')
+                validate_pathname_list.append(href)
+
+        return validate_pathname_list
 
     @classmethod
     def __genrate_item_menu(cls, router: Dict, modules: str):

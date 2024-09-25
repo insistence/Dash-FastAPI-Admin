@@ -1,10 +1,14 @@
 import dash
+from dash import dcc
 import feffery_antd_components as fac
 from callbacks.layout_c import aside_c  # noqa: F401
 
 
 def render_aside_content(menu_info):
     return [
+        dcc.Store(id='current-key_path-store'),
+        dcc.Store(id='current-item-store'),
+        dcc.Store(id='current-item_path-store'),
         fac.AntdSider(
             [
                 fac.AntdRow(
@@ -52,18 +56,7 @@ def render_aside_content(menu_info):
                 ),
                 fac.AntdMenu(
                     id='index-side-menu',
-                    menuItems=[
-                        {
-                            'component': 'Item',
-                            'props': {
-                                'key': '首页',
-                                'title': '首页',
-                                'icon': 'antd-dashboard',
-                                'href': '/',
-                            },
-                        }
-                    ]
-                    + menu_info,
+                    menuItems=menu_info,
                     mode='inline',
                     theme='dark',
                     defaultSelectedKey='首页',

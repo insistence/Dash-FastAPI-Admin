@@ -6,7 +6,7 @@ from flask import session
 from callbacks.system_c import notice_c
 from components.ApiRadioGroup import ApiRadioGroup
 from components.ApiSelect import ApiSelect
-from config.global_config import ApiBaseUrlConfig
+from config.env import ApiConfig
 from utils.permission_util import PermissionManager
 
 
@@ -390,12 +390,12 @@ def render(*args, **kwargs):
                                                 'placeholder': '请输入...'
                                             },
                                             uploadImage={
-                                                'server': f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor',
+                                                'server': f'{ApiConfig.BaseUrl}/common/uploadForEditor',
                                                 'fieldName': 'file',
                                                 'maxFileSize': 10 * 1024 * 1024,
                                                 'maxNumberOfFiles': 10,
                                                 'meta': {
-                                                    'baseUrl': ApiBaseUrlConfig.BaseUrl,
+                                                    'baseUrl': ApiConfig.BaseUrl,
                                                     'uploadId': str(
                                                         uuid.uuid4()
                                                     ),
@@ -413,14 +413,14 @@ def render(*args, **kwargs):
                                                 'base64LimitSize': 500 * 1024,
                                             },
                                             uploadVideo={
-                                                'server': f'{ApiBaseUrlConfig.BaseUrl}/common/uploadForEditor',
+                                                'server': f'{ApiConfig.BaseUrl}/common/uploadForEditor',
                                                 'fieldName': 'file',
                                                 'maxFileSize': 100
                                                 * 1024
                                                 * 1024,
                                                 'maxNumberOfFiles': 3,
                                                 'meta': {
-                                                    'baseUrl': ApiBaseUrlConfig.BaseUrl,
+                                                    'baseUrl': ApiConfig.BaseUrl,
                                                     'uploadId': str(
                                                         uuid.uuid4()
                                                     ),

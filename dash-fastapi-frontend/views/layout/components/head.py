@@ -1,7 +1,7 @@
 import feffery_antd_components as fac
 from dash import html
 from callbacks.layout_c import head_c  # noqa: F401
-from config.global_config import ApiBaseUrlConfig
+from config.env import ApiConfig
 from utils.cache_util import CacheManager
 
 
@@ -80,7 +80,7 @@ def render_head_content():
                             fac.AntdAvatar(
                                 id='avatar-info',
                                 mode='image',
-                                src=f"{ApiBaseUrlConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
+                                src=f"{ApiConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
                                 if CacheManager.get('user_info').get('avatar')
                                 else '/assets/imgs/profile.jpg',
                                 size=36,

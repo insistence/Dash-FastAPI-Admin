@@ -4,7 +4,7 @@ from dash import dcc, html
 from callbacks import register_c  # noqa: F401
 
 
-def render_register_content():
+def render():
     return html.Div(
         [
             fac.AntdCard(

@@ -5,7 +5,7 @@ from dash import dcc, html
 from callbacks import login_c  # noqa: F401
 
 
-def render_content():
+def render():
     return html.Div(
         [
             dcc.Store(id='login-success-container'),

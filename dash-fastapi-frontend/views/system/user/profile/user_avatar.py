@@ -2,7 +2,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from dash import html, dcc
 from callbacks.system_c.user_c.profile_c import avatar_c  # noqa: F401
-from config.global_config import ApiBaseUrlConfig
+from config.env import ApiConfig
 
 
 def render(avatar_path):
@@ -11,7 +11,7 @@ def render(avatar_path):
             [
                 fac.AntdImage(
                     id='user-avatar-image-info',
-                    src=f'{ApiBaseUrlConfig.BaseUrl}{avatar_path}'
+                    src=f'{ApiConfig.BaseUrl}{avatar_path}'
                     if avatar_path
                     else '/assets/imgs/profile.jpg',
                     preview=False,

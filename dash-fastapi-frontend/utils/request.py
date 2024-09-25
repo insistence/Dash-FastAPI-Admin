@@ -10,7 +10,7 @@ from config.exception import (
 )
 from config.constant import HttpStatusConstant
 from config.enums import ApiMethod
-from config.global_config import ApiBaseUrlConfig
+from config.env import ApiConfig
 from utils.cache_util import CacheManager
 from utils.log_util import logger
 
@@ -40,7 +40,7 @@ def api_request(
     :param stream: 是否为流式请求
     :return: 请求结果
     """
-    api_url = ApiBaseUrlConfig.BaseUrl + url
+    api_url = ApiConfig.BaseUrl + url
     api_method = method.value
     user_agent = request.headers.get('User-Agent')
     authorization = (

@@ -74,5 +74,8 @@ def close_personal_info_modal(close_click, tab_close_counts):
     关闭当前个人资料标签页回调
     """
     if close_click:
-        return ['个人资料', tab_close_counts + 1 if tab_close_counts else 1]
+        return [
+            'Profile/user/profile',
+            tab_close_counts + 1 if tab_close_counts else 1,
+        ]
     raise PreventUpdate

@@ -1,14 +1,12 @@
 import dash
 import feffery_antd_components as fac
-import importlib
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+from importlib import import_module
 from jsonpath_ng import parse
-from server import app
-from utils.cache_util import CacheManager
-from utils.router_util import RouterUtil
-from utils.tree_tool import find_href_by_key
 import views  # noqa: F401
+from server import app
+from utils.router_util import RouterUtil
 
 
 @app.callback(
@@ -23,9 +21,9 @@ import views  # noqa: F401
         Input('tabs-container', 'tabCloseCounts'),
     ],
     [
-        State('index-side-menu', 'currentKeyPath'),
-        State('index-side-menu', 'currentItem'),
-        State('index-side-menu', 'currentItemPath'),
+        State('current-key_path-store', 'data'),
+        State('current-item-store', 'data'),
+        State('current-item_path-store', 'data'),
         State('tabs-container', 'latestDeletePane'),
         State('tabs-container', 'items'),
         State('tabs-container', 'activeKey'),
@@ -63,10 +61,8 @@ def handle_tab_switch_and_create(
         breadcrumb_items = [
             {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
         ]
-        if currentKey == '首页':
+        if currentKey == 'Index/':
             pass
-        elif currentKey == '个人资料':
-            breadcrumb_items.append({'title': '个人资料'})
         else:
             breadcrumb_items = breadcrumb_items + [
                 {'title': item.get('props').get('title')}
@@ -81,17 +77,9 @@ def handle_tab_switch_and_create(
                 currentKeyPath,
             ]
 
-        if currentKey == '个人资料':
-            menu_title = '个人资料'
-            menu_modules = 'system.user.profile'
-            breadcrumb_items = [
-                {'title': '首页', 'icon': 'antd-dashboard', 'href': '/'},
-                {'title': menu_title},
-            ]
-        else:
-            menu_title = currentItem.get('props').get('title')
-            # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
-            menu_modules = currentItem.get('props').get('modules')
+        menu_title = currentItem.get('props').get('title')
+        # 判断当前选中的菜单栏项是否存在module，如果有，则动态导入module，否则返回404页面
+        menu_modules = currentItem.get('props').get('modules')
 
         for index, item in enumerate(origin_items):
             if {
@@ -131,9 +119,7 @@ def handle_tab_switch_and_create(
                     'icon': 'antd-arrow-left',
                 },
             )
-        if currentKey not in ['首页', '个人资料'] and RouterUtil.is_http(
-            currentItem.get('path')
-        ):
+        if RouterUtil.is_http(currentItem.get('path')):
             raise PreventUpdate
         if menu_modules:
             # 否则追加子项返回
@@ -142,9 +128,10 @@ def handle_tab_switch_and_create(
                 {
                     'label': menu_title,
                     'key': currentKey,
-                    'children': importlib.import_module(
-                        'views.' + menu_modules
-                    ).render(),
+                    'closable': False
+                    if currentItem.get('props').get('affix')
+                    else True,
+                    'children': import_module('views.' + menu_modules).render(),
                     'contextMenu': context_menu,
                 }
             )
@@ -363,7 +350,7 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
                     'icon': 'antd-close-circle',
                 },
             ]
-            if clickedContextMenu['tabKey'] == '首页':
+            if clickedContextMenu['tabKey'] == 'Index/':
                 new_items[0]['contextMenu'] = context_menu
             else:
                 context_menu.insert(
@@ -432,30 +419,24 @@ def handle_via_context_menu(clickedContextMenu, origin_items, activeKey):
             },
         ]
         # 否则则为全部关闭
-        return [new_items, '首页', dash.no_update]
+        return [new_items, 'Index/', dash.no_update]
 
     raise PreventUpdate
 
 
 # 标签页点击回调
-@app.callback(
+app.clientside_callback(
+    """
+    (activeKey, routerList) => {
+        if (activeKey) {
+            let currentItem = findByKey(routerList, activeKey);
+            return currentItem?.props?.href;
+        }
+        throw window.dash_clientside.PreventUpdate; 
+    }
+    """,
     Output('dcc-url', 'pathname', allow_duplicate=True),
     Input('tabs-container', 'activeKey'),
+    State('router-list-container', 'data'),
     prevent_initial_call=True,
 )
-def get_current_href(active_key):
-    if active_key:
-        if active_key == '首页':
-            return '/'
-
-        elif active_key == '个人资料':
-            return '/user/profile'
-
-        else:
-            current_href = find_href_by_key(
-                CacheManager.get('menu_info'), active_key
-            )
-
-            return current_href
-
-    raise PreventUpdate

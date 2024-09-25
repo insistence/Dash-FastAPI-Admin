@@ -1,14 +1,14 @@
 from dash import dcc, no_update
 from dash.dependencies import Input, Output, State
 from flask import session
+from importlib import import_module
+import views
 from api.login import LoginApi
 from api.router import RouterApi
-from config.global_config import RouterConfig
+from config.router import RouterConfig
 from server import app
 from utils.cache_util import CacheManager
 from utils.router_util import RouterUtil
-from utils.tree_tool import find_key_by_href, find_node_values
-from views import forget, layout, login, page_404, register
 
 
 @app.callback(
@@ -17,7 +17,8 @@ from views import forget, layout, login, page_404, register
         redirect_container=Output(
             'redirect-container', 'children', allow_duplicate=True
         ),
-        menu_current_key=Output('current-key-container', 'data'),
+        current_pathname=Output('current-pathname-container', 'data'),
+        router_list=Output('router-list-container', 'data'),
         search_panel_data=Output('search-panel', 'data'),
     ),
     inputs=dict(pathname=Input('url-container', 'pathname')),
@@ -39,6 +40,7 @@ def router(pathname, url_trigger, session_token):
             current_user = LoginApi.get_info()
             router_list_result = RouterApi.get_routers()
             router_list = router_list_result['data']
+            router_list = RouterConfig.CONSTANT_ROUTES + router_list
             menu_info = RouterUtil.generate_menu_tree(router_list)
             permissions = {
                 'perms': current_user['permissions'],
@@ -51,26 +53,24 @@ def router(pathname, url_trigger, session_token):
             )
             CacheManager.set(cache_obj)
         menu_info = CacheManager.get('menu_info')
-        dynamic_valid_pathname_list = find_node_values(menu_info, 'href')
-        valid_href_list = (
-            dynamic_valid_pathname_list + RouterConfig.STATIC_VALID_PATHNAME
+        valid_pathname_list = RouterUtil.generate_validate_pathname_list(
+            menu_info
         )
-        if pathname in valid_href_list:
-            current_key = find_key_by_href(menu_info, pathname)
-            if pathname == '/':
-                current_key = '首页'
-            if pathname == '/user/profile':
-                current_key = '个人资料'
+        if pathname in valid_pathname_list:
             if url_trigger == 'load':
                 # 根据pathname控制渲染行为
-                if pathname == '/login' or pathname == '/forget':
+                if pathname in [
+                    route.get('path')
+                    for route in RouterConfig.WHITE_ROUTES_LIST
+                ]:
                     # 重定向到主页面
                     return dict(
                         app_mount=no_update,
                         redirect_container=dcc.Location(
                             pathname='/', id='router-redirect'
                         ),
-                        menu_current_key=no_update,
+                        current_pathname=no_update,
+                        router_list=no_update,
                         search_panel_data=no_update,
                     )
 
@@ -82,9 +82,10 @@ def router(pathname, url_trigger, session_token):
                 )
                 # 否则正常渲染主页面
                 return dict(
-                    app_mount=layout.render_content(user_menu_info),
+                    app_mount=views.layout.render(user_menu_info),
                     redirect_container=None,
-                    menu_current_key=current_key,
+                    current_pathname=pathname,
+                    router_list=menu_info,
                     search_panel_data=search_panel_data,
                 )
 
@@ -92,45 +93,35 @@ def router(pathname, url_trigger, session_token):
                 return dict(
                     app_mount=no_update,
                     redirect_container=None,
-                    menu_current_key=current_key,
+                    current_pathname=pathname,
+                    router_list=no_update,
                     search_panel_data=no_update,
                 )
 
         else:
             # 渲染404状态页
             return dict(
-                app_mount=page_404.render_content(),
+                app_mount=views.page_404.render(),
                 redirect_container=None,
-                menu_current_key=no_update,
+                current_pathname=no_update,
+                router_list=no_update,
                 search_panel_data=no_update,
             )
 
     else:
         # 若未登录
         # 根据pathname控制渲染行为
-        if pathname == '/login':
-            return dict(
-                app_mount=login.render_content(),
-                redirect_container=None,
-                menu_current_key=no_update,
-                search_panel_data=no_update,
-            )
+        for route in RouterConfig.WHITE_ROUTES_LIST:
+            if pathname == route.get('path'):
+                component = route.get('component') or 'page_404'
 
-        if pathname == '/forget':
-            return dict(
-                app_mount=forget.render_forget_content(),
-                redirect_container=None,
-                menu_current_key=no_update,
-                search_panel_data=no_update,
-            )
-
-        if pathname == '/register':
-            return dict(
-                app_mount=register.render_register_content(),
-                redirect_container=None,
-                menu_current_key=no_update,
-                search_panel_data=no_update,
-            )
+                return dict(
+                    app_mount=import_module('views.' + component).render(),
+                    redirect_container=None,
+                    current_pathname=no_update,
+                    router_list=no_update,
+                    search_panel_data=no_update,
+                )
 
         # 否则重定向到登录页
         return dict(
@@ -138,6 +129,7 @@ def router(pathname, url_trigger, session_token):
             redirect_container=dcc.Location(
                 pathname='/login', id='router-redirect'
             ),
-            menu_current_key=no_update,
+            current_pathname=no_update,
+            router_list=no_update,
             search_panel_data=no_update,
         )

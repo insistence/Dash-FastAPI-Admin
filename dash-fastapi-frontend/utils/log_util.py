@@ -1,7 +1,7 @@
 import os
 import time
 from loguru import logger
-from config.global_config import PathConfig
+from config.env import PathConfig
 
 
 log_time = time.strftime('%Y%m%d', time.localtime())

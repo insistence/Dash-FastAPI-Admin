@@ -4,7 +4,7 @@ from dash import dcc, html
 from callbacks import forget_c  # noqa: F401
 
 
-def render_forget_content():
+def render():
     return html.Div(
         [
             fac.AntdCard(

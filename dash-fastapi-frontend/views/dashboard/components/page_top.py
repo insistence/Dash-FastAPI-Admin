@@ -1,7 +1,7 @@
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from dash import html
-from config.global_config import ApiBaseUrlConfig
+from config.env import ApiConfig
 from utils.cache_util import CacheManager
 
 
@@ -12,7 +12,7 @@ def render_page_top():
                 fac.AntdAvatar(
                     id='dashboard-avatar-info',
                     mode='image',
-                    src=f"{ApiBaseUrlConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
+                    src=f"{ApiConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
                     if CacheManager.get('user_info').get('avatar')
                     else '/assets/imgs/profile.jpg',
                     size='large',
