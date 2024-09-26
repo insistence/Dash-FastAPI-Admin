@@ -478,18 +478,25 @@ def dict_data_delete_confirm(delete_confirm, dict_codes_data):
         Output('dict_data-export-complete-judge-container', 'data'),
     ],
     Input('dict_data-export', 'nClicks'),
-    State('dict_data-dict_type-select', 'value'),
+    [
+        State('dict_data-dict_type-select', 'value'),
+        State('dict_data-dict_label-input', 'value'),
+        State('dict_data-status-select', 'value'),
+    ],
     running=[[Output('dict_data-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_dict_data_list(export_click, dict_type):
+def export_dict_data_list(export_click, dict_type, dict_label, status_select):
     """
     导出字典数据信息回调
     """
     if export_click:
-        export_dict_data_res = DictDataApi.export_data(
-            dict(dict_type=dict_type)
+        export_params = dict(
+            dict_type=dict_type,
+            dict_label=dict_label,
+            status=status_select,
         )
+        export_dict_data_res = DictDataApi.export_data(export_params)
         export_dict_data = export_dict_data_res.content
         MessageManager.success('导出成功')
 

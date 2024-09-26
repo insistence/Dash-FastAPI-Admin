@@ -558,15 +558,36 @@ def dict_type_to_dict_data_modal(
         Output('dict_type-export-complete-judge-container', 'data'),
     ],
     Input('dict_type-export', 'nClicks'),
+    [
+        State('dict_type-dict_name-input', 'value'),
+        State('dict_type-dict_type-input', 'value'),
+        State('dict_type-status-select', 'value'),
+        State('dict_type-create_time-range', 'value'),
+    ],
     running=[[Output('dict_type-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_dict_type_list(export_click):
+def export_dict_type_list(
+    export_click, dict_name, dict_type, status_select, create_time_range
+):
     """
     导出字典类型信息回调
     """
     if export_click:
-        export_dict_type_res = DictTypeApi.export_type({})
+        begin_time = None
+        end_time = None
+        if create_time_range:
+            begin_time = create_time_range[0]
+            end_time = create_time_range[1]
+
+        export_params = dict(
+            dict_name=dict_name,
+            dict_type=dict_type,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+        )
+        export_dict_type_res = DictTypeApi.export_type(export_params)
         export_dict_type = export_dict_type_res.content
         MessageManager.success(content='导出成功')
 
