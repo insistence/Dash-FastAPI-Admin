@@ -463,15 +463,23 @@ def post_delete_confirm(delete_confirm, post_ids_data):
         Output('post-export-complete-judge-container', 'data'),
     ],
     Input('post-export', 'nClicks'),
+    [
+        State('post-post_code-input', 'value'),
+        State('post-post_name-input', 'value'),
+        State('post-status-select', 'value'),
+    ],
     running=[[Output('post-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_post_list(export_click):
+def export_post_list(export_click, post_code, post_name, status):
     """
     导出岗位信息回调
     """
     if export_click:
-        export_post_res = PostApi.export_post({})
+        export_params = dict(
+            post_code=post_code, post_name=post_name, status=status
+        )
+        export_post_res = PostApi.export_post(export_params)
         export_post = export_post_res.content
         MessageManager.success(content='导出成功')
 
