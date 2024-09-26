@@ -487,15 +487,35 @@ def config_delete_confirm(delete_confirm, config_ids_data):
         Output('config-export-complete-judge-container', 'data'),
     ],
     Input('config-export', 'nClicks'),
+    [
+        State('config-config_name-input', 'value'),
+        State('config-config_key-input', 'value'),
+        State('config-config_type-select', 'value'),
+        State('config-create_time-range', 'value'),
+    ],
     running=[[Output('config-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_config_list(export_click):
+def export_config_list(
+    export_click, config_name, config_key, config_type, create_time_range
+):
     """
     导出参数设置信息回调
     """
     if export_click:
-        export_config_res = ConfigApi.export_config({})
+        begin_time = None
+        end_time = None
+        if create_time_range:
+            begin_time = create_time_range[0]
+            end_time = create_time_range[1]
+        export_params = dict(
+            config_name=config_name,
+            config_key=config_key,
+            config_type=config_type,
+            begin_time=begin_time,
+            end_time=end_time,
+        )
+        export_config_res = ConfigApi.export_config(export_params)
         export_config = export_config_res.content
         MessageManager.success(content='导出成功')
 
