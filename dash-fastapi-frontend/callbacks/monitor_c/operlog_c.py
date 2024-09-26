@@ -329,15 +329,46 @@ def operation_log_delete_confirm(delete_confirm, oper_ids_data):
         Output('operation_log-export-complete-judge-container', 'data'),
     ],
     Input('operation_log-export', 'nClicks'),
+    [
+        State('operation_log-list-table', 'sorter'),
+        State('operation_log-title-input', 'value'),
+        State('operation_log-oper_name-input', 'value'),
+        State('operation_log-business_type-select', 'value'),
+        State('operation_log-status-select', 'value'),
+        State('operation_log-oper_time-range', 'value'),
+    ],
     running=[[Output('operation_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_operation_log_list(export_click):
+def export_operation_log_list(
+    export_click,
+    sorter,
+    title,
+    oper_name,
+    business_type,
+    status_select,
+    oper_time_range,
+):
     """
     导出操作日志信息回调
     """
     if export_click:
-        export_operation_log_res = OperlogApi.export_operlog({})
+        begin_time = None
+        end_time = None
+        if oper_time_range:
+            begin_time = oper_time_range[0]
+            end_time = oper_time_range[1]
+        export_params = dict(
+            title=title,
+            oper_name=oper_name,
+            business_type=business_type,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+            order_by_column=sorter.get('columns')[0] if sorter else None,
+            is_asc=f"{sorter.get('orders')[0]}ing" if sorter else None,
+        )
+        export_operation_log_res = OperlogApi.export_operlog(export_params)
         export_operation_log = export_operation_log_res.content
         MessageManager.success(content='导出成功')
 
