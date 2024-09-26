@@ -8,6 +8,7 @@ from api.monitor.logininfor import LogininforApi
 from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_logininfor_table(query_params: Dict):
@@ -31,6 +32,7 @@ def generate_logininfor_table(query_params: Dict):
         item['status_tag'] = DictManager.get_dict_tag(
             dict_type='sys_common_status', dict_value=item.get('status')
         )
+        item['login_time'] = TimeFormatUtil.format_time(item.get('login_time'))
         item['key'] = str(item['info_id'])
 
     return [table_data, table_pagination]

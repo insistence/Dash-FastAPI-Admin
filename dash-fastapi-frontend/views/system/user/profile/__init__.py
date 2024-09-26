@@ -2,6 +2,7 @@ import feffery_antd_components as fac
 import feffery_utils_components as fuc
 from dash import html
 from api.system.user import UserApi
+from utils.time_format_util import TimeFormatUtil
 from . import reset_pwd, user_avatar, user_info
 
 
@@ -124,9 +125,11 @@ def render(*args, **kwargs):
                                                     ),
                                                     fac.AntdText('创建日期'),
                                                     html.Div(
-                                                        user_profile.get(
-                                                            'data'
-                                                        ).get('create_time'),
+                                                        TimeFormatUtil.format_time(
+                                                            user_profile.get(
+                                                                'data'
+                                                            ).get('create_time')
+                                                        ),
                                                         id='profile_c-create_time',
                                                         className='pull-right',
                                                     ),

@@ -8,6 +8,7 @@ from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 @app.callback(
@@ -90,6 +91,9 @@ def get_job_log_table_data(
             )
             item['job_group_tag'] = DictManager.get_dict_tag(
                 dict_type='sys_job_group', dict_value=item.get('job_group')
+            )
+            item['create_time'] = TimeFormatUtil.format_time(
+                item.get('create_time')
             )
             item['key'] = str(item['job_log_id'])
             item['operation'] = [

@@ -6,6 +6,7 @@ from api.system.role import RoleApi
 from server import app
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 @app.callback(
@@ -96,6 +97,9 @@ def get_allocate_user_table_data(
                 item['status'] = dict(tag='正常', color='blue')
             else:
                 item['status'] = dict(tag='停用', color='volcano')
+            item['create_time'] = TimeFormatUtil.format_time(
+                item.get('create_time')
+            )
             item['key'] = str(item['user_id'])
             if triggered_id.index == 'allocated':
                 item['operation'] = [

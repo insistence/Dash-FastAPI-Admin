@@ -10,6 +10,7 @@ from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 @app.callback(
@@ -80,6 +81,9 @@ def get_dict_data_table_data(
         for item in table_data:
             item['status'] = DictManager.get_dict_tag(
                 dict_type='sys_normal_disable', dict_value=item.get('status')
+            )
+            item['create_time'] = TimeFormatUtil.format_time(
+                item.get('create_time')
             )
             item['key'] = str(item['dict_code'])
             item['operation'] = [

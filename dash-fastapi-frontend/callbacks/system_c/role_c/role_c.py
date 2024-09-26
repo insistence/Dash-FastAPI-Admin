@@ -12,6 +12,7 @@ from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 from utils.tree_tool import find_tree_all_keys
 
 
@@ -37,6 +38,9 @@ def generate_role_table(query_params: Dict):
             item['status'] = dict(checked=True, disabled=item['role_id'] == 1)
         else:
             item['status'] = dict(checked=False, disabled=item['role_id'] == 1)
+        item['create_time'] = TimeFormatUtil.format_time(
+            item.get('create_time')
+        )
         item['key'] = str(item['role_id'])
         if item['role_id'] == 1:
             item['operation'] = []

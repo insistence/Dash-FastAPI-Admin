@@ -12,6 +12,7 @@ from server import app
 from utils.common import validate_data_not_empty
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_user_table(query_params: Dict):
@@ -38,6 +39,9 @@ def generate_user_table(query_params: Dict):
             item['status'] = dict(checked=False, disabled=item['user_id'] == 1)
         item['dept_name'] = (
             item.get('dept').get('dept_name') if item.get('dept') else None
+        )
+        item['create_time'] = TimeFormatUtil.format_time(
+            item.get('create_time')
         )
         item['key'] = str(item['user_id'])
         if item['user_id'] == 1:
@@ -715,6 +719,9 @@ def role_to_allocated_user_modal(
         table_data = allocated_role_info.get('roles')
         selected_row_keys = []
         for item in table_data:
+            item['create_time'] = TimeFormatUtil.format_time(
+                item.get('create_time')
+            )
             item['key'] = str(item['role_id'])
             if item.get('flag'):
                 selected_row_keys.append(str(item['role_id']))

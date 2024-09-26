@@ -11,6 +11,7 @@ from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 from utils.tree_tool import list_to_tree, list_to_tree_select
 from views.system.menu.components import button_type, content_type, menu_type
 
@@ -27,6 +28,9 @@ def generate_menu_table(query_params: Dict):
     table_data = table_info['data']
     for item in table_data:
         default_expanded_row_keys.append(str(item['menu_id']))
+        item['create_time'] = TimeFormatUtil.format_time(
+            item.get('create_time')
+        )
         item['key'] = str(item['menu_id'])
         item['icon'] = [
             {

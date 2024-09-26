@@ -10,6 +10,7 @@ from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_notice_table(query_params: Dict):
@@ -35,6 +36,9 @@ def generate_notice_table(query_params: Dict):
         )
         item['notice_type'] = DictManager.get_dict_tag(
             dict_type='sys_notice_type', dict_value=item.get('notice_type')
+        )
+        item['create_time'] = TimeFormatUtil.format_time(
+            item.get('create_time')
         )
         item['key'] = str(item['notice_id'])
         item['operation'] = [

@@ -11,6 +11,7 @@ from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_config_table(query_params: Dict):
@@ -33,6 +34,9 @@ def generate_config_table(query_params: Dict):
     for item in table_data:
         item['config_type'] = DictManager.get_dict_tag(
             dict_type='sys_yes_no', dict_value=item.get('config_type')
+        )
+        item['create_time'] = TimeFormatUtil.format_time(
+            item.get('create_time')
         )
         item['key'] = str(item['config_id'])
         item['operation'] = [

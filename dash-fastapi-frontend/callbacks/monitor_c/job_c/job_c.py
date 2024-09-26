@@ -11,6 +11,7 @@ from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_job_table(query_params: Dict):
@@ -495,6 +496,9 @@ def get_job_detail_modal(
         job_info['status'] = DictManager.get_dict_label(
             dict_type='sys_job_status',
             dict_value=job_info.get('status'),
+        )
+        job_info['create_time'] = TimeFormatUtil.format_time(
+            job_info.get('create_time')
         )
         return dict(
             modal_visible=True,

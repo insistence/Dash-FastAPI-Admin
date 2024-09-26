@@ -9,6 +9,7 @@ from server import app
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.time_format_util import TimeFormatUtil
 
 
 def generate_operlog_table(query_params: Dict):
@@ -36,6 +37,9 @@ def generate_operlog_table(query_params: Dict):
             item['business_type_tag'] = DictManager.get_dict_tag(
                 dict_type='sys_oper_type',
                 dict_value=item.get('business_type'),
+            )
+            item['oper_time'] = TimeFormatUtil.format_time(
+                item.get('oper_time')
             )
             item['key'] = str(item['oper_id'])
             item['cost_time'] = f"{item['cost_time']}毫秒"
