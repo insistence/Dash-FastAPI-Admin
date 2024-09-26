@@ -712,15 +712,35 @@ def role_to_allocated_user_modal(allocated_click, allocated_user_search_nclick):
         Output('role-export-complete-judge-container', 'data'),
     ],
     Input('role-export', 'nClicks'),
+    [
+        State('role-role_name-input', 'value'),
+        State('role-role_key-input', 'value'),
+        State('role-status-select', 'value'),
+        State('role-create_time-range', 'value'),
+    ],
     running=[[Output('role-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_role_list(export_click):
+def export_role_list(
+    export_click, role_name, role_key, status_select, create_time_range
+):
     """
     导出角色信息回调
     """
     if export_click:
-        export_role_res = RoleApi.export_role({})
+        begin_time = None
+        end_time = None
+        if create_time_range:
+            begin_time = create_time_range[0]
+            end_time = create_time_range[1]
+        export_params = dict(
+            role_name=role_name,
+            role_key=role_key,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+        )
+        export_role_res = RoleApi.export_role(export_params)
         export_role = export_role_res.content
         MessageManager.success(content='导出成功')
 
