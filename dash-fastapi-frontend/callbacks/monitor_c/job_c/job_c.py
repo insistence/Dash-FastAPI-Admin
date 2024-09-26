@@ -663,15 +663,25 @@ def job_to_job_log_modal(
         Output('job-export-complete-judge-container', 'data'),
     ],
     Input('job-export', 'nClicks'),
+    [
+        State('job-job_name-input', 'value'),
+        State('job-job_group-select', 'value'),
+        State('job-status-select', 'value'),
+    ],
     running=[[Output('job-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_job_list(export_click):
+def export_job_list(export_click, job_name, job_group, status_select):
     """
     导出定时任务信息回调
     """
     if export_click:
-        export_job_res = JobApi.export_job({})
+        export_params = dict(
+            job_name=job_name,
+            job_group=job_group,
+            status=status_select,
+        )
+        export_job_res = JobApi.export_job(export_params)
         export_job = export_job_res.content
         MessageManager.success(content='导出成功')
 

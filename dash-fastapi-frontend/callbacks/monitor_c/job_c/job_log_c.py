@@ -283,15 +283,35 @@ def job_log_delete_confirm(delete_confirm, job_log_ids_data):
         Output('job_log-export-complete-judge-container', 'data'),
     ],
     Input('job_log-export', 'nClicks'),
+    [
+        State('job_log-job_name-input', 'value'),
+        State('job_log-job_group-select', 'value'),
+        State('job_log-status-select', 'value'),
+        State('job_log-create_time-range', 'value'),
+    ],
     running=[[Output('job_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_job_log_list(export_click):
+def export_job_log_list(
+    export_click, job_name, job_group, status_select, create_time_range
+):
     """
     导出定时任务调度日志信息回调
     """
     if export_click:
-        export_job_log_res = JobLogApi.export_job_log({})
+        begin_time = None
+        end_time = None
+        if create_time_range:
+            begin_time = create_time_range[0]
+            end_time = create_time_range[1]
+        export_params = dict(
+            job_name=job_name,
+            job_group=job_group,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+        )
+        export_job_log_res = JobLogApi.export_job_log(export_params)
         export_job_log = export_job_log_res.content
         MessageManager.success(content='导出成功')
 
