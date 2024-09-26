@@ -270,15 +270,38 @@ def login_log_delete_confirm(delete_confirm, info_ids_data):
         Output('login_log-export-complete-judge-container', 'data'),
     ],
     Input('login_log-export', 'nClicks'),
+    [
+        State('login_log-list-table', 'sorter'),
+        State('login_log-ipaddr-input', 'value'),
+        State('login_log-user_name-input', 'value'),
+        State('login_log-status-select', 'value'),
+        State('login_log-login_time-range', 'value'),
+    ],
     running=[[Output('login_log-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_login_log_list(export_click):
+def export_login_log_list(
+    export_click, sorter, ipaddr, user_name, status_select, login_time_range
+):
     """
     导出登录日志信息回调
     """
     if export_click:
-        export_login_log_res = LogininforApi.export_logininfor({})
+        begin_time = None
+    end_time = None
+    if login_time_range:
+        begin_time = login_time_range[0]
+        end_time = login_time_range[1]
+        export_params = dict(
+            ipaddr=ipaddr,
+            user_name=user_name,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+            order_by_column=sorter.get('columns')[0] if sorter else None,
+            is_asc=f"{sorter.get('orders')[0]}ing" if sorter else None,
+        )
+        export_login_log_res = LogininforApi.export_logininfor(export_params)
         export_login_log = export_login_log_res.content
         MessageManager.success(content='导出成功')
 
