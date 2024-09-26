@@ -846,15 +846,45 @@ def download_user_template(download_click):
         ),
     ],
     Input('user-export', 'nClicks'),
+    [
+        State('dept-tree', 'selectedKeys'),
+        State('user-user_name-input', 'value'),
+        State('user-phone_number-input', 'value'),
+        State('user-status-select', 'value'),
+        State('user-create_time-range', 'value'),
+    ],
     running=[[Output('user-export', 'loading'), True, False]],
     prevent_initial_call=True,
 )
-def export_user_list(export_click):
+def export_user_list(
+    export_click,
+    selected_dept_tree,
+    user_name,
+    phone_number,
+    status_select,
+    create_time_range,
+):
     """
     导出用户信息回调
     """
     if export_click:
-        export_user_res = UserApi.export_user({})
+        dept_id = None
+        begin_time = None
+        end_time = None
+        if create_time_range:
+            begin_time = create_time_range[0]
+            end_time = create_time_range[1]
+        if selected_dept_tree:
+            dept_id = int(selected_dept_tree[0])
+        export_params = dict(
+            dept_id=dept_id,
+            user_name=user_name,
+            phonenumber=phone_number,
+            status=status_select,
+            begin_time=begin_time,
+            end_time=end_time,
+        )
+        export_user_res = UserApi.export_user(export_params)
         MessageManager.success(content='导出成功')
 
         export_user = export_user_res.content
