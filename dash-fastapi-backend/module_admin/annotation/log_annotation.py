@@ -108,10 +108,10 @@ class Log:
                     system_os += f' {user_agent_info.os.version[0]}'
                 login_log = dict(
                     ipaddr=oper_ip,
-                    loginLocation=oper_location,
+                    login_location=oper_location,
                     browser=browser,
                     os=system_os,
-                    loginTime=oper_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    login_time=oper_time.strftime('%Y-%m-%d %H:%M:%S'),
                 )
                 kwargs['form_data'].login_info = login_log
             try:

@@ -33,10 +33,10 @@ class OnlineService:
                 user_name=payload.get('user_name'),
                 dept_name=payload.get('dept_name'),
                 ipaddr=payload.get('login_info').get('ipaddr'),
-                login_location=payload.get('login_info').get('loginLocation'),
+                login_location=payload.get('login_info').get('login_location'),
                 browser=payload.get('login_info').get('browser'),
                 os=payload.get('login_info').get('os'),
-                login_time=payload.get('login_info').get('loginTime'),
+                login_time=payload.get('login_info').get('login_time'),
             )
             if query_object.user_name and not query_object.ipaddr:
                 if query_object.user_name == payload.get('login_info').get('ipaddr'):
