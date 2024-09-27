@@ -121,7 +121,7 @@ class Log:
                 logger.warning(e.message)
                 result = ResponseUtil.failure(data=e.data, msg=e.message)
             except ServiceException as e:
-                logger.exception(e)
+                logger.error(e.message)
                 result = ResponseUtil.error(data=e.data, msg=e.message)
             except Exception as e:
                 logger.exception(e)
