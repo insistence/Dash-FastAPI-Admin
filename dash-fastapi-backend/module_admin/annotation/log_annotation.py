@@ -3,12 +3,11 @@ import json
 import os
 import requests
 import time
-import warnings
 from datetime import datetime
 from fastapi import Request
 from fastapi.responses import JSONResponse, ORJSONResponse, UJSONResponse
 from functools import lru_cache, wraps
-from typing import Literal, Optional, Union
+from typing import Literal, Optional
 from user_agents import parse
 from module_admin.entity.vo.log_vo import LogininforModel, OperLogModel
 from module_admin.service.log_service import LoginLogService, OperationLogService
