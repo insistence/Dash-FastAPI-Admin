@@ -1,4 +1,6 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Query, Request, status, UploadFile
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from module_admin.service.common_service import CommonService
 from module_admin.service.login_service import LoginService
 from utils.log_util import logger
@@ -13,6 +15,33 @@ async def common_upload(request: Request, file: UploadFile = File(...)):
     logger.info('上传成功')
 
     return ResponseUtil.success(model_content=upload_result.result)
+
+
+@commonController.post('/uploadForEditor', dependencies=[Depends(LoginService.get_current_user)])
+async def editor_upload(request: Request, base_url: str = Form(), file: UploadFile = File(...)):
+    try:
+        upload_result = await CommonService.upload_service(request, file)
+        logger.info('上传成功')
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder(
+                {
+                    'errno': 0,
+                    'data': {'url': f'{base_url}{upload_result.result.file_name}'},
+                }
+            ),
+        )
+    except Exception as e:
+        logger.exception(e)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content=jsonable_encoder(
+                {
+                    'errno': 1,
+                    'message': str(e),
+                }
+            ),
+        )
 
 
 @commonController.get('/download')
