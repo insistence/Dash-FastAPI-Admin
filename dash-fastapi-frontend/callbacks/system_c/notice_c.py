@@ -5,11 +5,13 @@ from dash.exceptions import PreventUpdate
 from typing import Dict
 from api.system.notice import NoticeApi
 from config.constant import SysNoticeStatusConstant, SysNoticeTypeConstant
+from config.env import ApiConfig
 from server import app
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
+from utils.string_util import StringUtil
 from utils.time_format_util import TimeFormatUtil
 
 
@@ -318,7 +320,9 @@ def add_edit_notice_modal(
                     notice_title=notice_info.get('notice_title'),
                     notice_type=notice_info.get('notice_type'),
                     status=notice_info.get('status'),
-                    notice_content=notice_content,
+                    notice_content=StringUtil.insert_before_substring(
+                        notice_content, '/profile/upload/', ApiConfig.BaseUrl
+                    ),
                     editor_key=str(uuid.uuid4()),
                 ),
                 form_validate=[None] * 4,
@@ -403,7 +407,7 @@ def notice_confirm(
                 notice_title=notice_title,
                 notice_type=notice_type,
                 status=status,
-                notice_content=notice_content,
+                notice_content=notice_content.replace(ApiConfig.BaseUrl, ''),
             )
             params_edit = dict(
                 notice_id=edit_row_info.get('notice_id')
@@ -412,7 +416,7 @@ def notice_confirm(
                 notice_title=notice_title,
                 notice_type=notice_type,
                 status=status,
-                notice_content=notice_content,
+                notice_content=notice_content.replace(ApiConfig.BaseUrl, ''),
             )
             modal_type = modal_type.get('type')
             if modal_type == 'add':

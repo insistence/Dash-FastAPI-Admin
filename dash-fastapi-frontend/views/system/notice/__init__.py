@@ -1,6 +1,5 @@
 import feffery_antd_components as fac
 import feffery_utils_components as fuc
-import uuid
 from dash import dcc, html
 from flask import session
 from callbacks.system_c import notice_c
@@ -395,11 +394,7 @@ def render(*args, **kwargs):
                                                 'maxFileSize': 10 * 1024 * 1024,
                                                 'maxNumberOfFiles': 10,
                                                 'meta': {
-                                                    'baseUrl': ApiConfig.BaseUrl,
-                                                    'uploadId': str(
-                                                        uuid.uuid4()
-                                                    ),
-                                                    'taskPath': 'notice',
+                                                    'base_url': ApiConfig.BaseUrl,
                                                 },
                                                 'metaWithUrl': True,
                                                 'headers': {
@@ -420,11 +415,7 @@ def render(*args, **kwargs):
                                                 * 1024,
                                                 'maxNumberOfFiles': 3,
                                                 'meta': {
-                                                    'baseUrl': ApiConfig.BaseUrl,
-                                                    'uploadId': str(
-                                                        uuid.uuid4()
-                                                    ),
-                                                    'taskPath': 'notice',
+                                                    'base_url': ApiConfig.BaseUrl,
                                                 },
                                                 'metaWithUrl': True,
                                                 'headers': {
