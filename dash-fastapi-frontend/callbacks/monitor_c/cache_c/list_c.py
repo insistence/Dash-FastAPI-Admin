@@ -1,5 +1,4 @@
 import uuid
-from dash import no_update
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.monitor.cache import CacheApi
@@ -69,7 +68,9 @@ def get_cache_key_list(
     """
     获取键名列表回调
     """
-    if cache_name_table_row_click or cache_key_refresh_click or operations:
+    if cache_name_table_click_row_record and (
+        cache_name_table_row_click or cache_key_refresh_click or operations
+    ):
         cache_key_res = CacheApi.list_cache_key(
             cache_name=cache_name_table_click_row_record.get('key')
         )
@@ -183,22 +184,14 @@ def clear_cache_key(clear_click, recently_button_clicked_row, cache_key_store):
         CacheApi.clear_cache_key(
             cache_key=recently_button_clicked_row.get('key'),
         )
-        if cache_key_store == recently_button_clicked_row.get('key'):
-            MessageManager.success(content='清除成功')
+        MessageManager.success(content='清除成功')
 
-            return dict(
-                cache_name=None,
-                cache_key=None,
-                cache_value=None,
-                operations={'type': 'clear_cache_key'},
-            )
-        else:
-            return dict(
-                cache_name=no_update,
-                cache_key=no_update,
-                cache_value=no_update,
-                operations={'type': 'clear_cache_key'},
-            )
+        return dict(
+            cache_name=None,
+            cache_key=None,
+            cache_value=None,
+            operations={'type': 'clear_cache_key'},
+        )
 
     raise PreventUpdate
 
