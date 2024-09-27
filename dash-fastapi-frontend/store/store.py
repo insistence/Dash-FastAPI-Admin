@@ -1,4 +1,4 @@
-from dash import html, dcc
+from dash import dcc, html
 
 
 def render_store_container():

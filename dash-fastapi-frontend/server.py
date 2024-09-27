@@ -1,4 +1,4 @@
-import dash
+from dash import Dash
 from flask import request, session
 from user_agents import parse
 from config.env import AppConfig
@@ -6,7 +6,7 @@ from config.exception import global_exception_handler
 from utils.log_util import logger
 
 
-app = dash.Dash(
+app = Dash(
     __name__,
     compress=True,
     suppress_callback_exceptions=True,

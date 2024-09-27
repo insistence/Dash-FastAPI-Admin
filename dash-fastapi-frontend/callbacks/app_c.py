@@ -1,6 +1,5 @@
-import dash
 from dash import dcc
-import feffery_utils_components as fuc
+from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 from flask import session
 from server import app
@@ -21,7 +20,7 @@ def redirect_page(okCounts):
 
         return [dcc.Location(pathname='/login', id='index-redirect'), None]
 
-    return [dash.no_update] * 2
+    raise PreventUpdate
 
 
 # 应用初始化主题颜色
@@ -38,7 +37,7 @@ def get_primary_color(_, custom_color):
 
     #         return primary_color
 
-    return dash.no_update
+    raise PreventUpdate
 
 
 app.clientside_callback(

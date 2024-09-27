@@ -1,9 +1,7 @@
-import dash
-import time
 import uuid
-from dash.dependencies import Input, Output, State, ALL
+from dash import no_update
+from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-import feffery_utils_components as fuc
 from api.monitor.cache import CacheApi
 from server import app
 from utils.feedback_util import MessageManager
@@ -196,9 +194,9 @@ def clear_cache_key(clear_click, recently_button_clicked_row, cache_key_store):
             )
         else:
             return dict(
-                cache_name=dash.no_update,
-                cache_key=dash.no_update,
-                cache_value=dash.no_update,
+                cache_name=no_update,
+                cache_key=no_update,
+                cache_value=no_update,
                 operations={'type': 'clear_cache_key'},
             )
 

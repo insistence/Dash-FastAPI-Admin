@@ -1,8 +1,8 @@
-import os
 import argparse
-from pydantic_settings import BaseSettings
-from functools import lru_cache
+import os
 from dotenv import load_dotenv
+from functools import lru_cache
+from pydantic_settings import BaseSettings
 
 
 class AppSettings(BaseSettings):

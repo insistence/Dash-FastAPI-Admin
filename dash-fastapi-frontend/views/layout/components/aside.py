@@ -1,6 +1,5 @@
-import dash
-from dash import dcc
 import feffery_antd_components as fac
+from dash import dcc, get_asset_url
 from callbacks.layout_c import aside_c  # noqa: F401
 
 
@@ -17,7 +16,7 @@ def render_aside_content(menu_info):
                             fac.AntdImage(
                                 width=32,
                                 height=32,
-                                src=dash.get_asset_url('imgs/logo.png'),
+                                src=get_asset_url('imgs/logo.png'),
                                 preview=False,
                             ),
                             flex='1',

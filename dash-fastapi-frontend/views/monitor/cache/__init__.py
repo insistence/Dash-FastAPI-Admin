@@ -1,4 +1,4 @@
 from . import (
-    control,
-    list
+    control,  # noqa: F401
+    list,  # noqa: F401
 )
