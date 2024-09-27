@@ -551,6 +551,7 @@ def reset_config_export_status(data):
 
 
 @app.callback(
+    Output('config-refresh-cache', 'nClicks'),
     Input('config-refresh-cache', 'nClicks'),
     running=[[Output('config-refresh-cache', 'loading'), True, False]],
     prevent_initial_call=True,
@@ -562,3 +563,7 @@ def refresh_config_cache(refresh_click):
     if refresh_click:
         ConfigApi.refresh_cache()
         MessageManager.success(content='刷新成功')
+
+        return no_update
+
+    raise PreventUpdate

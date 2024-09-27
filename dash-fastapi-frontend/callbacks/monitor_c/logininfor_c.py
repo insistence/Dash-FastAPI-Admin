@@ -1,6 +1,6 @@
 import time
 import uuid
-from dash import ctx, dcc
+from dash import ctx, dcc, no_update
 from dash.dependencies import Input, Output, State, ALL
 from dash.exceptions import PreventUpdate
 from typing import Dict
@@ -335,6 +335,7 @@ def reset_login_log_export_status(data):
 
 
 @app.callback(
+    Output('login_log-unlock', 'nClicks'),
     Input('login_log-unlock', 'nClicks'),
     State('login_log-list-table', 'selectedRows'),
     prevent_initial_call=True,
@@ -347,3 +348,7 @@ def unlock_user(unlock_click, selected_rows):
         user_name = selected_rows[0].get('user_name')
         LogininforApi.unlock_logininfor(user_name=user_name)
         MessageManager.success(content='解锁成功')
+        
+        return no_update
+    
+    raise PreventUpdate
