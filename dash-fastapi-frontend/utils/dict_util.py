@@ -1,37 +1,36 @@
-from cachebox import cached, TTLCache
-from flask import session
 from typing import Any, Literal
 from api.system.dict.data import DictDataApi
-
-
-def _DictManager__custom_key_maker(*args, **kwargs):
-    key = args[1].get('dict_type')
-    if session.get('Authorization'):
-        key = f'{session.get("Authorization")}:{args[1].get("dict_type")}'
-    return key
+from utils.cache_util import TTLCacheManager
 
 
 class DictManager:
     @classmethod
-    @cached(TTLCache(0, ttl=600), key_maker=_DictManager__custom_key_maker)
     def get_dict_options(cls, dict_type: str):
-        dict_data = DictDataApi.get_dicts(dict_type=dict_type).get('data')
-        select_options = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
+        cache_dict_value = TTLCacheManager.get(target_key=dict_type)
+        if cache_dict_value:
+            select_options, dict_options = cache_dict_value
+        else:
+            dict_data = DictDataApi.get_dicts(dict_type=dict_type).get('data')
+            select_options = [
+                dict(
+                    label=item.get('dict_label'),
+                    value=item.get('dict_value'),
+                )
+                for item in dict_data
+            ]
+            dict_options = [
+                dict(
+                    label=item.get('dict_label'),
+                    value=item.get('dict_value'),
+                    css_class=item.get('css_class'),
+                    list_class=item.get('list_class'),
+                )
+                for item in dict_data
+            ]
+            TTLCacheManager.set(
+                target_key=dict_type,
+                target_value=[select_options, dict_options],
             )
-            for item in dict_data
-        ]
-        dict_options = [
-            dict(
-                label=item.get('dict_label'),
-                value=item.get('dict_value'),
-                css_class=item.get('css_class'),
-                list_class=item.get('list_class'),
-            )
-            for item in dict_data
-        ]
 
         return [select_options, dict_options]
 

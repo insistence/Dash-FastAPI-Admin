@@ -7,6 +7,7 @@ from typing import Dict
 from api.system.dict.type import DictTypeApi
 from config.constant import SysNormalDisableConstant
 from server import app
+from utils.cache_util import TTLCacheManager
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
@@ -389,6 +390,7 @@ def dict_type_confirm(confirm_trigger, modal_type, form_value, form_label):
                     operations={'type': 'add'},
                 )
             if modal_type == 'edit':
+                TTLCacheManager.delete(form_value.get('dict_type'))
                 MessageManager.success(content='编辑成功')
 
                 return dict(
@@ -436,7 +438,7 @@ def dict_type_confirm(confirm_trigger, modal_type, form_value, form_label):
         Input('dict_type-list-table', 'nClicksButton'),
     ],
     [
-        State('dict_type-list-table', 'selectedRowKeys'),
+        State('dict_type-list-table', 'selectedRows'),
         State('dict_type-list-table', 'clickedContent'),
         State('dict_type-list-table', 'recentlyButtonClickedRow'),
     ],
@@ -445,7 +447,7 @@ def dict_type_confirm(confirm_trigger, modal_type, form_value, form_label):
 def dict_type_delete_modal(
     operation_click,
     button_click,
-    selected_row_keys,
+    selected_rows,
     clicked_content,
     recently_button_clicked_row,
 ):
@@ -461,17 +463,25 @@ def dict_type_delete_modal(
             'index': 'delete',
             'type': 'dict_type-operation-button',
         }:
-            dict_ids = ','.join(selected_row_keys)
+            dict_ids = ','.join(
+                [str(item.get('dict_id')) for item in selected_rows]
+            )
+            dict_types = ','.join(
+                [item.get('dict_type').get('content') for item in selected_rows]
+            )
         else:
             if clicked_content == '删除':
                 dict_ids = recently_button_clicked_row['key']
+                dict_types = recently_button_clicked_row['dict_type'].get(
+                    'content'
+                )
             else:
                 return no_update
 
         return [
             f'是否确认删除字典编号为{dict_ids}的字典类型？',
             True,
-            dict_ids,
+            {'dict_ids': dict_ids, 'dict_types': dict_types},
         ]
 
     raise PreventUpdate
@@ -488,8 +498,10 @@ def dict_type_delete_confirm(delete_confirm, dict_ids_data):
     删除字典类型弹窗确认回调，实现删除操作
     """
     if delete_confirm:
-        params = dict_ids_data
+        params = dict_ids_data.get('dict_ids')
+        dict_types = dict_ids_data.get('dict_types')
         DictTypeApi.del_type(params)
+        TTLCacheManager.delete(dict_types)
         MessageManager.success(content='删除成功')
 
         return {'type': 'delete'}

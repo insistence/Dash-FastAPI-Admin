@@ -6,6 +6,7 @@ from dash.exceptions import PreventUpdate
 from api.system.dict.data import DictDataApi
 from config.constant import SysNormalDisableConstant
 from server import app
+from utils.cache_util import TTLCacheManager
 from utils.common import validate_data_not_empty
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
@@ -359,6 +360,7 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
             if modal_type == 'edit':
                 DictDataApi.update_data(params_edit)
             if modal_type == 'add':
+                TTLCacheManager.delete(form_value.get('dict_type'))
                 MessageManager.success('新增成功')
 
                 return dict(
@@ -368,6 +370,7 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
                     operations={'type': 'add'},
                 )
             if modal_type == 'edit':
+                TTLCacheManager.delete(form_value.get('dict_type'))
                 MessageManager.success('编辑成功')
 
                 return dict(
@@ -415,7 +418,7 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
         Input('dict_data-list-table', 'nClicksButton'),
     ],
     [
-        State('dict_data-list-table', 'selectedRowKeys'),
+        State('dict_data-list-table', 'selectedRows'),
         State('dict_data-list-table', 'clickedContent'),
         State('dict_data-list-table', 'recentlyButtonClickedRow'),
     ],
@@ -424,7 +427,7 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
 def dict_data_delete_modal(
     operation_click,
     button_click,
-    selected_row_keys,
+    selected_rows,
     clicked_content,
     recently_button_clicked_row,
 ):
@@ -440,17 +443,23 @@ def dict_data_delete_modal(
             'index': 'delete',
             'type': 'dict_data-operation-button',
         }:
-            dict_codes = ','.join(selected_row_keys)
+            dict_codes = ','.join(
+                [str(item.get('dict_code')) for item in selected_rows]
+            )
+            dict_types = ','.join(
+                list(set([item.get('dict_type') for item in selected_rows]))
+            )
         else:
             if clicked_content == '删除':
                 dict_codes = recently_button_clicked_row['key']
+                dict_types = recently_button_clicked_row['dict_type']
             else:
                 return no_update
 
         return [
             f'是否确认删除字典编码为{dict_codes}的数据？',
             True,
-            dict_codes,
+            {'dict_codes': dict_codes, 'dict_types': dict_types},
         ]
 
     raise PreventUpdate
@@ -467,8 +476,10 @@ def dict_data_delete_confirm(delete_confirm, dict_codes_data):
     删除字典数据弹窗确认回调，实现删除操作
     """
     if delete_confirm:
-        params = dict_codes_data
+        params = dict_codes_data.get('dict_codes')
+        dict_types = dict_codes_data.get('dict_types')
         DictDataApi.del_data(params)
+        TTLCacheManager.delete(dict_types)
         MessageManager.success('删除成功')
 
         return {'type': 'delete'}
