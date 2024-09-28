@@ -300,7 +300,7 @@ def render():
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
                                                     'fixed': 'right',
-                                                    'width': 150,
+                                                    'width': 170,
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
