@@ -461,13 +461,13 @@ def user_confirm(confirm_trigger, modal_type, form_value, form_label):
         ):
             params_add = form_value
             params_add['post_ids'] = (
-                [int(item) for item in params_add['post_ids']]
-                if params_add['post_ids']
+                [int(item) for item in params_add.get('post_ids')]
+                if params_add.get('post_ids')
                 else []
             )
             params_add['role_ids'] = (
-                [int(item) for item in params_add['role_ids']]
-                if params_add['role_ids']
+                [int(item) for item in params_add.get('role_ids')]
+                if params_add.get('role_ids')
                 else []
             )
             params_edit = params_add.copy()
@@ -756,7 +756,7 @@ app.clientside_callback(
     }
     """,
     [
-        Output('user-import-confirm-modal', 'visible'),
+        Output('user-import-confirm-modal', 'visible', allow_duplicate=True),
         Output('user-upload-choose', 'contents'),
         Output('user-import-update-check', 'checked'),
     ],
@@ -767,7 +767,10 @@ app.clientside_callback(
 
 @app.callback(
     output=dict(
-        modal_visible=Output('batch-result-modal', 'visible'),
+        result_modal_visible=Output('batch-result-modal', 'visible'),
+        import_modal_visible=Output(
+            'user-import-confirm-modal', 'visible', allow_duplicate=True
+        ),
         batch_result=Output('batch-result-content', 'children'),
         operations=Output(
             'user-operations-store', 'data', allow_duplicate=True
@@ -799,7 +802,12 @@ def user_import_confirm(import_confirm, contents, is_update):
             MessageManager.success(content='导入成功')
 
             return dict(
-                modal_visible=True if batch_import_result.get('msg') else False,
+                result_modal_visible=True
+                if batch_import_result.get('msg')
+                else False,
+                import_modal_visible=True
+                if batch_import_result.get('msg')
+                else False,
                 batch_result=batch_import_result.get('msg'),
                 operations={'type': 'batch-import'},
             )
@@ -807,7 +815,8 @@ def user_import_confirm(import_confirm, contents, is_update):
             MessageManager.warning(content='请上传需要导入的文件')
 
             return dict(
-                modal_visible=no_update,
+                result_modal_visible=no_update,
+                import_modal_visible=True,
                 batch_result=no_update,
                 operations=no_update,
             )
