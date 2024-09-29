@@ -1,54 +1,64 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-import feffery_utils_components as fuc
+from dash import dcc, html
+from feffery_utils_components import FefferyShadowDom, FefferyStyle
+from typing import Dict, Optional, Union
+from uuid import uuid4
 
 
-class ManuallyUpload:
-    def __init__(self):
-        pass
-
-    def render(self):
-        return fuc.FefferyShadowDom(
-            [
-                dcc.Upload(
-                    html.Div(
-                        html.Span(
-                            html.Div(
-                                html.Span(
-                                    html.Div(
-                                        [
-                                            html.P(
-                                                fac.AntdIcon(
-                                                    icon='antd-cloud-upload',
-                                                ),
-                                                className='ant-upload-drag-icon',
+class ManuallyUpload(FefferyShadowDom):
+    def __init__(
+        self,
+        id: Optional[Union[str, Dict]] = str(uuid4()),
+        accept: Optional[str] = None,
+        disabled: Optional[bool] = False,
+        max_size: Optional[Union[float, int]] = -1,
+        min_size: Optional[Union[float, int]] = 0,
+        multiple: Optional[bool] = False,
+    ):
+        children = [
+            dcc.Upload(
+                html.Div(
+                    html.Span(
+                        html.Div(
+                            html.Span(
+                                html.Div(
+                                    [
+                                        html.P(
+                                            fac.AntdIcon(
+                                                icon='antd-cloud-upload',
                                             ),
-                                            html.P(
-                                                '用户导入',
-                                                className='ant-upload-text',
-                                            ),
-                                            html.P(
-                                                '点击或拖拽文件至此处进行上传',
-                                                className='ant-upload-hint',
-                                            ),
-                                        ],
-                                        className='ant-upload-drag-container',
-                                    ),
-                                    tabIndex='0',
-                                    role='button',
-                                    className='ant-upload ant-upload-btn',
+                                            className='ant-upload-drag-icon',
+                                        ),
+                                        html.P(
+                                            '用户导入',
+                                            className='ant-upload-text',
+                                        ),
+                                        html.P(
+                                            '点击或拖拽文件至此处进行上传',
+                                            className='ant-upload-hint',
+                                        ),
+                                    ],
+                                    className='ant-upload-drag-container',
                                 ),
-                                className='ant-upload ant-upload-drag',
+                                tabIndex='0',
+                                role='button',
+                                className='ant-upload ant-upload-btn',
                             ),
-                            className='ant-upload-wrapper',
+                            className='ant-upload ant-upload-drag',
                         ),
-                        className='ant-droag-upload-container',
+                        className='ant-upload-wrapper',
                     ),
-                    id='user-upload-choose',
-                    accept='.xls,.xlsx',
+                    className='ant-droag-upload-container',
                 ),
-                fuc.FefferyStyle(
-                    rawStyle="""
+                id=id,
+                accept=accept,
+                disabled=disabled,
+                max_size=max_size,
+                min_size=min_size,
+                multiple=multiple,
+            ),
+            FefferyStyle(
+                rawStyle="""
                             .ant-droag-upload-container {
                                 border: 1px solid transparent; 
                                 transition: border 0.3s;
@@ -111,6 +121,6 @@ class ManuallyUpload:
                                 box-sizing: border-box;
                             }
                             """
-                ),
-            ]
-        )
+            ),
+        ]
+        super().__init__(children=children)

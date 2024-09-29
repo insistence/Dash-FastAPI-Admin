@@ -667,7 +667,9 @@ def render(*args, **kwargs):
             [
                 html.Div(
                     [
-                        ManuallyUpload().render(),
+                        ManuallyUpload(
+                            id='user-upload-choose', accept='.xls,.xlsx'
+                        ),
                     ],
                     style={'marginTop': '10px'},
                 ),
