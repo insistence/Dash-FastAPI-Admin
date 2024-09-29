@@ -370,11 +370,16 @@ def render(*args, **kwargs):
                                         },
                                         required=True,
                                         label='任务名称',
-                                        labelCol={'span': 6},
-                                        wrapperCol={'span': 18},
+                                        labelCol={'span': 3},
+                                        wrapperCol={'span': 21},
                                     ),
-                                    span=12,
+                                    span=24,
                                 ),
+                            ],
+                            gutter=5,
+                        ),
+                        fac.AntdRow(
+                            [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         ApiSelect(
@@ -389,6 +394,25 @@ def render(*args, **kwargs):
                                             'required': False,
                                         },
                                         label='任务分组',
+                                        labelCol={'span': 6},
+                                        wrapperCol={'span': 18},
+                                    ),
+                                    span=12,
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        ApiSelect(
+                                            dict_type='sys_job_executor',
+                                            name='job_executor',
+                                            placeholder='请选择任务执行器',
+                                            style={'width': '100%'},
+                                        ),
+                                        id={
+                                            'type': 'job-form-label',
+                                            'index': 'job_executor',
+                                            'required': False,
+                                        },
+                                        label='任务执行器',
                                         labelCol={'span': 6},
                                         wrapperCol={'span': 18},
                                     ),
@@ -637,11 +661,16 @@ def render(*args, **kwargs):
                                             'type': 'job_detail-form-label',
                                             'index': 'job_name',
                                         },
-                                        labelCol={'span': 8},
-                                        wrapperCol={'span': 16},
+                                        labelCol={'span': 3},
+                                        wrapperCol={'span': 21},
                                     ),
-                                    span=12,
+                                    span=24,
                                 ),
+                            ],
+                            gutter=5,
+                        ),
+                        fac.AntdRow(
+                            [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
@@ -661,11 +690,6 @@ def render(*args, **kwargs):
                                     ),
                                     span=12,
                                 ),
-                            ],
-                            gutter=5,
-                        ),
-                        fac.AntdRow(
-                            [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
@@ -685,6 +709,11 @@ def render(*args, **kwargs):
                                     ),
                                     span=12,
                                 ),
+                            ],
+                            gutter=5,
+                        ),
+                        fac.AntdRow(
+                            [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
@@ -699,10 +728,10 @@ def render(*args, **kwargs):
                                             'type': 'job_detail-form-label',
                                             'index': 'invoke_target',
                                         },
-                                        labelCol={'span': 8},
-                                        wrapperCol={'span': 16},
+                                        labelCol={'span': 3},
+                                        wrapperCol={'span': 21},
                                     ),
-                                    span=12,
+                                    span=24,
                                 ),
                             ],
                             gutter=5,

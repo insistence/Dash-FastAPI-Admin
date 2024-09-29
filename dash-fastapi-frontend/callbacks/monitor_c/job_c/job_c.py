@@ -493,6 +493,10 @@ def get_job_detail_modal(
             dict_type='sys_job_group',
             dict_value=job_info.get('job_group'),
         )
+        job_info['job_executor'] = DictManager.get_dict_label(
+            dict_type='sys_job_executor',
+            dict_value=job_info.get('job_executor'),
+        )
         job_info['status'] = DictManager.get_dict_label(
             dict_type='sys_job_status',
             dict_value=job_info.get('status'),
