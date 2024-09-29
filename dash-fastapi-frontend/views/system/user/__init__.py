@@ -402,218 +402,249 @@ def render(*args, **kwargs):
             [
                 fac.AntdForm(
                     [
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        name='nick_name',
-                                        placeholder='请输入用户昵称',
-                                        allowClear=True,
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            name='nick_name',
+                                            placeholder='请输入用户昵称',
+                                            allowClear=True,
+                                            style={'width': '100%'},
+                                        ),
+                                        label='用户昵称',
+                                        required=True,
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'nick_name',
+                                            'required': True,
+                                        },
                                     ),
-                                    label='用户昵称',
-                                    required=True,
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'nick_name',
-                                        'required': True,
-                                    },
+                                    span=12,
                                 ),
-                                fac.AntdFormItem(
-                                    fac.AntdTreeSelect(
-                                        id='user-dpet-tree',
-                                        name='dept_id',
-                                        placeholder='请选择归属部门',
-                                        treeData=[],
-                                        treeNodeFilterProp='title',
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdTreeSelect(
+                                            id='user-dpet-tree',
+                                            name='dept_id',
+                                            placeholder='请选择归属部门',
+                                            treeData=[],
+                                            treeNodeFilterProp='title',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='归属部门',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'dept_id',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='归属部门',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'dept_id',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 1},
+                                    span=12,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        name='phonenumber',
-                                        placeholder='请输入手机号码',
-                                        allowClear=True,
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            name='phonenumber',
+                                            placeholder='请输入手机号码',
+                                            allowClear=True,
+                                            style={'width': '100%'},
+                                        ),
+                                        label='手机号码',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'phonenumber',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='手机号码',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'phonenumber',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 1},
+                                    span=12,
                                 ),
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        name='email',
-                                        placeholder='请输入邮箱',
-                                        allowClear=True,
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            name='email',
+                                            placeholder='请输入邮箱',
+                                            allowClear=True,
+                                            style={'width': '100%'},
+                                        ),
+                                        label='邮箱',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'email',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='邮箱',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'email',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 5},
+                                    span=12,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
                         ),
                         html.Div(
-                            fac.AntdSpace(
+                            fac.AntdRow(
                                 [
-                                    fac.AntdFormItem(
-                                        fac.AntdInput(
-                                            id='user-form-user_name',
-                                            name='user_name',
-                                            placeholder='请输入用户名称',
-                                            allowClear=True,
-                                            style={'width': 200},
+                                    fac.AntdCol(
+                                        fac.AntdFormItem(
+                                            fac.AntdInput(
+                                                id='user-form-user_name',
+                                                name='user_name',
+                                                placeholder='请输入用户名称',
+                                                allowClear=True,
+                                                style={'width': '100%'},
+                                            ),
+                                            label='用户名称',
+                                            required=True,
+                                            id={
+                                                'type': 'user-form-label',
+                                                'index': 'user_name',
+                                                'required': True,
+                                            },
                                         ),
-                                        label='用户名称',
-                                        required=True,
-                                        id={
-                                            'type': 'user-form-label',
-                                            'index': 'user_name',
-                                            'required': True,
-                                        },
+                                        span=12,
                                     ),
-                                    fac.AntdFormItem(
-                                        fac.AntdInput(
-                                            id='user-form-password',
-                                            name='password',
-                                            placeholder='请输入密码',
-                                            mode='password',
-                                            passwordUseMd5=True,
-                                            style={'width': 200},
+                                    fac.AntdCol(
+                                        fac.AntdFormItem(
+                                            fac.AntdInput(
+                                                id='user-form-password',
+                                                name='password',
+                                                placeholder='请输入密码',
+                                                mode='password',
+                                                passwordUseMd5=True,
+                                                style={'width': '100%'},
+                                            ),
+                                            label='用户密码',
+                                            required=True,
+                                            id={
+                                                'type': 'user-form-label',
+                                                'index': 'password',
+                                                'required': True,
+                                            },
                                         ),
-                                        label='用户密码',
-                                        required=True,
-                                        id={
-                                            'type': 'user-form-label',
-                                            'index': 'password',
-                                            'required': True,
-                                        },
+                                        span=12,
                                     ),
                                 ],
-                                size='middle',
+                                gutter=10,
                             ),
                             id='user-user_name-password-container',
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    ApiSelect(
-                                        dict_type='sys_user_sex',
-                                        name='sex',
-                                        placeholder='请选择性别',
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        ApiSelect(
+                                            dict_type='sys_user_sex',
+                                            name='sex',
+                                            placeholder='请选择性别',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='用户性别',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'sex',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='用户性别',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'sex',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 1},
+                                    span=12,
                                 ),
-                                fac.AntdFormItem(
-                                    ApiRadioGroup(
-                                        dict_type='sys_normal_disable',
-                                        name='status',
-                                        defaultValue='0',
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        ApiRadioGroup(
+                                            dict_type='sys_normal_disable',
+                                            name='status',
+                                            defaultValue='0',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='用户状态',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'status',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='用户状态',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'status',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 2},
+                                    span=12,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdSelect(
-                                        id='user-post',
-                                        name='post_ids',
-                                        placeholder='请选择岗位',
-                                        options=[],
-                                        mode='multiple',
-                                        optionFilterProp='label',
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdSelect(
+                                            id='user-post',
+                                            name='post_ids',
+                                            placeholder='请选择岗位',
+                                            options=[],
+                                            mode='multiple',
+                                            optionFilterProp='label',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='岗位',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'post_ids',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='岗位',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'post_ids',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 4},
+                                    span=12,
                                 ),
-                                fac.AntdFormItem(
-                                    fac.AntdSelect(
-                                        id='user-role',
-                                        name='role_ids',
-                                        placeholder='请选择角色',
-                                        options=[],
-                                        mode='multiple',
-                                        optionFilterProp='label',
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdSelect(
+                                            id='user-role',
+                                            name='role_ids',
+                                            placeholder='请选择角色',
+                                            options=[],
+                                            mode='multiple',
+                                            optionFilterProp='label',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='角色',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'role_ids',
+                                            'required': False,
+                                        },
                                     ),
-                                    label='角色',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'role_ids',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 8},
+                                    span=12,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        name='remark',
-                                        placeholder='请输入内容',
-                                        allowClear=True,
-                                        mode='text-area',
-                                        style={'width': 490},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            name='remark',
+                                            placeholder='请输入内容',
+                                            allowClear=True,
+                                            mode='text-area',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='备注',
+                                        id={
+                                            'type': 'user-form-label',
+                                            'index': 'remark',
+                                            'required': False,
+                                        },
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    label='备注',
-                                    id={
-                                        'type': 'user-form-label',
-                                        'index': 'remark',
-                                        'required': False,
-                                    },
-                                    labelCol={'offset': 2},
+                                    span=24,
                                 ),
-                            ]
+                            ],
+                            gutter=10,
                         ),
                     ],
                     id='user-form',
                     enableBatchControl=True,
+                    labelCol={'span': 8},
+                    wrapperCol={'span': 16},
+                    style={'marginRight': '15px'},
                 )
             ],
             id='user-modal',
