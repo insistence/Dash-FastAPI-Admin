@@ -1,5 +1,4 @@
 import feffery_antd_components as fac
-from dash import html
 from callbacks.system_c.menu_c.components_c import button_type_c  # noqa: F401
 
 
