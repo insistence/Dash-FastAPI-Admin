@@ -113,19 +113,26 @@ class RouterUtil:
         return new_router_list
 
     @classmethod
-    def generate_search_panel_data(cls, menu_list: List):
+    def generate_search_panel_data(
+        cls, menu_list: List, section_path: List = []
+    ):
         """
         生成搜索面板数据
 
         :param menu_list: 菜单列表
+        :param section_path: 分组路径
         :return: 搜索面板数据
         """
         search_panel_data = []
         for item in menu_list:
             if item.get('children'):
+                section_path.append(item.get('props').get('title'))
                 search_panel_data.extend(
-                    cls.generate_search_panel_data(item.get('children'))
+                    cls.generate_search_panel_data(
+                        item.get('children'), section_path
+                    )
                 )
+                section_path.pop()
             else:
                 href = item.get('props').get('href')
                 target = (
@@ -136,6 +143,7 @@ class RouterUtil:
                 item_dict = dict(
                     id=item.get('props').get('key'),
                     title=item.get('props').get('title'),
+                    section='/'.join(section_path),
                     handler=f'() => window.open("{href}", "{target}")',
                 )
                 search_panel_data.append(item_dict)
