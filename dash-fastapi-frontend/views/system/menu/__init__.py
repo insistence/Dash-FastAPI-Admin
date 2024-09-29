@@ -288,121 +288,125 @@ def render(*args, **kwargs):
             [
                 fac.AntdForm(
                     [
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdTreeSelect(
-                                        id='menu-parent_id',
-                                        placeholder='请选择上级菜单',
-                                        treeData=[],
-                                        defaultValue='0',
-                                        treeNodeFilterProp='title',
-                                        style={'width': 495},
-                                    ),
-                                    label='上级菜单',
-                                    required=True,
-                                    id='menu-parent_id-form-item',
-                                    labelCol={
-                                        'span': 4,
-                                    },
-                                    wrapperCol={'span': 20},
-                                ),
-                            ],
-                            size='middle',
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdRadioGroup(
-                                        id='menu-menu_type',
-                                        options=[
-                                            {
-                                                'label': '目录',
-                                                'value': MenuConstant.TYPE_DIR,
-                                            },
-                                            {
-                                                'label': '菜单',
-                                                'value': MenuConstant.TYPE_MENU,
-                                            },
-                                            {
-                                                'label': '按钮',
-                                                'value': MenuConstant.TYPE_BUTTON,
-                                            },
-                                        ],
-                                        defaultValue='M',
-                                        style={'width': 495},
-                                    ),
-                                    label='菜单类型',
-                                    required=True,
-                                    id='menu-menu_type-form-item',
-                                    labelCol={
-                                        'span': 4,
-                                    },
-                                    wrapperCol={'span': 20},
-                                )
-                            ],
-                            size='middle',
-                        ),
-                        fac.AntdSpace(
-                            [
-                                fac.AntdFormItem(
-                                    fac.AntdPopover(
-                                        fac.AntdInput(
-                                            id='menu-icon',
-                                            placeholder='点击此处选择图标',
-                                            readOnly=True,
-                                            style={'width': 495},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdTreeSelect(
+                                            id='menu-parent_id',
+                                            placeholder='请选择上级菜单',
+                                            treeData=[],
+                                            defaultValue='0',
+                                            treeNodeFilterProp='title',
+                                            style={'width': '100%'},
                                         ),
-                                        content=render_icon(),
-                                        trigger='click',
-                                        placement='bottom',
+                                        label='上级菜单',
+                                        required=True,
+                                        id='menu-parent_id-form-item',
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    label='菜单图标',
-                                    id='menu-icon-form-item',
-                                    labelCol={
-                                        'span': 4,
-                                    },
-                                    wrapperCol={'span': 20},
+                                    span=24,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
                         ),
-                        fac.AntdSpace(
+                        fac.AntdRow(
                             [
-                                fac.AntdFormItem(
-                                    fac.AntdInput(
-                                        id='menu-menu_name',
-                                        placeholder='请输入菜单名称',
-                                        allowClear=True,
-                                        style={'width': 200},
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdRadioGroup(
+                                            id='menu-menu_type',
+                                            options=[
+                                                {
+                                                    'label': '目录',
+                                                    'value': MenuConstant.TYPE_DIR,
+                                                },
+                                                {
+                                                    'label': '菜单',
+                                                    'value': MenuConstant.TYPE_MENU,
+                                                },
+                                                {
+                                                    'label': '按钮',
+                                                    'value': MenuConstant.TYPE_BUTTON,
+                                                },
+                                            ],
+                                            defaultValue='M',
+                                            style={'width': '100%'},
+                                        ),
+                                        label='菜单类型',
+                                        required=True,
+                                        id='menu-menu_type-form-item',
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    label='菜单名称',
-                                    required=True,
-                                    id='menu-menu_name-form-item',
-                                    labelCol={
-                                        'span': 8,
-                                    },
-                                    wrapperCol={'span': 16},
-                                ),
-                                fac.AntdFormItem(
-                                    fac.AntdInputNumber(
-                                        id='menu-order_num',
-                                        min=0,
-                                        style={'width': 200},
-                                    ),
-                                    label='显示排序',
-                                    required=True,
-                                    id='menu-order_num-form-item',
-                                    labelCol={
-                                        'span': 8,
-                                    },
-                                    wrapperCol={'span': 16},
+                                    span=24,
                                 ),
                             ],
-                            size='middle',
+                            gutter=10,
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdPopover(
+                                            fac.AntdInput(
+                                                id='menu-icon',
+                                                placeholder='点击此处选择图标',
+                                                readOnly=True,
+                                                style={'width': '100%'},
+                                            ),
+                                            content=render_icon(),
+                                            trigger='click',
+                                            placement='bottom',
+                                        ),
+                                        label='菜单图标',
+                                        id='menu-icon-form-item',
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
+                                    ),
+                                    span=24,
+                                ),
+                            ],
+                            gutter=10,
+                        ),
+                        fac.AntdRow(
+                            [
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInput(
+                                            id='menu-menu_name',
+                                            placeholder='请输入菜单名称',
+                                            allowClear=True,
+                                            style={'width': '100%'},
+                                        ),
+                                        label='菜单名称',
+                                        required=True,
+                                        id='menu-menu_name-form-item',
+                                    ),
+                                    span=12,
+                                ),
+                                fac.AntdCol(
+                                    fac.AntdFormItem(
+                                        fac.AntdInputNumber(
+                                            id='menu-order_num',
+                                            min=0,
+                                            style={'width': '100%'},
+                                        ),
+                                        label='显示排序',
+                                        required=True,
+                                        id='menu-order_num-form-item',
+                                    ),
+                                    span=12,
+                                ),
+                            ],
+                            gutter=10,
                         ),
                         html.Div(id='content-by-menu-type'),
-                    ]
+                    ],
+                    labelCol={'span': 8},
+                    wrapperCol={'span': 16},
+                    style={'marginRight': '15px'},
                 )
             ],
             id='menu-modal',
