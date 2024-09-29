@@ -290,10 +290,10 @@ def export_login_log_list(
     """
     if export_click:
         begin_time = None
-    end_time = None
-    if login_time_range:
-        begin_time = login_time_range[0]
-        end_time = login_time_range[1]
+        end_time = None
+        if login_time_range:
+            begin_time = login_time_range[0]
+            end_time = login_time_range[1]
         export_params = dict(
             ipaddr=ipaddr,
             user_name=user_name,
@@ -348,7 +348,7 @@ def unlock_user(unlock_click, selected_rows):
         user_name = selected_rows[0].get('user_name')
         LogininforApi.unlock_logininfor(user_name=user_name)
         MessageManager.success(content='解锁成功')
-        
+
         return no_update
-    
+
     raise PreventUpdate
