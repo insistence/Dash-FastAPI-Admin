@@ -1,6 +1,9 @@
 class RouterConfig:
     """
     路由配置
+
+    WHITE_ROUTES_LIST: 白名单路由列表
+    CONSTANT_ROUTES: 公共路由列表
     """
 
     WHITE_ROUTES_LIST = [
@@ -61,12 +64,19 @@ class RouterConfig:
             'hidden': True,
             'name': 'UserProfile',
             'redirect': 'noredirect',
+            'meta': {
+                'title': '系统设置',
+                'icon': 'antd-trophy',
+            },
             'children': [
                 {
                     'path': 'profile',
                     'component': 'system.user.profile',
                     'name': 'Profile',
-                    'meta': {'title': '个人资料'},
+                    'meta': {
+                        'title': '个人资料',
+                        'icon': 'antd-idcard',
+                    },
                 }
             ],
         },
