@@ -320,6 +320,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
+                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'dropdown',
                                                         'dropdownProps': {

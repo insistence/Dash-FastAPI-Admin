@@ -297,6 +297,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
+                                                    'width': 170,
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },

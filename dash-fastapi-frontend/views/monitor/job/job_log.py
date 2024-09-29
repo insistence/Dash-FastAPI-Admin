@@ -296,6 +296,7 @@ def render():
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
+                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },

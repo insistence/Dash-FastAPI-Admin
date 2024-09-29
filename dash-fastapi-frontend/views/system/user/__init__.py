@@ -312,7 +312,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'user_id',
                                                     'title': '用户编号',
-                                                    'width': 100,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -320,7 +319,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'user_name',
                                                     'title': '用户名称',
-                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -328,7 +326,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'nick_name',
                                                     'title': '用户昵称',
-                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -336,7 +333,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'dept_name',
                                                     'title': '部门',
-                                                    'width': 130,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -344,7 +340,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'phonenumber',
                                                     'title': '手机号码',
-                                                    'width': 130,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -352,7 +347,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'status',
                                                     'title': '状态',
-                                                    'width': 110,
+                                                    'width': 100,
                                                     'renderOptions': {
                                                         'renderType': 'switch'
                                                     },
@@ -360,7 +355,6 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'create_time',
                                                     'title': '创建时间',
-                                                    'width': 160,
                                                     'renderOptions': {
                                                         'renderType': 'ellipsis'
                                                     },
@@ -368,6 +362,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
+                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'dropdown',
                                                         'dropdownProps': {

@@ -311,6 +311,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'status',
                                                     'title': '状态',
+                                                    'width': 100,
                                                     'renderOptions': {
                                                         'renderType': 'switch'
                                                     },
