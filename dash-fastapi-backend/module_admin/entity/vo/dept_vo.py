@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_validation_decorator import Network, NotBlank, Size
 from typing import Literal, Optional
-from module_admin.annotation.pydantic_annotation import as_query
 
 
 class DeptModel(BaseModel):
@@ -52,7 +51,6 @@ class DeptModel(BaseModel):
         self.get_email()
 
 
-@as_query
 class DeptQueryModel(DeptModel):
     """
     部门管理不分页查询模型

@@ -1,7 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional
-from module_admin.annotation.pydantic_annotation import as_query
 
 
 class OnlineModel(BaseModel):
@@ -19,7 +18,6 @@ class OnlineModel(BaseModel):
     login_time: Optional[datetime] = Field(default=None, description='登录时间')
 
 
-@as_query
 class OnlineQueryModel(OnlineModel):
     """
     在线用户不分页查询模型
@@ -29,7 +27,6 @@ class OnlineQueryModel(OnlineModel):
     end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-@as_query
 class OnlinePageQueryModel(OnlineQueryModel):
     """
     在线用户分页查询模型

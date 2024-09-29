@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.enums import BusinessType
 from config.get_db import get_db
@@ -18,9 +18,7 @@ onlineController = APIRouter(prefix='/monitor/online', dependencies=[Depends(Log
 @onlineController.get(
     '/list', response_model=PageResponseModel, dependencies=[Depends(CheckUserInterfaceAuth('monitor:online:list'))]
 )
-async def get_monitor_online_list(
-    request: Request, online_page_query: OnlineQueryModel = Depends(OnlineQueryModel.as_query)
-):
+async def get_monitor_online_list(request: Request, online_page_query: OnlineQueryModel = Query()):
     # 获取全量数据
     online_query_result = await OnlineService.get_online_list_services(request, online_page_query)
     logger.info('获取成功')
@@ -35,9 +33,7 @@ async def get_monitor_online_list(
     response_model=PageResponseModel,
     dependencies=[Depends(CheckUserInterfaceAuth('monitor:online:list'))],
 )
-async def get_monitor_online_page_list(
-    request: Request, online_page_query: OnlinePageQueryModel = Depends(OnlinePageQueryModel.as_query)
-):
+async def get_monitor_online_page_list(request: Request, online_page_query: OnlinePageQueryModel = Query()):
     online_query = OnlineQueryModel(**online_page_query.model_dump(by_alias=True))
     # 获取全量数据
     online_query_result = await OnlineService.get_online_list_services(request, online_query)
