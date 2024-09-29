@@ -62,7 +62,6 @@ def render():
                         ),
                         label='路由名称',
                         tooltip='默认不填则和路由地址相同：如地址为：`user`，则名称为`User`（注意：因为router会删除名称相同路由，为避免名字的冲突，特殊情况下请自定义，保证唯一性）',
-                        required=True,
                         id='menu-menu-route_name-form-item',
                     ),
                     span=12,
