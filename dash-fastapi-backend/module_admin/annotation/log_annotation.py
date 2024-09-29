@@ -68,7 +68,11 @@ class Log:
             # 获取请求的url
             oper_url = request.url.path
             # 获取请求的ip及ip归属区域
-            oper_ip = request.headers.get('X-Forwarded-For')
+            oper_ip = (
+                request.headers.get('remote_addr')
+                if request.headers.get('is_browser') == 'no'
+                else request.headers.get('X-Forwarded-For')
+            )
             oper_location = '内网IP'
             if AppConfig.app_ip_location_query:
                 oper_location = get_ip_location(oper_ip)
