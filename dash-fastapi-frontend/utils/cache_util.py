@@ -91,4 +91,5 @@ class TTLCacheManager:
         """
         target_key_list = target_keys.split(',')
         for target_key in target_key_list:
-            del ttl_manager[target_key]
+            if ttl_manager.get(target_key) is not None:
+                del ttl_manager[target_key]
