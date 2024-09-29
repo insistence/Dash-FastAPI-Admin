@@ -386,17 +386,8 @@ def render(*args, **kwargs):
                                 allowClear=True,
                                 style={'width': 350},
                             ),
-                            label=html.Div(
-                                [
-                                    fac.AntdTooltip(
-                                        fac.AntdIcon(
-                                            icon='antd-question-circle'
-                                        ),
-                                        title='控制器中定义的权限字符，如：common',
-                                    ),
-                                    fac.AntdText('权限字符'),
-                                ]
-                            ),
+                            label='权限字符',
+                            tooltip='控制器中定义的权限字符，如：common',
                             required=True,
                             id={
                                 'type': 'role-form-label',

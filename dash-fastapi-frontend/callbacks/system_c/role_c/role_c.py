@@ -479,8 +479,8 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             {'type': 'role-form-value', 'index': ALL, 'required': ALL}, 'value'
         ),
         form_label=State(
-            {'type': 'role-form-value', 'index': ALL, 'required': True},
-            'placeholder',
+            {'type': 'role-form-label', 'index': ALL, 'required': True},
+            'label',
         ),
         menu_checked_keys=State('role-menu-perms', 'checkedKeys'),
         menu_half_checked_keys=State('role-menu-perms', 'halfCheckedKeys'),
@@ -582,7 +582,7 @@ def role_confirm(
             form_label_validate_info=[
                 None
                 if validate_data_not_empty(form_value_state.get(k))
-                else form_label_state.get(k)
+                else f'{form_label_state.get(k)}不能为空!'
                 for k in form_label_output_list
             ],
             modal_visible=no_update,
