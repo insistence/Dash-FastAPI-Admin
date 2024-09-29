@@ -14,7 +14,8 @@ def render(menu_info):
             [
                 # 全局重载
                 fuc.FefferyReload(id='trigger-reload-output'),
-                html.Div(id='idle-placeholder-container'),
+                # 响应式监听组件
+                fuc.FefferyResponsive(id='responsive-layout-container'),
                 # 布局设置抽屉
                 fac.AntdDrawer(
                     [
@@ -100,9 +101,7 @@ def render(menu_info):
                                 ),
                             ),
                             id='left-side-menu-container',
-                            # style={
-                            #     'flex': '1'
-                            # }
+                            flex='none',
                         ),
                         # 右侧区域
                         fac.AntdCol(
@@ -121,7 +120,8 @@ def render(menu_info):
                                 ),
                                 fac.AntdRow(render_main_content(), wrap=False),
                             ],
-                            style={'flex': '6', 'width': '300px'},
+                            flex='auto',
+                            style={'width': 0},
                         ),
                     ],
                 ),

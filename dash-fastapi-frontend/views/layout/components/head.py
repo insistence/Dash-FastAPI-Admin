@@ -26,6 +26,7 @@ def render_head_content():
                     'alignItems': 'center',
                 },
             ),
+            id='fold-side-menu-col',
             flex='1',
         ),
         # 页首面包屑区域
@@ -35,8 +36,13 @@ def render_head_content():
                     {'title': '首页', 'icon': 'antd-dashboard', 'href': '/#'}
                 ],
                 id='header-breadcrumb',
+                style={
+                    'height': '100%',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                },
             ),
-            style={'height': '100%', 'display': 'flex', 'alignItems': 'center'},
+            id='header-breadcrumb-col',
             flex='21',
         ),
         # 页首中部搜索区域
@@ -57,6 +63,7 @@ def render_head_content():
                     'alignItems': 'center',
                 },
             ),
+            id='header-search-col',
             flex='6',
         ),
         # 页首开源项目地址
@@ -67,8 +74,13 @@ def render_head_content():
                 ),
                 href='https://gitee.com/insistence2022/dash-fastapi-admin',
                 target='_blank',
+                style={
+                    'height': '100%',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                },
             ),
-            style={'height': '100%', 'display': 'flex', 'alignItems': 'center'},
+            id='header-gitee-col',
             flex='3',
         ),
         # 页首右侧用户信息区域

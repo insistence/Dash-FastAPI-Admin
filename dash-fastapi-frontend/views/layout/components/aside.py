@@ -64,8 +64,8 @@ def render_aside_content(menu_info):
             ],
             id='menu-collapse-sider-custom',
             collapsible=True,
-            collapsedWidth=60,
+            collapsedWidth=64,
             trigger=None,
-            width=210,
+            width=256,
         ),
     ]
