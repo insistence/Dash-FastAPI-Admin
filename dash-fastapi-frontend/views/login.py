@@ -3,6 +3,7 @@ import feffery_utils_components as fuc
 import time
 from dash import dcc, html
 from callbacks import login_c  # noqa: F401
+from config.env import AppConfig
 
 
 def render():
@@ -31,14 +32,14 @@ def render():
                                                     className='ant-pro-form-login-logo',
                                                 ),
                                                 html.Span(
-                                                    'DF Admin',
+                                                    AppConfig.app_name,
                                                     className='ant-pro-form-login-title',
                                                 ),
                                             ],
                                             className='ant-pro-form-login-header',
                                         ),
                                         html.Div(
-                                            'DF Admin 是 Dash 中最完备的中后台管理系统',
+                                            f'{AppConfig.app_name} 是 Dash 中最完备的中后台管理系统',
                                             className='ant-pro-form-login-desc ',
                                         ),
                                     ],

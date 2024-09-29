@@ -1,6 +1,7 @@
 import feffery_antd_components as fac
 from dash import dcc, get_asset_url
 from callbacks.layout_c import aside_c  # noqa: F401
+from config.env import AppConfig
 
 
 def render_aside_content(menu_info):
@@ -28,11 +29,10 @@ def render_aside_content(menu_info):
                         ),
                         fac.AntdCol(
                             fac.AntdText(
-                                '后台管理系统',
+                                AppConfig.app_name,
                                 id='logo-text',
                                 style={
                                     'fontSize': '22px',
-                                    # 'paddingLeft': '20px',
                                     'color': 'rgb(255, 255, 255)',
                                 },
                             ),
@@ -41,6 +41,7 @@ def render_aside_content(menu_info):
                                 'height': '100%',
                                 'display': 'flex',
                                 'alignItems': 'center',
+                                'marginLeft': '25px',
                             },
                         ),
                     ],
@@ -50,7 +51,7 @@ def render_aside_content(menu_info):
                         'position': 'sticky',
                         'top': 0,
                         'zIndex': 999,
-                        'paddingLeft': '10px',
+                        'paddingLeft': '18px',
                     },
                 ),
                 fac.AntdMenu(

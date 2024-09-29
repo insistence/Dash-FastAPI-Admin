@@ -11,7 +11,7 @@ class AppSettings(BaseSettings):
     """
 
     app_env: str = 'dev'
-    app_name: str = '通用后台管理系统'
+    app_name: str = 'DF Admin'
     app_base_url: str = 'http://127.0.0.1:9099'
     app_proxy_path: str = '/dev-api'
     app_is_proxy: bool = False
