@@ -94,6 +94,7 @@ def render(menu_info):
                                     id='side-menu',
                                     style={
                                         'height': '100vh',
+                                        'overflowX': 'hidden',
                                         'overflowY': 'auto',
                                         'transition': 'width 1s',
                                         'background': '#001529',
