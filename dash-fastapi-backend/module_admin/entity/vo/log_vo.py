@@ -1,147 +1,121 @@
-from pydantic import BaseModel
-from typing import Union, Optional, List
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal, Optional
 
 
 class OperLogModel(BaseModel):
     """
     操作日志表对应pydantic模型
     """
-    oper_id: Optional[int]
-    title: Optional[str]
-    business_type: Optional[int]
-    method: Optional[str]
-    request_method: Optional[str]
-    operator_type: Optional[int]
-    oper_name: Optional[str]
-    dept_name: Optional[str]
-    oper_url: Optional[str]
-    oper_ip: Optional[str]
-    oper_location: Optional[str]
-    oper_param: Optional[str]
-    json_result: Optional[str]
-    status: Optional[int]
-    error_msg: Optional[str]
-    oper_time: Optional[str]
-    cost_time: Optional[int]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+    oper_id: Optional[int] = Field(default=None, description='日志主键')
+    title: Optional[str] = Field(default=None, description='模块标题')
+    business_type: Optional[Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']] = (
+        Field(
+            default=None, description='业务类型（0其它 1新增 2修改 3删除 4授权 5导出 6导入 7强退 8生成代码 9清空数据）'
+        )
+    )
+    method: Optional[str] = Field(default=None, description='方法名称')
+    request_method: Optional[str] = Field(default=None, description='请求方式')
+    operator_type: Optional[Literal[0, 1, 2]] = Field(
+        default=None, description='操作类别（0其它 1后台用户 2手机端用户）'
+    )
+    oper_name: Optional[str] = Field(default=None, description='操作人员')
+    dept_name: Optional[str] = Field(default=None, description='部门名称')
+    oper_url: Optional[str] = Field(default=None, description='请求URL')
+    oper_ip: Optional[str] = Field(default=None, description='主机地址')
+    oper_location: Optional[str] = Field(default=None, description='操作地点')
+    oper_param: Optional[str] = Field(default=None, description='请求参数')
+    json_result: Optional[str] = Field(default=None, description='返回参数')
+    status: Optional[Literal[0, 1, '0', '1']] = Field(default=None, description='操作状态（0正常 1异常）')
+    error_msg: Optional[str] = Field(default=None, description='错误消息')
+    oper_time: Optional[datetime] = Field(default=None, description='操作时间')
+    cost_time: Optional[int] = Field(default=None, description='消耗时间')
 
 
 class LogininforModel(BaseModel):
     """
     登录日志表对应pydantic模型
     """
-    info_id: Optional[int]
-    user_name: Optional[str]
-    ipaddr: Optional[str]
-    login_location: Optional[str]
-    browser: Optional[str]
-    os: Optional[str]
-    status: Optional[str]
-    msg: Optional[str]
-    login_time: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+    info_id: Optional[int] = Field(default=None, description='访问ID')
+    user_name: Optional[str] = Field(default=None, description='用户账号')
+    ipaddr: Optional[str] = Field(default=None, description='登录IP地址')
+    login_location: Optional[str] = Field(default=None, description='登录地点')
+    browser: Optional[str] = Field(default=None, description='浏览器类型')
+    os: Optional[str] = Field(default=None, description='操作系统')
+    status: Optional[Literal['0', '1']] = Field(default=None, description='登录状态（0成功 1失败）')
+    msg: Optional[str] = Field(default=None, description='提示消息')
+    login_time: Optional[datetime] = Field(default=None, description='访问时间')
 
 
 class OperLogQueryModel(OperLogModel):
     """
     操作日志管理不分页查询模型
     """
-    order_by_column: Optional[str]
-    is_asc: Optional[str]
-    oper_time_start: Optional[str]
-    oper_time_end: Optional[str]
+
+    order_by_column: Optional[str] = Field(default=None, description='排序的字段名称')
+    is_asc: Optional[Literal['ascending', 'descending']] = Field(
+        default=None, description='排序方式（ascending升序 descending降序）'
+    )
+    begin_time: Optional[str] = Field(default=None, description='开始时间')
+    end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-class OperLogPageObject(OperLogQueryModel):
+class OperLogPageQueryModel(OperLogQueryModel):
     """
     操作日志管理分页查询模型
     """
-    page_num: int
-    page_size: int
 
-
-class OperLogPageObjectResponse(BaseModel):
-    """
-    操作日志列表分页查询返回模型
-    """
-    rows: List[Union[OperLogModel, None]] = []
-    page_num: int
-    page_size: int
-    total: int
-    has_next: bool
+    page_num: int = Field(default=1, description='当前页码')
+    page_size: int = Field(default=10, description='每页记录数')
 
 
 class DeleteOperLogModel(BaseModel):
     """
     删除操作日志模型
     """
-    oper_ids: str
 
-
-class ClearOperLogModel(BaseModel):
-    """
-    清除操作日志模型
-    """
-    oper_type: str
+    oper_ids: str = Field(description='需要删除的日志主键')
 
 
 class LoginLogQueryModel(LogininforModel):
     """
     登录日志管理不分页查询模型
     """
-    order_by_column: Optional[str]
-    is_asc: Optional[str]
-    login_time_start: Optional[str]
-    login_time_end: Optional[str]
+
+    order_by_column: Optional[str] = Field(default=None, description='排序的字段名称')
+    is_asc: Optional[Literal['ascending', 'descending']] = Field(
+        default=None, description='排序方式（ascending升序 descending降序）'
+    )
+    begin_time: Optional[str] = Field(default=None, description='开始时间')
+    end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-class LoginLogPageObject(LoginLogQueryModel):
+class LoginLogPageQueryModel(LoginLogQueryModel):
     """
     登录日志管理分页查询模型
     """
-    page_num: int
-    page_size: int
 
-
-class LoginLogPageObjectResponse(BaseModel):
-    """
-    登录日志列表分页查询返回模型
-    """
-    rows: List[Union[LogininforModel, None]] = []
-    page_num: int
-    page_size: int
-    total: int
-    has_next: bool
+    page_num: int = Field(default=1, description='当前页码')
+    page_size: int = Field(default=10, description='每页记录数')
 
 
 class DeleteLoginLogModel(BaseModel):
     """
     删除登录日志模型
     """
-    info_ids: str
 
-
-class ClearLoginLogModel(BaseModel):
-    """
-    清除登录日志模型
-    """
-    oper_type: str
+    info_ids: str = Field(description='需要删除的访问ID')
 
 
 class UnlockUser(BaseModel):
     """
     解锁用户模型
     """
-    user_name: str
 
-
-class CrudLogResponse(BaseModel):
-    """
-    操作各类日志响应模型
-    """
-    is_success: bool
-    message: str
+    user_name: str = Field(description='用户名称')

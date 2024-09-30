@@ -1,16 +1,16 @@
-import dash
-from dash import dcc
 import feffery_utils_components as fuc
-from flask import session
+from dash import ctx, dcc, no_update
 from dash.dependencies import Input, Output, State
-
+from dash.exceptions import PreventUpdate
+from flask import session
+from api.login import LoginApi
 from server import app
-from api.login import logout_api
+from utils.cache_util import CacheManager
 
 
 # 页首右侧个人中心选项卡回调
 app.clientside_callback(
-    '''
+    """
     (nClicks, clickedKey) => {
         if (clickedKey == '退出登录') {
             return [
@@ -33,56 +33,55 @@ app.clientside_callback(
         }
         return window.dash_clientside.no_update;
      }
-    ''',
-    [Output('dcc-url', 'pathname', allow_duplicate=True),
-     Output('logout-modal', 'visible'),
-     Output('layout-setting-drawer', 'visible')],
+    """,
+    [
+        Output('dcc-url', 'pathname', allow_duplicate=True),
+        Output('logout-modal', 'visible'),
+        Output('layout-setting-drawer', 'visible'),
+    ],
     Input('index-header-dropdown', 'nClicks'),
     State('index-header-dropdown', 'clickedKey'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 
 
 # 退出登录回调
 @app.callback(
-    [Output('redirect-container', 'children', allow_duplicate=True),
-     Output('token-container', 'data', allow_duplicate=True)],
+    [
+        Output('redirect-container', 'children', allow_duplicate=True),
+        Output('token-container', 'data', allow_duplicate=True),
+    ],
     Input('logout-modal', 'okCounts'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def logout_confirm(okCounts):
     if okCounts:
-        result = logout_api()
+        result = LoginApi.logout()
         if result['code'] == 200:
             session.clear()
+            CacheManager.clear()
 
-            return [
-                dcc.Location(
-                    pathname='/login',
-                    id='index-redirect'
-                ),
-                None
-            ]
+            return [dcc.Location(pathname='/login', id='index-redirect'), None]
 
-    return [dash.no_update] * 2
+    raise PreventUpdate
 
 
 # 全局页面重载回调
 app.clientside_callback(
-    '''
+    """
     (nClicks) => {
         return true;
     }
-    ''',
+    """,
     Output('trigger-reload-output', 'reload', allow_duplicate=True),
     Input('index-reload', 'nClicks'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 
 
 # 布局设置回调
 app.clientside_callback(
-    '''
+    """
     (visible, custom_color) => {
         if (visible) {
             if (custom_color) {
@@ -91,64 +90,57 @@ app.clientside_callback(
         }
         return window.dash_clientside.no_update;
     }
-    ''',
+    """,
     Output('hex-color-picker', 'color', allow_duplicate=True),
     Input('layout-setting-drawer', 'visible'),
     State('custom-app-primary-color-container', 'data'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 
 
 @app.callback(
-    [Output('selected-color-input', 'value'),
-     Output('selected-color-input', 'style')],
+    [
+        Output('selected-color-input', 'value'),
+        Output('selected-color-input', 'style'),
+    ],
     Input('hex-color-picker', 'color'),
     State('selected-color-input', 'style'),
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
 def show_selected_color(pick_color, old_style):
-
-    return [
-        pick_color,
-        {
-            **old_style,
-            'background': pick_color
-        }
-    ]
+    return [pick_color, {**old_style, 'background': pick_color}]
 
 
 @app.callback(
-    [Output('custom-app-primary-color-container', 'data'),
-     Output('hex-color-picker', 'color', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
-    [Input('save-setting', 'nClicks'),
-     Input('reset-setting', 'nClicks')],
-    [State('selected-color-input', 'value'),
-     State('system-app-primary-color-container', 'data')],
-    prevent_initial_call=True
+    [
+        Output('custom-app-primary-color-container', 'data'),
+        Output('hex-color-picker', 'color', allow_duplicate=True),
+        Output('global-message-container', 'children', allow_duplicate=True),
+    ],
+    [Input('save-setting', 'nClicks'), Input('reset-setting', 'nClicks')],
+    [
+        State('selected-color-input', 'value'),
+        State('system-app-primary-color-container', 'data'),
+    ],
+    prevent_initial_call=True,
 )
-def save_rest_layout_setting(save_click, reset_click, picked_color, system_color):
+def save_rest_layout_setting(
+    save_click, reset_click, picked_color, system_color
+):
     if save_click or reset_click:
-        trigger_id = dash.ctx.triggered_id
+        trigger_id = ctx.triggered_id
         if trigger_id == 'save-setting':
-
             return [
                 picked_color,
-                dash.no_update,
-                fuc.FefferyFancyMessage('保存成功', type='success')
+                no_update,
+                fuc.FefferyFancyMessage('保存成功', type='success'),
             ]
 
         elif trigger_id == 'reset-setting':
-
             return [
                 None,
                 system_color,
-                fuc.FefferyFancyMessage('重置成功', type='success')
+                fuc.FefferyFancyMessage('重置成功', type='success'),
             ]
 
-    return [
-        dash.no_update,
-        dash.no_update,
-        dash.no_update
-    ]
-
+    raise PreventUpdate

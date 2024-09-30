@@ -1,21 +1,22 @@
+import argparse
 import os
 import sys
-import argparse
-from pydantic import BaseSettings
-from functools import lru_cache
 from dotenv import load_dotenv
+from functools import lru_cache
+from pydantic_settings import BaseSettings
 
 
 class AppSettings(BaseSettings):
     """
     应用配置
     """
+
     app_env: str = 'dev'
     app_name: str = 'Dash-FasAPI-Admin'
     app_root_path: str = '/dev-api'
     app_host: str = '0.0.0.0'
     app_port: int = 9099
-    app_version: str = '1.4.0'
+    app_version: str = '2.0.0'
     app_reload: bool = True
     app_ip_location_query: bool = True
     app_same_time_login: bool = True
@@ -25,6 +26,7 @@ class JwtSettings(BaseSettings):
     """
     Jwt配置
     """
+
     jwt_secret_key: str = 'b01c66dc2c58dc6a0aabfe2144256be36226de378bf87f72c0c795dda67f4d55'
     jwt_algorithm: str = 'HS256'
     jwt_expire_minutes: int = 1440
@@ -35,11 +37,12 @@ class DataBaseSettings(BaseSettings):
     """
     数据库配置
     """
+
     db_host: str = '127.0.0.1'
     db_port: int = 3306
     db_username: str = 'root'
     db_password: str = 'mysqlroot'
-    db_database: str = 'dash-fastapi'
+    db_database: str = 'ruoyi-fastapi'
     db_echo: bool = True
     db_max_overflow: int = 10
     db_pool_size: int = 50
@@ -51,6 +54,7 @@ class RedisSettings(BaseSettings):
     """
     Redis配置
     """
+
     redis_host: str = '127.0.0.1'
     redis_port: int = 6379
     redis_username: str = ''
@@ -58,25 +62,59 @@ class RedisSettings(BaseSettings):
     redis_database: int = 2
 
 
+class UploadSettings:
+    """
+    上传配置
+    """
+
+    UPLOAD_PREFIX = '/profile'
+    UPLOAD_PATH = 'df_admin/upload_path'
+    UPLOAD_MACHINE = 'A'
+    DEFAULT_ALLOWED_EXTENSION = [
+        # 图片
+        'bmp',
+        'gif',
+        'jpg',
+        'jpeg',
+        'png',
+        # word excel powerpoint
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'ppt',
+        'pptx',
+        'html',
+        'htm',
+        'txt',
+        # 压缩文件
+        'rar',
+        'zip',
+        'gz',
+        'bz2',
+        # 视频格式
+        'mp4',
+        'avi',
+        'rmvb',
+        # pdf
+        'pdf',
+    ]
+    DOWNLOAD_PATH = 'df_admin/download_path'
+
+    def __init__(self):
+        if not os.path.exists(self.UPLOAD_PATH):
+            os.makedirs(self.UPLOAD_PATH)
+        if not os.path.exists(self.DOWNLOAD_PATH):
+            os.makedirs(self.DOWNLOAD_PATH)
+
+
 class CachePathConfig:
     """
     缓存目录配置
     """
+
     PATH = os.path.join(os.path.abspath(os.getcwd()), 'caches')
     PATHSTR = 'caches'
-
-
-class RedisInitKeyConfig:
-    """
-    系统内置Redis键名
-    """
-    ACCESS_TOKEN = {'key': 'access_token', 'remark': '登录令牌信息'}
-    SYS_DICT = {'key': 'sys_dict', 'remark': '数据字典'}
-    SYS_CONFIG = {'key': 'sys_config', 'remark': '配置信息'}
-    CAPTCHA_CODES = {'key': 'captcha_codes', 'remark': '图片验证码'}
-    ACCOUNT_LOCK = {'key': 'account_lock', 'remark': '用户锁定'}
-    PASSWORD_ERROR_COUNT = {'key': 'password_error_count', 'remark': '密码错误次数'}
-    SMS_CODE = {'key': 'sms_code', 'remark': '短信验证码'}
 
 
 class GetConfig:
@@ -119,6 +157,14 @@ class GetConfig:
         # 实例化Redis配置模型
         return RedisSettings()
 
+    @lru_cache()
+    def get_upload_config(self):
+        """
+        获取数据库配置
+        """
+        # 实例上传配置
+        return UploadSettings()
+
     @staticmethod
     def parse_cli_args():
         """
@@ -156,3 +202,5 @@ JwtConfig = get_config.get_jwt_config()
 DataBaseConfig = get_config.get_database_config()
 # Redis配置
 RedisConfig = get_config.get_redis_config()
+# 上传配置
+UploadConfig = get_config.get_upload_config()

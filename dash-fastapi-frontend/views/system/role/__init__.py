@@ -1,128 +1,25 @@
-from dash import dcc, html
 import feffery_antd_components as fac
-
-import callbacks.system_c.role_c.role_c
+from dash import dcc, html
+from callbacks.system_c.role_c import role_c
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
+from utils.permission_util import PermissionManager
 from . import data_scope, allocate_user
-from api.role import get_role_list_api
 
 
 def render(*args, **kwargs):
-    button_perms = kwargs.get('button_perms')
-
-    role_params = dict(page_num=1, page_size=10)
-    table_info = get_role_list_api(role_params)
-    table_data = []
-    page_num = 1
-    page_size = 10
-    total = 0
-    if table_info['code'] == 200:
-        table_data = table_info['data']['rows']
-        page_num = table_info['data']['page_num']
-        page_size = table_info['data']['page_size']
-        total = table_info['data']['total']
-        for item in table_data:
-            if item['status'] == '0':
-                item['status'] = dict(checked=True, disabled=item['role_id'] == 1)
-            else:
-                item['status'] = dict(checked=False, disabled=item['role_id'] == 1)
-            item['key'] = str(item['role_id'])
-            if item['role_id'] == 1:
-                item['operation'] = []
-            else:
-                item['operation'] = fac.AntdSpace(
-                    [
-                        fac.AntdButton(
-                            '修改',
-                            id={
-                                'type': 'role-operation-table',
-                                'operation': 'edit',
-                                'index': str(item['role_id'])
-                            },
-                            type='link',
-                            icon=fac.AntdIcon(
-                                icon='antd-edit'
-                            ),
-                            style={
-                                'padding': 0
-                            }
-                        ) if 'system:role:edit' in button_perms else [],
-                        fac.AntdButton(
-                            '删除',
-                            id={
-                                'type': 'role-operation-table',
-                                'operation': 'delete',
-                                'index': str(item['role_id'])
-                            },
-                            type='link',
-                            icon=fac.AntdIcon(
-                                icon='antd-delete'
-                            ),
-                            style={
-                                'padding': 0
-                            }
-                        ) if 'system:role:remove' in button_perms else [],
-                        fac.AntdPopover(
-                            fac.AntdButton(
-                                '更多',
-                                type='link',
-                                icon=fac.AntdIcon(
-                                    icon='antd-more'
-                                ),
-                                style={
-                                    'padding': 0
-                                }
-                            ),
-                            content=fac.AntdSpace(
-                                [
-                                    fac.AntdButton(
-                                        '数据权限',
-                                        id={
-                                            'type': 'role-operation-table',
-                                            'operation': 'datascope',
-                                            'index': str(item['role_id'])
-                                        },
-                                        type='text',
-                                        block=True,
-                                        icon=fac.AntdIcon(
-                                            icon='antd-check-circle'
-                                        ),
-                                        style={
-                                            'padding': 0
-                                        }
-                                    ),
-                                    fac.AntdButton(
-                                        '分配用户',
-                                        id={
-                                            'type': 'role-operation-table',
-                                            'operation': 'allocation',
-                                            'index': str(item['role_id'])
-                                        },
-                                        type='text',
-                                        block=True,
-                                        icon=fac.AntdIcon(
-                                            icon='antd-user'
-                                        ),
-                                        style={
-                                            'padding': 0
-                                        }
-                                    ),
-                                ],
-                                direction='vertical'
-                            ),
-                            placement='bottomRight'
-                        ) if 'system:role:edit' in button_perms else []
-                    ]
-                )
+    query_params = dict(page_num=1, page_size=10)
+    table_data, table_pagination = role_c.generate_role_table(query_params)
 
     return [
-        dcc.Store(id='role-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='role-export-complete-judge-container'),
         # 绑定的导出组件
         dcc.Download(id='role-export-container'),
         # 角色管理模块操作类型存储容器
         dcc.Store(id='role-operations-store'),
-        dcc.Store(id='role-operations-store-bk'),
+        # 角色管理模块弹窗类型存储容器
+        dcc.Store(id='role-modal_type-store'),
         # 角色管理模块修改操作行key存储容器
         dcc.Store(id='role-edit-id-store'),
         # 角色管理模块删除操作行key存储容器
@@ -152,10 +49,12 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 220
-                                                            }
+                                                            },
                                                         ),
                                                         label='角色名称',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -165,41 +64,38 @@ def render(*args, **kwargs):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 220
-                                                            }
+                                                            },
                                                         ),
                                                         label='权限字符',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_normal_disable',
                                                             id='role-status-select',
                                                             placeholder='角色状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
                                                             style={
                                                                 'width': 220
-                                                            }
+                                                            },
                                                         ),
                                                         label='状态',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='role-create_time-range',
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='创建时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -208,9 +104,11 @@ def render(*args, **kwargs):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -218,16 +116,18 @@ def render(*args, **kwargs):
                                                             id='role-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='role-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -246,15 +146,19 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'operation': 'add'
+                                                    'operation': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
                                                     'border-color': '#a3d3ff',
-                                                    'marginRight': '10px'
-                                                }
-                                            ) if 'system:role:add' in button_perms else [],
+                                                    'marginRight': '10px',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:role:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -264,16 +168,20 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'operation': 'edit'
+                                                    'operation': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
                                                     'border-color': '#d0f5e0',
-                                                    'marginRight': '10px'
-                                                }
-                                            ) if 'system:role:edit' in button_perms else [],
+                                                    'marginRight': '10px',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:role:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -283,16 +191,20 @@ def render(*args, **kwargs):
                                                 ],
                                                 id={
                                                     'type': 'role-operation-button',
-                                                    'operation': 'delete'
+                                                    'operation': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
                                                     'border-color': '#ffdbdb',
-                                                    'marginRight': '10px'
-                                                }
-                                            ) if 'system:role:remove' in button_perms else [],
+                                                    'marginRight': '10px',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:role:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -305,15 +217,17 @@ def render(*args, **kwargs):
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
                                                     'border-color': '#ffe399',
-                                                    'marginRight': '10px'
-                                                }
-                                            ) if 'system:role:export' in button_perms else [],
+                                                    'marginRight': '10px',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:role:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -327,10 +241,10 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='role-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='role-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -342,24 +256,22 @@ def render(*args, **kwargs):
                                                             ),
                                                         ],
                                                         id='role-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -400,6 +312,7 @@ def render(*args, **kwargs):
                                                 {
                                                     'dataIndex': 'status',
                                                     'title': '状态',
+                                                    'width': 100,
                                                     'renderOptions': {
                                                         'renderType': 'switch'
                                                     },
@@ -413,39 +326,31 @@ def render(*args, **kwargs):
                                                 },
                                                 {
                                                     'title': '操作',
-                                                    'width': 180,
+                                                    'width': 200,
                                                     'dataIndex': 'operation',
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
                                             bordered=True,
-                                            pagination={
-                                                'pageSize': page_size,
-                                                'current': page_num,
-                                                'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
-                                                'showQuickJumper': True,
-                                                'total': total
-                                            },
+                                            pagination=table_pagination,
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑角色表单modal
         fac.AntdModal(
             [
@@ -456,126 +361,84 @@ def render(*args, **kwargs):
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'role_name',
-                                    'required': True
+                                    'required': True,
                                 },
                                 placeholder='请输入角色名称',
                                 allowClear=True,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='角色名称',
                             required=True,
                             id={
                                 'type': 'role-form-label',
                                 'index': 'role_name',
-                                'required': True
+                                'required': True,
                             },
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'role_key',
-                                    'required': True
+                                    'required': True,
                                 },
                                 placeholder='请输入权限字符',
                                 allowClear=True,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
-                            label=html.Div(
-                                [
-                                    fac.AntdTooltip(
-                                        fac.AntdIcon(
-                                            icon='antd-question-circle'
-                                        ),
-                                        title='控制器中定义的权限字符，如：common'
-                                    ),
-                                    fac.AntdText('权限字符')
-                                ]
-                            ),
+                            label='权限字符',
+                            tooltip='控制器中定义的权限字符，如：common',
                             required=True,
                             id={
                                 'type': 'role-form-label',
                                 'index': 'role_key',
-                                'required': True
+                                'required': True,
                             },
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
                             fac.AntdInputNumber(
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'role_sort',
-                                    'required': True
+                                    'required': True,
                                 },
                                 placeholder='请输入角色顺序',
                                 defaultValue=0,
                                 min=0,
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='角色顺序',
                             required=True,
                             id={
                                 'type': 'role-form-label',
                                 'index': 'role_sort',
-                                'required': True
+                                'required': True,
                             },
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
-                            fac.AntdRadioGroup(
+                            ApiRadioGroup(
+                                dict_type='sys_normal_disable',
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'status',
-                                    'required': False
+                                    'required': False,
                                 },
-                                options=[
-                                    {
-                                        'label': '正常',
-                                        'value': '0'
-                                    },
-                                    {
-                                        'label': '停用',
-                                        'value': '1'
-                                    },
-                                ],
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='状态',
                             id={
                                 'type': 'role-form-label',
                                 'index': 'status',
-                                'required': False
+                                'required': False,
                             },
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
                             [
@@ -584,14 +447,14 @@ def render(*args, **kwargs):
                                         fac.AntdCol(
                                             fac.AntdCheckbox(
                                                 id='role-menu-perms-radio-fold-unfold',
-                                                label='展开/折叠'
+                                                label='展开/折叠',
                                             ),
                                             span=7,
                                         ),
                                         fac.AntdCol(
                                             fac.AntdCheckbox(
                                                 id='role-menu-perms-radio-all-none',
-                                                label='全选/全不选'
+                                                label='全选/全不选',
                                             ),
                                             span=8,
                                         ),
@@ -599,14 +462,12 @@ def render(*args, **kwargs):
                                             fac.AntdCheckbox(
                                                 id='role-menu-perms-radio-parent-children',
                                                 label='父子联动',
-                                                checked=True
+                                                checked=True,
                                             ),
                                             span=6,
                                         ),
                                     ],
-                                    style={
-                                        'paddingTop': '6px'
-                                    }
+                                    style={'paddingTop': '6px'},
                                 ),
                                 fac.AntdRow(
                                     fac.AntdCol(
@@ -618,56 +479,44 @@ def render(*args, **kwargs):
                                                     multiple=True,
                                                     checkable=True,
                                                     showLine=False,
-                                                    selectable=False
+                                                    selectable=False,
                                                 )
                                             ],
                                             style={
                                                 'border': 'solid 1px rgba(0, 0, 0, 0.2)',
                                                 'border-radius': '5px',
-                                                'width': 350
-                                            }
+                                                'width': 350,
+                                            },
                                         )
                                     ),
-                                    style={
-                                        'paddingTop': '6px'
-                                    }
+                                    style={'paddingTop': '6px'},
                                 ),
                             ],
                             label='菜单权限',
                             id='role-menu-perms-form-item',
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                         fac.AntdFormItem(
                             fac.AntdInput(
                                 id={
                                     'type': 'role-form-value',
                                     'index': 'remark',
-                                    'required': False
+                                    'required': False,
                                 },
                                 placeholder='请输入内容',
                                 allowClear=True,
                                 mode='text-area',
-                                style={
-                                    'width': 350
-                                }
+                                style={'width': 350},
                             ),
                             label='备注',
                             id={
                                 'type': 'role-form-label',
                                 'index': 'remark',
-                                'required': False
+                                'required': False,
                             },
-                            labelCol={
-                                'span': 6
-                            },
-                            wrapperCol={
-                                'span': 18
-                            }
+                            labelCol={'span': 6},
+                            wrapperCol={'span': 18},
                         ),
                     ]
                 )
@@ -676,9 +525,8 @@ def render(*args, **kwargs):
             mask=False,
             width=600,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除角色二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='role-delete-text'),
@@ -686,9 +534,8 @@ def render(*args, **kwargs):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
-
         # 数据权限modal
         fac.AntdModal(
             data_scope.render(),
@@ -697,18 +544,17 @@ def render(*args, **kwargs):
             mask=False,
             width=600,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 分配用户modal
         fac.AntdModal(
-            allocate_user.render(button_perms),
+            allocate_user.render(),
             id='role_to_allocated_user-modal',
             title='分配用户',
             mask=False,
             maskClosable=False,
             width=1000,
             renderFooter=False,
-            okClickClose=False
-        )
+            okClickClose=False,
+        ),
     ]

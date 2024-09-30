@@ -1,13 +1,13 @@
-from dash import dcc, html
 import feffery_antd_components as fac
+from dash import dcc, html
+from callbacks.system_c.dict_c import dict_data_c  # noqa: F401
+from components.ApiRadioGroup import ApiRadioGroup
+from components.ApiSelect import ApiSelect
+from utils.permission_util import PermissionManager
 
-import callbacks.system_c.dict_c.dict_data_c
 
-
-def render(button_perms):
-
+def render():
     return [
-        dcc.Store(id='dict_data-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='dict_data-export-complete-judge-container'),
         # 绑定的导出组件
@@ -31,10 +31,12 @@ def render(button_perms):
                                                             allowClear=False,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='字典名称',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdInput(
@@ -44,31 +46,26 @@ def render(button_perms):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='字典标签',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_normal_disable',
                                                             id='dict_data-status-select',
                                                             placeholder='数据状态',
-                                                            options=[
-                                                                {
-                                                                    'label': '正常',
-                                                                    'value': '0'
-                                                                },
-                                                                {
-                                                                    'label': '停用',
-                                                                    'value': '1'
-                                                                }
-                                                            ],
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='状态',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -77,9 +74,11 @@ def render(button_perms):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -87,16 +86,18 @@ def render(button_perms):
                                                             id='dict_data-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='dict_data-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -115,14 +116,18 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'dict_data-operation-button',
-                                                    'index': 'add'
+                                                    'index': 'add',
                                                 },
                                                 style={
                                                     'color': '#1890ff',
                                                     'background': '#e8f4ff',
-                                                    'border-color': '#a3d3ff'
-                                                }
-                                            ) if 'system:dict:add' in button_perms else [],
+                                                    'border-color': '#a3d3ff',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:dict:add'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -132,15 +137,19 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'dict_data-operation-button',
-                                                    'index': 'edit'
+                                                    'index': 'edit',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#71e2a3',
                                                     'background': '#e7faf0',
-                                                    'border-color': '#d0f5e0'
-                                                }
-                                            ) if 'system:dict:edit' in button_perms else [],
+                                                    'border-color': '#d0f5e0',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:dict:edit'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -150,15 +159,19 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'dict_data-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'system:dict:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:dict:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -170,15 +183,17 @@ def render(button_perms):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'system:dict:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'system:dict:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -192,10 +207,10 @@ def render(button_perms):
                                                             ),
                                                         ],
                                                         id='dict_data-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='dict_data-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -207,24 +222,22 @@ def render(button_perms):
                                                             ),
                                                         ],
                                                         id='dict_data-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -287,11 +300,11 @@ def render(button_perms):
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
                                                     'fixed': 'right',
-                                                    'width': 150,
+                                                    'width': 170,
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -301,28 +314,32 @@ def render(button_perms):
                                                 'pageSize': 10,
                                                 'current': 1,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': 0
+                                                'total': 0,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 新增和编辑字典数据表单modal
         fac.AntdModal(
             [
@@ -333,24 +350,19 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_type'
-                                            },
+                                            name='dict_type',
                                             placeholder='请输入字典类型',
                                             disabled=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='字典类型',
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'dict_type',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -359,25 +371,20 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_label'
-                                            },
+                                            name='dict_label',
                                             placeholder='请输入数据标签',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='数据标签',
                                         required=True,
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'dict_label',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -386,25 +393,20 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_value'
-                                            },
+                                            name='dict_value',
                                             placeholder='请输入数据键值',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='数据键值',
                                         required=True,
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'dict_value',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -413,24 +415,19 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'css_class'
-                                            },
+                                            name='css_class',
                                             placeholder='请输入样式属性',
                                             allowClear=True,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='样式属性',
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'css_class',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -439,25 +436,20 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInputNumber(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'dict_sort'
-                                            },
+                                            name='dict_sort',
                                             defaultValue=0,
                                             min=0,
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='显示排序',
                                         required=True,
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'dict_sort',
-                                            'required': True
-                                        }
+                                            'required': True,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -466,49 +458,44 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdSelect(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'list_class'
-                                            },
+                                            name='list_class',
                                             placeholder='回显样式',
                                             options=[
                                                 {
                                                     'label': '默认',
-                                                    'value': 'default'
+                                                    'value': 'default',
                                                 },
                                                 {
                                                     'label': '主要',
-                                                    'value': 'primary'
+                                                    'value': 'primary',
                                                 },
                                                 {
                                                     'label': '成功',
-                                                    'value': 'success'
+                                                    'value': 'success',
                                                 },
                                                 {
                                                     'label': '信息',
-                                                    'value': 'info'
+                                                    'value': 'info',
                                                 },
                                                 {
                                                     'label': '警告',
-                                                    'value': 'warning'
+                                                    'value': 'warning',
                                                 },
                                                 {
                                                     'label': '危险',
-                                                    'value': 'danger'
-                                                }
+                                                    'value': 'danger',
+                                                },
                                             ],
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='回显样式',
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'list_class',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -516,34 +503,20 @@ def render(button_perms):
                             [
                                 fac.AntdCol(
                                     fac.AntdFormItem(
-                                        fac.AntdRadioGroup(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'status'
-                                            },
-                                            options=[
-                                                {
-                                                    'label': '正常',
-                                                    'value': '0'
-                                                },
-                                                {
-                                                    'label': '停用',
-                                                    'value': '1'
-                                                },
-                                            ],
+                                        ApiRadioGroup(
+                                            dict_type='sys_normal_disable',
+                                            name='status',
                                             defaultValue='0',
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='状态',
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'status',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
@@ -552,35 +525,28 @@ def render(button_perms):
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdInput(
-                                            id={
-                                                'type': 'dict_data-form-value',
-                                                'index': 'remark'
-                                            },
+                                            name='remark',
                                             placeholder='请输入内容',
                                             allowClear=True,
                                             mode='text-area',
-                                            style={
-                                                'width': 350
-                                            }
+                                            style={'width': 350},
                                         ),
                                         label='备注',
                                         id={
                                             'type': 'dict_data-form-label',
                                             'index': 'remark',
-                                            'required': False
-                                        }
+                                            'required': False,
+                                        },
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ]
                         ),
                     ],
-                    labelCol={
-                        'span': 6
-                    },
-                    wrapperCol={
-                        'span': 18
-                    }
+                    id='dict_data-form',
+                    enableBatchControl=True,
+                    labelCol={'span': 6},
+                    wrapperCol={'span': 18},
                 )
             ],
             id='dict_data-modal',
@@ -588,15 +554,14 @@ def render(button_perms):
             maskClosable=False,
             width=580,
             renderFooter=True,
-            okClickClose=False
+            okClickClose=False,
         ),
-
         # 删除字典数据二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='dict_data-delete-text'),
             id='dict_data-delete-confirm-modal',
             visible=False,
             title='提示',
-            renderFooter=True
+            renderFooter=True,
         ),
     ]

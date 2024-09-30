@@ -1,12 +1,12 @@
-from dash import dcc, html
 import feffery_antd_components as fac
+from dash import dcc, html
+from callbacks.monitor_c.job_c import job_log_c  # noqa: F401
+from components.ApiSelect import ApiSelect
+from utils.permission_util import PermissionManager
 
-import callbacks.monitor_c.job_c.job_log_c
 
-
-def render(button_perms):
+def render():
     return [
-        dcc.Store(id='job_log-button-perms-container', data=button_perms),
         # 用于导出成功后重置dcc.Download的状态，防止多次下载文件
         dcc.Store(id='job_log-export-complete-judge-container'),
         # 绑定的导出组件
@@ -30,22 +30,26 @@ def render(button_perms):
                                                             allowClear=True,
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='任务名称',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
-                                                        fac.AntdSelect(
+                                                        ApiSelect(
+                                                            dict_type='sys_job_group',
                                                             id='job_log-job_group-select',
                                                             placeholder='请选择任务组名',
-                                                            options=[],
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='任务组名',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdSelect(
@@ -54,29 +58,33 @@ def render(button_perms):
                                                             options=[
                                                                 {
                                                                     'label': '成功',
-                                                                    'value': '0'
+                                                                    'value': '0',
                                                                 },
                                                                 {
                                                                     'label': '失败',
-                                                                    'value': '1'
-                                                                }
+                                                                    'value': '1',
+                                                                },
                                                             ],
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='执行状态',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdDateRangePicker(
                                                             id='job_log-create_time-range',
                                                             style={
                                                                 'width': 240
-                                                            }
+                                                            },
                                                         ),
                                                         label='执行时间',
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -85,9 +93,11 @@ def render(button_perms):
                                                             type='primary',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-search'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
                                                     ),
                                                     fac.AntdFormItem(
                                                         fac.AntdButton(
@@ -95,16 +105,18 @@ def render(button_perms):
                                                             id='job_log-reset',
                                                             icon=fac.AntdIcon(
                                                                 icon='antd-sync'
-                                                            )
+                                                            ),
                                                         ),
-                                                        style={'paddingBottom': '10px'},
-                                                    )
+                                                        style={
+                                                            'paddingBottom': '10px'
+                                                        },
+                                                    ),
                                                 ],
                                                 layout='inline',
                                             )
                                         ],
                                         id='job_log-search-form-container',
-                                        hidden=False
+                                        hidden=False,
                                     ),
                                 )
                             ]
@@ -123,15 +135,19 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'job_log-operation-button',
-                                                    'index': 'delete'
+                                                    'index': 'delete',
                                                 },
                                                 disabled=True,
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:job:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:job:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -141,14 +157,18 @@ def render(button_perms):
                                                 ],
                                                 id={
                                                     'type': 'job_log-operation-button',
-                                                    'index': 'clear'
+                                                    'index': 'clear',
                                                 },
                                                 style={
                                                     'color': '#ff9292',
                                                     'background': '#ffeded',
-                                                    'border-color': '#ffdbdb'
-                                                }
-                                            ) if 'monitor:job:remove' in button_perms else [],
+                                                    'border-color': '#ffdbdb',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:job:remove'
+                                            )
+                                            else [],
                                             fac.AntdButton(
                                                 [
                                                     fac.AntdIcon(
@@ -160,15 +180,17 @@ def render(button_perms):
                                                 style={
                                                     'color': '#ffba00',
                                                     'background': '#fff8e6',
-                                                    'border-color': '#ffe399'
-                                                }
-                                            ) if 'monitor:job:export' in button_perms else [],
+                                                    'border-color': '#ffe399',
+                                                },
+                                            )
+                                            if PermissionManager.check_perms(
+                                                'monitor:job:export'
+                                            )
+                                            else [],
                                         ],
-                                        style={
-                                            'paddingBottom': '10px'
-                                        }
+                                        style={'paddingBottom': '10px'},
                                     ),
-                                    span=16
+                                    span=16,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdSpace(
@@ -182,10 +204,10 @@ def render(button_perms):
                                                             ),
                                                         ],
                                                         id='job_log-hidden',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
                                                     id='job_log-hidden-tooltip',
-                                                    title='隐藏搜索'
+                                                    title='隐藏搜索',
                                                 )
                                             ),
                                             html.Div(
@@ -197,24 +219,22 @@ def render(button_perms):
                                                             ),
                                                         ],
                                                         id='job_log-refresh',
-                                                        shape='circle'
+                                                        shape='circle',
                                                     ),
-                                                    title='刷新'
+                                                    title='刷新',
                                                 )
                                             ),
                                         ],
                                         style={
                                             'float': 'right',
-                                            'paddingBottom': '10px'
-                                        }
+                                            'paddingBottom': '10px',
+                                        },
                                     ),
                                     span=8,
-                                    style={
-                                        'paddingRight': '10px'
-                                    }
-                                )
+                                    style={'paddingRight': '10px'},
+                                ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -239,7 +259,7 @@ def render(button_perms):
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'job_group',
+                                                    'dataIndex': 'job_group_tag',
                                                     'title': '任务组名',
                                                     'renderOptions': {
                                                         'renderType': 'tags'
@@ -260,7 +280,7 @@ def render(button_perms):
                                                     },
                                                 },
                                                 {
-                                                    'dataIndex': 'status',
+                                                    'dataIndex': 'status_tag',
                                                     'title': '执行状态',
                                                     'renderOptions': {
                                                         'renderType': 'tags'
@@ -276,10 +296,11 @@ def render(button_perms):
                                                 {
                                                     'title': '操作',
                                                     'dataIndex': 'operation',
+                                                    'width': 120,
                                                     'renderOptions': {
                                                         'renderType': 'button'
                                                     },
-                                                }
+                                                },
                                             ],
                                             rowSelectionType='checkbox',
                                             rowSelectionWidth=50,
@@ -288,28 +309,32 @@ def render(button_perms):
                                                 'pageSize': 10,
                                                 'current': 1,
                                                 'showSizeChanger': True,
-                                                'pageSizeOptions': [10, 30, 50, 100],
+                                                'pageSizeOptions': [
+                                                    10,
+                                                    30,
+                                                    50,
+                                                    100,
+                                                ],
                                                 'showQuickJumper': True,
-                                                'total': 0
+                                                'total': 0,
                                             },
                                             mode='server-side',
                                             style={
                                                 'width': '100%',
-                                                'padding-right': '10px'
-                                            }
+                                                'padding-right': '10px',
+                                            },
                                         ),
-                                        text='数据加载中'
+                                        text='数据加载中',
                                     ),
                                 )
                             ]
                         ),
                     ],
-                    span=24
+                    span=24,
                 )
             ],
-            gutter=5
+            gutter=5,
         ),
-
         # 任务调度日志明细modal，表单项id使用字典类型，index与后端数据库字段一一对应
         fac.AntdModal(
             [
@@ -322,49 +347,41 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_name'
+                                                'index': 'job_name',
                                             }
                                         ),
                                         label='任务名称',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_name'
+                                            'index': 'job_name',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_group'
+                                                'index': 'job_group',
                                             }
                                         ),
                                         label='任务分组',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_group'
+                                            'index': 'job_group',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -373,49 +390,41 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_executor'
+                                                'index': 'job_executor',
                                             }
                                         ),
                                         label='任务执行器',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_executor'
+                                            'index': 'job_executor',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'invoke_target'
+                                                'index': 'invoke_target',
                                             }
                                         ),
                                         label='调用目标字符串',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'invoke_target'
+                                            'index': 'invoke_target',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -424,49 +433,41 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_args'
+                                                'index': 'job_args',
                                             }
                                         ),
                                         label='位置参数',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_args'
+                                            'index': 'job_args',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_kwargs'
+                                                'index': 'job_kwargs',
                                             }
                                         ),
                                         label='关键字参数',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_kwargs'
+                                            'index': 'job_kwargs',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -475,23 +476,19 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_trigger'
+                                                'index': 'job_trigger',
                                             }
                                         ),
                                         label='任务触发器',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_trigger'
+                                            'index': 'job_trigger',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
@@ -502,23 +499,19 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'job_message'
+                                                'index': 'job_message',
                                             }
                                         ),
                                         label='日志信息',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'job_message'
+                                            'index': 'job_message',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
@@ -529,49 +522,41 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'status'
+                                                'index': 'status',
                                             }
                                         ),
                                         label='执行状态',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'status'
+                                            'index': 'status',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                                 fac.AntdCol(
                                     fac.AntdFormItem(
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'create_time'
+                                                'index': 'create_time',
                                             }
                                         ),
                                         label='执行时间',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'create_time'
+                                            'index': 'create_time',
                                         },
-                                        labelCol={
-                                            'span': 8
-                                        },
-                                        wrapperCol={
-                                            'span': 16
-                                        }
+                                        labelCol={'span': 8},
+                                        wrapperCol={'span': 16},
                                     ),
-                                    span=12
+                                    span=12,
                                 ),
                             ],
-                            gutter=5
+                            gutter=5,
                         ),
                         fac.AntdRow(
                             [
@@ -580,36 +565,26 @@ def render(button_perms):
                                         fac.AntdText(
                                             id={
                                                 'type': 'job_log-form-value',
-                                                'index': 'exception_info'
+                                                'index': 'exception_info',
                                             }
                                         ),
                                         label='异常信息',
                                         required=True,
                                         id={
                                             'type': 'job_log-form-label',
-                                            'index': 'exception_info'
+                                            'index': 'exception_info',
                                         },
-                                        labelCol={
-                                            'span': 4
-                                        },
-                                        wrapperCol={
-                                            'span': 20
-                                        }
+                                        labelCol={'span': 4},
+                                        wrapperCol={'span': 20},
                                     ),
-                                    span=24
+                                    span=24,
                                 ),
                             ],
                         ),
                     ],
-                    labelCol={
-                        'span': 8
-                    },
-                    wrapperCol={
-                        'span': 16
-                    },
-                    style={
-                        'marginRight': '15px'
-                    }
+                    labelCol={'span': 8},
+                    wrapperCol={'span': 16},
+                    style={'marginRight': '15px'},
                 )
             ],
             id='job_log-modal',
@@ -617,7 +592,6 @@ def render(button_perms):
             width=850,
             renderFooter=False,
         ),
-
         # 删除任务调度日志二次确认modal
         fac.AntdModal(
             fac.AntdText('是否确认删除？', id='job_log-delete-text'),
@@ -625,6 +599,6 @@ def render(button_perms):
             visible=False,
             title='提示',
             renderFooter=True,
-            centered=True
+            centered=True,
         ),
     ]

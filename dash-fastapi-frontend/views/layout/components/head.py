@@ -1,8 +1,8 @@
-from dash import html
 import feffery_antd_components as fac
-from flask import session
-from config.global_config import ApiBaseUrlConfig
-import callbacks.layout_c.head_c
+from dash import html
+from callbacks.layout_c import head_c  # noqa: F401
+from config.env import ApiConfig
+from utils.cache_util import CacheManager
 
 
 def render_head_content():
@@ -12,81 +12,60 @@ def render_head_content():
             html.Div(
                 fac.AntdButton(
                     fac.AntdIcon(
-                        id='fold-side-menu-icon',
-                        icon='antd-menu-fold'
+                        id='fold-side-menu-icon', icon='antd-menu-fold'
                     ),
                     id='fold-side-menu',
                     type='text',
                     shape='circle',
                     size='large',
-                    style={
-                        'marginLeft': '5px',
-                        'background': 'white'
-                    }
+                    style={'marginLeft': '5px', 'background': 'white'},
                 ),
                 style={
                     'height': '100%',
                     'display': 'flex',
-                    'alignItems': 'center'
-                }
+                    'alignItems': 'center',
+                },
             ),
-            flex='1'
+            id='fold-side-menu-col',
+            flex='1',
         ),
-
         # 页首面包屑区域
         fac.AntdCol(
             fac.AntdBreadcrumb(
                 items=[
-                    {
-                        'title': '首页',
-                        'icon': 'antd-dashboard',
-                        'href': '/#'
-                    }
+                    {'title': '首页', 'icon': 'antd-dashboard', 'href': '/#'}
                 ],
-                id='header-breadcrumb'
+                id='header-breadcrumb',
+                style={
+                    'height': '100%',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                },
             ),
-            style={
-                'height': '100%',
-                'display': 'flex',
-                'alignItems': 'center'
-            },
-            flex='21'
+            id='header-breadcrumb-col',
+            flex='21',
         ),
-
         # 页首中部搜索区域
         fac.AntdCol(
             fac.AntdParagraph(
                 [
                     fac.AntdText(
-                        'Ctrl',
-                        keyboard=True,
-                        style={
-                            'color': '#8c8c8c'
-                        }
+                        'Ctrl', keyboard=True, style={'color': '#8c8c8c'}
                     ),
                     fac.AntdText(
-                        'K',
-                        keyboard=True,
-                        style={
-                            'color': '#8c8c8c'
-                        }
+                        'K', keyboard=True, style={'color': '#8c8c8c'}
                     ),
-                    fac.AntdText(
-                        '唤出搜索面板',
-                        style={
-                            'color': '#8c8c8c'
-                        }
-                    )
+                    fac.AntdText('唤出搜索面板', style={'color': '#8c8c8c'}),
                 ],
                 style={
                     'height': '100%',
                     'display': 'flex',
-                    'alignItems': 'center'
-                }
+                    'alignItems': 'center',
+                },
             ),
-            flex='6'
+            id='header-search-col',
+            flex='6',
         ),
-
         # 页首开源项目地址
         fac.AntdCol(
             html.A(
@@ -94,16 +73,16 @@ def render_head_content():
                     src='https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark'
                 ),
                 href='https://gitee.com/insistence2022/dash-fastapi-admin',
-                target='_blank'
+                target='_blank',
+                style={
+                    'height': '100%',
+                    'display': 'flex',
+                    'alignItems': 'center',
+                },
             ),
-            style={
-                'height': '100%',
-                'display': 'flex',
-                'alignItems': 'center'
-            },
-            flex='3'
+            id='header-gitee-col',
+            flex='3',
         ),
-
         # 页首右侧用户信息区域
         fac.AntdCol(
             fac.AntdSpace(
@@ -113,11 +92,13 @@ def render_head_content():
                             fac.AntdAvatar(
                                 id='avatar-info',
                                 mode='image',
-                                src=f"{ApiBaseUrlConfig.BaseUrl}{session.get('user_info').get('avatar')}&token={session.get('Authorization')}",
-                                size=36
+                                src=f"{ApiConfig.BaseUrl}{CacheManager.get('user_info').get('avatar')}"
+                                if CacheManager.get('user_info').get('avatar')
+                                else '/assets/imgs/profile.jpg',
+                                size=36,
                             ),
                             count=6,
-                            size='small'
+                            size='small',
                         ),
                         content=fac.AntdTabs(
                             items=[
@@ -135,18 +116,18 @@ def render_head_content():
                                                         'padding': '5px 10px',
                                                         'height': 40,
                                                         'width': 300,
-                                                        'borderBottom': '1px solid #f1f3f5'
-                                                    }
+                                                        'borderBottom': '1px solid #f1f3f5',
+                                                    },
                                                 )
                                                 for i in range(1, 8)
                                             ],
                                             direction='vertical',
                                             style={
                                                 'height': 280,
-                                                'overflowY': 'auto'
-                                            }
+                                                'overflowY': 'auto',
+                                            },
                                         )
-                                    ]
+                                    ],
                                 },
                                 {
                                     'key': '已读消息',
@@ -162,63 +143,57 @@ def render_head_content():
                                                         'padding': '5px 10px',
                                                         'height': 40,
                                                         'width': 300,
-                                                        'borderBottom': '1px solid #f1f3f5'
-                                                    }
+                                                        'borderBottom': '1px solid #f1f3f5',
+                                                    },
                                                 )
                                                 for i in range(8, 15)
                                             ],
                                             direction='vertical',
                                             style={
                                                 'height': 280,
-                                                'overflowY': 'auto'
-                                            }
+                                                'overflowY': 'auto',
+                                            },
                                         )
-                                    ]
+                                    ],
                                 },
                             ],
-                            centered=True
+                            centered=True,
                         ),
-                        placement='bottomRight'
+                        placement='bottomRight',
                     ),
-
                     fac.AntdDropdown(
                         id='index-header-dropdown',
-                        title=session.get('user_info').get('user_name'),
+                        title=CacheManager.get('user_info').get('user_name'),
                         arrow=True,
                         menuItems=[
                             {
                                 'title': '个人资料',
                                 'key': '个人资料',
-                                'icon': 'antd-idcard'
+                                'icon': 'antd-idcard',
                             },
                             {
                                 'title': '布局设置',
                                 'key': '布局设置',
-                                'icon': 'antd-layout'
+                                'icon': 'antd-layout',
                             },
-                            {
-                                'isDivider': True
-                            },
+                            {'isDivider': True},
                             {
                                 'title': '退出登录',
                                 'key': '退出登录',
-                                'icon': 'antd-logout'
+                                'icon': 'antd-logout',
                             },
                         ],
                         placement='bottomRight',
-                        overlayStyle={
-                            'width': '100px'
-                        }
-                    )
+                    ),
                 ],
                 style={
                     'height': '100%',
                     'float': 'right',
                     'display': 'flex',
-                    'alignItems': 'center'
-                }
+                    'alignItems': 'center',
+                },
             ),
-            flex='3'
+            flex='3',
         ),
         fac.AntdCol(
             # 全局刷新按钮
@@ -226,8 +201,7 @@ def render_head_content():
                 fac.AntdTooltip(
                     fac.AntdButton(
                         fac.AntdIcon(
-                            id='index-reload-icon',
-                            icon='fc-synchronize'
+                            id='index-reload-icon', icon='fc-synchronize'
                         ),
                         id='index-reload',
                         type='text',
@@ -235,18 +209,18 @@ def render_head_content():
                         size='large',
                         style={
                             'backgroundColor': 'rgb(255 255 255 / 0%)',
-                        }
+                        },
                     ),
                     title='刷新',
-                    placement='bottom'
+                    placement='bottom',
                 )
             ),
             style={
                 'height': '100%',
                 'paddingRight': '3px',
                 'display': 'flex',
-                'alignItems': 'center'
+                'alignItems': 'center',
             },
-            flex='1'
+            flex='1',
         ),
     ]

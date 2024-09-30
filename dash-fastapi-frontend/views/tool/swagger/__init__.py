@@ -1,10 +1,9 @@
-from dash import html
 import feffery_utils_components as fuc
-from config.global_config import ApiBaseUrlConfig
+from dash import html
+from config.env import ApiConfig
 
 
 def render(*args, **kwargs):
-
     return [
         html.Div(
             [
@@ -18,14 +17,9 @@ def render(*args, **kwargs):
                     }
                     """
                 ),
-                html.Iframe(
-                    src=f'{ApiBaseUrlConfig.BaseUrl}/docs'
-                )
+                html.Iframe(src=f'{ApiConfig.BaseUrl}/docs'),
             ],
             id='swagger-docs-container',
-            style={
-                'position': 'relative',
-                'height': 'calc(100vh - 120px)'
-            }
+            style={'position': 'relative', 'height': 'calc(100vh - 120px)'},
         )
     ]

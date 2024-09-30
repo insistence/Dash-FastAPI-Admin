@@ -1,20 +1,60 @@
+from config.enums import ApiMethod
 from utils.request import api_request
 
 
-def login_api(page_obj: dict):
+class LoginApi:
+    """
+    登录模块相关接口
+    """
 
-    return api_request(method='post', url='/login/loginByAccount', is_headers=False, data=page_obj)
+    @classmethod
+    def login(cls, data: dict):
+        """
+        登录接口
 
+        :param data: 登录参数
+        :return:
+        """
+        return api_request(
+            url='/login',
+            method=ApiMethod.POST,
+            headers={'is_token': False},
+            data=data,
+        )
 
-def get_captcha_image_api():
+    @classmethod
+    def get_info(cls):
+        """
+        获取登录用户信息接口
 
-    return api_request(method='post', url='/captcha/captchaImage', is_headers=False)
+        :return:
+        """
+        return api_request(
+            url='/getInfo',
+            method=ApiMethod.GET,
+        )
 
+    @classmethod
+    def logout(cls):
+        """
+        退出登录接口
 
-def get_current_user_info_api():
+        :return:
+        """
+        return api_request(
+            url='/logout',
+            method=ApiMethod.POST,
+        )
 
-    return api_request(method='post', url='/login/getLoginUserInfo', is_headers=True)
+    @classmethod
+    def get_code_img(cls):
+        """
+        获取图片验证码接口
 
-
-def logout_api():
-    return api_request(method='post', url='/login/logout', is_headers=True)
+        :return:
+        """
+        return api_request(
+            url='/captchaImage',
+            method=ApiMethod.GET,
+            headers={'is_token': False},
+        )

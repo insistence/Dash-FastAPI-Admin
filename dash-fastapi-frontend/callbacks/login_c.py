@@ -1,174 +1,234 @@
-import dash
-from dash import dcc
-import feffery_utils_components as fuc
-from dash.dependencies import Input, Output, State
-from flask import session
+import feffery_antd_components as fac
 import time
-
+from dash import dcc, get_asset_url, no_update
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
+from flask import session
+from api.login import LoginApi
 from server import app
-from utils.common import validate_data_not_empty
-from api.login import login_api, get_captcha_image_api
+from utils.common_util import ValidateUtil
+from utils.feedback_util import MessageManager
 
 
 @app.callback(
     output=dict(
-        username_form_status=Output('login-username-form-item', 'validateStatus'),
-        password_form_status=Output('login-password-form-item', 'validateStatus'),
+        username_form_status=Output(
+            'login-username-form-item', 'validateStatus'
+        ),
+        password_form_status=Output(
+            'login-password-form-item', 'validateStatus'
+        ),
         captcha_form_status=Output('login-captcha-form-item', 'validateStatus'),
         username_form_help=Output('login-username-form-item', 'help'),
         password_form_help=Output('login-password-form-item', 'help'),
         captcha_form_help=Output('login-captcha-form-item', 'help'),
-        image_click=Output('login-captcha-image-container', 'n_clicks'),
-        submit_loading=Output('login-submit', 'loading'),
         token=Output('token-container', 'data'),
-        redirect_container=Output('redirect-container', 'children', allow_duplicate=True),
-        global_message_container=Output('global-message-container', 'children', allow_duplicate=True)
+        redirect_container=Output(
+            'redirect-container', 'children', allow_duplicate=True
+        ),
+        login_success=Output('login-success-container', 'data'),
     ),
     inputs=dict(
-        nClicks=Input('login-submit', 'nClicks')
+        button_click=Input('login-submit', 'nClicks'),
+        keyboard_enter_press=Input('keyboard-enter-submit', 'pressedCounts'),
     ),
     state=dict(
         username=State('login-username', 'value'),
         password=State('login-password', 'value'),
         input_captcha=State('login-captcha', 'value'),
         session_id=State('captcha_image-session_id-container', 'data'),
-        image_click=State('login-captcha-image-container', 'n_clicks'),
-        captcha_hidden=State('captcha-row-container', 'hidden')
+        captcha_hidden=State('captcha-row-container', 'hidden'),
     ),
-    prevent_initial_call=True
+    running=[
+        [Output('login-submit', 'loading'), True, False],
+        [Output('login-submit', 'children'), '登录中', '登录'],
+        [Output('login-captcha-image-container', 'n_clicks'), 0, 1],
+    ],
+    prevent_initial_call=True,
 )
-def login_auth(nClicks, username, password, input_captcha, session_id, image_click, captcha_hidden):
-    if nClicks:
+def login_auth(
+    button_click,
+    keyboard_enter_press,
+    username,
+    password,
+    input_captcha,
+    session_id,
+    captcha_hidden,
+):
+    if button_click or keyboard_enter_press:
+        validate_list = [username, password, input_captcha]
         if captcha_hidden:
-            input_captcha = 'hidden'
+            validate_list = [username, password]
         # 校验全部输入值是否不为空
-        if all(validate_data_not_empty(item) for item in [username, password, input_captcha]):
-
-            try:
-                user_params = dict(username=username, password=password, captcha=input_captcha, session_id=session_id)
-                userinfo_result = login_api(user_params)
-                if userinfo_result['code'] == 200:
-                    token = userinfo_result['data']['access_token']
-                    session['Authorization'] = token
-                    return dict(
-                        username_form_status=None,
-                        password_form_status=None,
-                        captcha_form_status=None,
-                        username_form_help=None,
-                        password_form_help=None,
-                        captcha_form_help=None,
-                        image_click=dash.no_update,
-                        submit_loading=False,
-                        token=token,
-                        redirect_container=dcc.Location(pathname='/', id='login-redirect'),
-                        global_message_container=fuc.FefferyFancyMessage('登录成功', type='success')
-                    )
-
-                else:
-
-                    return dict(
-                        username_form_status=None,
-                        password_form_status=None,
-                        captcha_form_status=None,
-                        username_form_help=None,
-                        password_form_help=None,
-                        captcha_form_help=None,
-                        image_click=image_click + 1,
-                        submit_loading=False,
-                        token=None,
-                        redirect_container=None,
-                        global_message_container=fuc.FefferyFancyMessage(userinfo_result.get('message'), type='error')
-                    )
-            except Exception as e:
-                print(e)
-                return dict(
-                    username_form_status=None,
-                    password_form_status=None,
-                    captcha_form_status=None,
-                    username_form_help=None,
-                    password_form_help=None,
-                    captcha_form_help=None,
-                    image_click=image_click + 1,
-                    submit_loading=False,
-                    token=None,
-                    redirect_container=None,
-                    global_message_container=fuc.FefferyFancyMessage('接口异常', type='error')
-                )
+        if all(ValidateUtil.not_empty(item) for item in validate_list):
+            user_params = dict(
+                username=username,
+                password=password,
+                code=input_captcha,
+                uuid=session_id,
+            )
+            userinfo_result = LoginApi.login(user_params)
+            token = userinfo_result['token']
+            session['Authorization'] = token
+            MessageManager.success(content='登录成功')
+            return dict(
+                username_form_status=None,
+                password_form_status=None,
+                captcha_form_status=None,
+                username_form_help=None,
+                password_form_help=None,
+                captcha_form_help=None,
+                token=token,
+                redirect_container=dcc.Location(
+                    pathname='/', id='login-redirect'
+                ),
+                login_success={'timestamp': time.time()},
+            )
 
         return dict(
-            username_form_status=None if validate_data_not_empty(username) else 'error',
-            password_form_status=None if validate_data_not_empty(password) else 'error',
-            captcha_form_status=None if validate_data_not_empty(input_captcha) else 'error',
-            username_form_help=None if validate_data_not_empty(username) else '请输入用户名！',
-            password_form_help=None if validate_data_not_empty(password) else '请输入密码！',
-            captcha_form_help=None if validate_data_not_empty(input_captcha) else '请输入验证码！',
-            image_click=dash.no_update,
-            submit_loading=False,
+            username_form_status=None
+            if ValidateUtil.not_empty(username)
+            else 'error',
+            password_form_status=None
+            if ValidateUtil.not_empty(password)
+            else 'error',
+            captcha_form_status=None
+            if ValidateUtil.not_empty(input_captcha)
+            else 'error',
+            username_form_help=None
+            if ValidateUtil.not_empty(username)
+            else '请输入用户名！',
+            password_form_help=None
+            if ValidateUtil.not_empty(password)
+            else '请输入密码！',
+            captcha_form_help=None
+            if ValidateUtil.not_empty(input_captcha)
+            else '请输入验证码！',
             token=None,
             redirect_container=None,
-            global_message_container=None
+            login_success=None,
         )
 
     return dict(
-        username_form_status=dash.no_update,
-        password_form_status=dash.no_update,
-        captcha_form_status=dash.no_update,
-        username_form_help=dash.no_update,
-        password_form_help=dash.no_update,
-        captcha_form_help=dash.no_update,
-        image_click=image_click + 1,
-        submit_loading=dash.no_update,
-        token=dash.no_update,
-        redirect_container=dash.no_update,
-        global_message_container=dash.no_update
+        username_form_status=no_update,
+        password_form_status=no_update,
+        captcha_form_status=no_update,
+        username_form_help=no_update,
+        password_form_help=no_update,
+        captcha_form_help=no_update,
+        token=no_update,
+        redirect_container=no_update,
+        login_success=None,
     )
 
 
 @app.callback(
-    [Output('login-captcha-image', 'src'),
-     Output('captcha_image-session_id-container', 'data'),
-     Output('api-check-token', 'data', allow_duplicate=True),
-     Output('global-message-container', 'children', allow_duplicate=True)],
+    [
+        Output('captcha-row-container', 'hidden'),
+        Output('register-user-link-container', 'children'),
+        Output('forget-password-link-container', 'children'),
+        Output('login-captcha-image', 'src'),
+        Output('captcha_image-session_id-container', 'data'),
+    ],
     Input('login-captcha-image-container', 'n_clicks'),
-    prevent_initial_call=True
+    State('login-success-container', 'data'),
+    prevent_initial_call=True,
 )
-def change_login_captcha_image(captcha_click):
-    if captcha_click:
-        try:
-            captcha_image_info = get_captcha_image_api()
-            if captcha_image_info.get('code') == 200:
-                captcha_image = captcha_image_info.get('data').get('image')
-                session_id = captcha_image_info.get('data').get('session_id')
+def change_login_captcha_image(captcha_click, login_success):
+    if captcha_click and not login_success:
+        captcha_image_info = LoginApi.get_code_img()
+        captcha_enabled = captcha_image_info.get('captcha_enabled')
+        forget_enabled = captcha_image_info.get('forget_enabled')
+        register_enabled = captcha_image_info.get('register_enabled')
+        captcha_image = f"data:image/gif;base64,{captcha_image_info.get('img')}"
+        session_id = captcha_image_info.get('uuid')
 
-                return [
-                    captcha_image,
-                    session_id,
-                    dash.no_update,
-                    dash.no_update
-                ]
-            else:
-                return [
-                    dash.no_update,
-                    dash.no_update,
-                    {'timestamp': time.time()},
-                    dash.no_update
-                ]
-        except Exception as e:
+        return [
+            not captcha_enabled,
+            fac.AntdButton(
+                '注册',
+                id='register-user-link',
+                href='/register',
+                target='_self',
+                block=True,
+                size='large',
+            )
+            if register_enabled
+            else [],
+            fac.AntdButton(
+                '忘记密码？',
+                id='forget-password-link',
+                type='link',
+                href='/forget',
+                target='_self',
+                style={'padding': 0},
+            )
+            if forget_enabled
+            else [],
+            captcha_image,
+            session_id,
+        ]
 
-            return [dash.no_update, dash.no_update, {'timestamp': time.time()}, fuc.FefferyFancyMessage('接口异常', type='error')]
-
-    return [dash.no_update] * 4
+    raise PreventUpdate
 
 
 @app.callback(
-    Output('container', 'style'),
+    Output('login-page', 'style'),
     Input('url-container', 'pathname'),
-    State('container', 'style')
 )
-def random_bg(pathname, old_style):
+def random_login_bg(pathname):
     return {
-        **old_style,
-        'backgroundImage': 'url({})'.format(dash.get_asset_url('imgs/login-background.jpg')),
-        'backgroundRepeat': 'no-repeat',
-        'backgroundSize': 'cover'
+        'backgroundImage': 'url({})'.format(
+            get_asset_url('imgs/background.png')
+        ),
     }
+
+
+app.clientside_callback(
+    """
+    (_) => {
+        let username = Cookies.get("username");
+        let password = Cookies.get("password");
+        let remember = Cookies.get("remember");
+        return [
+            remember === undefined ? false : Boolean(remember), 
+            username === undefined ? '' : username, 
+            password === undefined ? '' : decrypt(password)
+        ];
+    }
+    """,
+    [
+        Output('login-remember-me', 'checked'),
+        Output('login-username', 'value'),
+        Output('login-password', 'value'),
+    ],
+    Input('login-page', 'id'),
+)
+
+
+app.clientside_callback(
+    """
+    (login_success, remember, username, password) => {
+        if (login_success) {
+            if (remember) {
+            Cookies.set("username", username, { expires: 30 });
+            Cookies.set("password", encrypt(password), { expires: 30 });
+            Cookies.set("remember", remember, { expires: 30 });
+            } else {
+                Cookies.remove("username");
+                Cookies.remove("password");
+                Cookies.remove("remember");
+            }
+        } else {
+            throw window.dash_clientside.PreventUpdate;
+        }
+    }
+    """,
+    Input('login-success-container', 'data'),
+    [
+        State('login-remember-me', 'checked'),
+        State('login-username', 'value'),
+        State('login-password', 'value'),
+    ],
+    prevent_initial_call=True,
+)

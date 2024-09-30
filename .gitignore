@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 develop-eggs/
+df_admin/
 dist/
 downloads/
 eggs/

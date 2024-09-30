@@ -1,12 +1,14 @@
 import feffery_antd_components as fac
-import dash
-
-import callbacks.layout_c.aside_c
+from dash import dcc, get_asset_url
+from callbacks.layout_c import aside_c  # noqa: F401
+from config.env import AppConfig
 
 
 def render_aside_content(menu_info):
-
     return [
+        dcc.Store(id='current-key_path-store'),
+        dcc.Store(id='current-item-store'),
+        dcc.Store(id='current-item_path-store'),
         fac.AntdSider(
             [
                 fac.AntdRow(
@@ -15,33 +17,33 @@ def render_aside_content(menu_info):
                             fac.AntdImage(
                                 width=32,
                                 height=32,
-                                src=dash.get_asset_url('imgs/logo.png'),
+                                src=get_asset_url('imgs/logo.png'),
                                 preview=False,
                             ),
                             flex='1',
                             style={
                                 'height': '100%',
                                 'display': 'flex',
-                                'alignItems': 'center'
-                            }
+                                'alignItems': 'center',
+                            },
                         ),
                         fac.AntdCol(
                             fac.AntdText(
-                                '后台管理系统',
+                                AppConfig.app_name,
                                 id='logo-text',
                                 style={
                                     'fontSize': '22px',
-                                    # 'paddingLeft': '20px',
-                                    'color': 'rgb(255, 255, 255)'
-                                }
+                                    'color': 'rgb(255, 255, 255)',
+                                },
                             ),
                             flex='5',
                             style={
                                 'height': '100%',
                                 'display': 'flex',
                                 'alignItems': 'center',
-                            }
-                        )
+                                'marginLeft': '25px',
+                            },
+                        ),
                     ],
                     style={
                         'height': '50px',
@@ -49,36 +51,22 @@ def render_aside_content(menu_info):
                         'position': 'sticky',
                         'top': 0,
                         'zIndex': 999,
-                        'paddingLeft': '10px'
-                    }
+                        'paddingLeft': '18px',
+                    },
                 ),
                 fac.AntdMenu(
                     id='index-side-menu',
-                    menuItems=[
-                                  {
-                                      'component': 'Item',
-                                      'props': {
-                                          'key': '首页',
-                                          'title': '首页',
-                                          'icon': 'antd-dashboard',
-                                          'href': '/'
-                                      }
-                                  }
-                              ] + menu_info,
+                    menuItems=menu_info,
                     mode='inline',
                     theme='dark',
                     defaultSelectedKey='首页',
-                    defaultOpenKeys=['-1_1'],
-                    style={
-                        'width': '100%',
-                        'height': 'calc(100vh - 50px)'
-                    }
+                    style={'width': '100%', 'height': 'calc(100vh - 50px)'},
                 ),
             ],
             id='menu-collapse-sider-custom',
             collapsible=True,
-            collapsedWidth=60,
+            collapsedWidth=64,
             trigger=None,
-            width=210
+            width=256,
         ),
     ]

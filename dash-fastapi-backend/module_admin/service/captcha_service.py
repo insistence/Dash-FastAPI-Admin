@@ -1,8 +1,8 @@
-from PIL import Image, ImageDraw, ImageFont
+import base64
 import io
 import os
 import random
-import base64
+from PIL import Image, ImageDraw, ImageFont
 
 
 class CaptchaService:
@@ -11,15 +11,15 @@ class CaptchaService:
     """
 
     @classmethod
-    def create_captcha_image_service(cls):
+    async def create_captcha_image_service(cls):
         # 创建空白图像
-        image = Image.new('RGB', (400, 300), color='#EAEAEA')
+        image = Image.new('RGB', (160, 60), color='#EAEAEA')
 
         # 创建绘图对象
         draw = ImageDraw.Draw(image)
 
         # 设置字体
-        font = ImageFont.truetype(os.path.join(os.path.abspath(os.getcwd()), 'assets', 'font', 'Arial.ttf'), size=100)
+        font = ImageFont.truetype(os.path.join(os.path.abspath(os.getcwd()), 'assets', 'font', 'Arial.ttf'), size=30)
 
         # 生成两个0-9之间的随机整数
         num1 = random.randint(0, 9)
@@ -35,14 +35,14 @@ class CaptchaService:
         else:
             result = num1 * num2
         # 绘制文本
-        text = f"{num1} {operational_character} {num2} = ?"
-        draw.text((10, 120), text, fill='blue', font=font)
+        text = f'{num1} {operational_character} {num2} = ?'
+        draw.text((25, 15), text, fill='blue', font=font)
 
         # 将图像数据保存到内存中
         buffer = io.BytesIO()
         image.save(buffer, format='PNG')
 
         # 将图像数据转换为base64字符串
-        base64_string = f'data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode()}'
+        base64_string = base64.b64encode(buffer.getvalue()).decode()
 
         return [base64_string, result]
