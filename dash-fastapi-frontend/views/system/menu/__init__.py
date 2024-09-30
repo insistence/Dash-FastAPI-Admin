@@ -14,7 +14,8 @@ def render(*args, **kwargs):
     return [
         # 菜单管理模块操作类型存储容器
         dcc.Store(id='menu-operations-store'),
-        dcc.Store(id='menu-operations-store-bk'),
+        # 菜单管理模块弹窗类型存储容器
+        dcc.Store(id='menu-modal_type-store'),
         # modal菜单类型存储容器
         dcc.Store(id='menu-modal-menu-type-store'),
         # 不同菜单类型的触发器

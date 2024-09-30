@@ -13,8 +13,6 @@ app.layout = html.Div(
         fuc.FefferyLocation(id='url-container'),
         # 用于回调pathname信息
         dcc.Location(id='dcc-url', refresh=False),
-        # 注入js执行容器
-        fuc.FefferyExecuteJs(id='execute-js-container'),
         # 注入页面内容挂载点
         html.Div(id='app-mount'),
         # 注入全局配置容器
@@ -26,7 +24,7 @@ app.layout = html.Div(
             placeholder='输入你想要搜索的菜单...',
             panelStyles={'accentColor': '#1890ff', 'zIndex': 99999},
         ),
-        # 辅助处理多输入 -> 存储接口返回token校验信息
+        # 注入全局store容器
         render_store_container(),
         # 重定向容器
         html.Div(id='redirect-container'),

@@ -38,7 +38,7 @@ from utils.feedback_util import MessageManager
         confirm_trigger=Input('menu-modal-F-trigger', 'data'),
     ),
     state=dict(
-        modal_type=State('menu-operations-store-bk', 'data'),
+        modal_type=State('menu-modal_type-store', 'data'),
         edit_row_info=State('menu-edit-id-store', 'data'),
         parent_id=State('menu-parent_id', 'value'),
         menu_type=State('menu-menu_type', 'value'),

@@ -18,7 +18,8 @@ def render(*args, **kwargs):
         dcc.Download(id='role-export-container'),
         # 角色管理模块操作类型存储容器
         dcc.Store(id='role-operations-store'),
-        dcc.Store(id='role-operations-store-bk'),
+        # 角色管理模块弹窗类型存储容器
+        dcc.Store(id='role-modal_type-store'),
         # 角色管理模块修改操作行key存储容器
         dcc.Store(id='role-edit-id-store'),
         # 角色管理模块删除操作行key存储容器

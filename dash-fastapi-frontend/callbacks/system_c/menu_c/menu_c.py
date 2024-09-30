@@ -239,7 +239,7 @@ def get_select_icon(icon):
         ],
         other=dict(
             edit_row_info=Output('menu-edit-id-store', 'data'),
-            modal_type=Output('menu-operations-store-bk', 'data'),
+            modal_type=Output('menu-modal_type-store', 'data'),
         ),
     ),
     inputs=dict(

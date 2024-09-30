@@ -249,7 +249,7 @@ app.clientside_callback(
         ],
         other=dict(
             edit_row_info=Output('notice-edit-id-store', 'data'),
-            modal_type=Output('notice-operations-store-bk', 'data'),
+            modal_type=Output('notice-modal_type-store', 'data'),
         ),
     ),
     inputs=dict(
@@ -376,7 +376,7 @@ def add_edit_notice_modal(
     ),
     inputs=dict(confirm_trigger=Input('notice-modal', 'okCounts')),
     state=dict(
-        modal_type=State('notice-operations-store-bk', 'data'),
+        modal_type=State('notice-modal_type-store', 'data'),
         edit_row_info=State('notice-edit-id-store', 'data'),
         notice_title=State('notice-notice_title', 'value'),
         notice_type=State('notice-notice_type', 'value'),

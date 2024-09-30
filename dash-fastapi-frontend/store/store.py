@@ -9,8 +9,6 @@ def render_store_container():
             dcc.Store(
                 id='custom-app-primary-color-container', storage_type='session'
             ),
-            # 接口校验返回存储容器
-            dcc.Store(id='api-check-result-container'),
             # token存储容器
             dcc.Store(id='token-container', storage_type='session'),
             # 当前路由存储容器

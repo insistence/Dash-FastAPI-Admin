@@ -115,24 +115,6 @@ def render(avatar_path):
                                 accept='.jpeg,.jpg,.png',
                                 max_size=10 * 1024 * 1024,
                             ),
-                            # fac.AntdUpload(
-                            #     id='avatar-upload-choose',
-                            #     apiUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/upload',
-                            #     apiUrlExtraParams={'taskPath': 'avatarUpload'},
-                            #     downloadUrl=f'{ApiBaseUrlConfig.BaseUrl}/common/caches',
-                            #     downloadUrlExtraParams={
-                            #         'taskPath': 'avatarUpload',
-                            #         'token': session.get('Authorization'),
-                            #     },
-                            #     headers={
-                            #         'Authorization': 'Bearer '
-                            #         + session.get('Authorization')
-                            #     },
-                            #     fileMaxSize=10,
-                            #     showUploadList=False,
-                            #     fileTypes=['jpeg', 'jpg', 'png'],
-                            #     buttonContent='选择',
-                            # ),
                             span=4,
                         ),
                         fac.AntdCol(

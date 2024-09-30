@@ -359,7 +359,7 @@ def change_role_menu_mode(parent_children):
             'role-menu-perms-radio-parent-children', 'checked'
         ),
         edit_row_info=Output('role-edit-id-store', 'data'),
-        modal_type=Output('role-operations-store-bk', 'data'),
+        modal_type=Output('role-modal_type-store', 'data'),
     ),
     inputs=dict(
         operation_click=Input(
@@ -392,7 +392,7 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
             role_info = dict(
                 role_name=None,
                 role_key=None,
-                role_sort=None,
+                role_sort=0,
                 status=SysNormalDisableConstant.NORMAL,
                 remark=None,
             )
@@ -473,7 +473,7 @@ def add_edit_role_modal(operation_click, button_click, selected_row_keys):
     ),
     inputs=dict(confirm_trigger=Input('role-modal', 'okCounts')),
     state=dict(
-        modal_type=State('role-operations-store-bk', 'data'),
+        modal_type=State('role-modal_type-store', 'data'),
         edit_row_info=State('role-edit-id-store', 'data'),
         form_value=State(
             {'type': 'role-form-value', 'index': ALL, 'required': ALL}, 'value'
