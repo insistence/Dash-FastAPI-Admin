@@ -21,7 +21,7 @@ class ServerService:
         cpu_used = cpu_usage_percent.user
         cpu_sys = cpu_usage_percent.system
         cpu_free = cpu_usage_percent.idle
-        cpu = CpuInfo(cpuNum=cpu_num, used=cpu_used, sys=cpu_sys, free=cpu_free)
+        cpu = CpuInfo(cpu_num=cpu_num, used=cpu_used, sys=cpu_sys, free=cpu_free)
 
         # 内存信息
         memory_info = psutil.virtual_memory()
