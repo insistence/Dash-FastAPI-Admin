@@ -23,6 +23,17 @@ class AppSettings(BaseSettings):
     app_compress_br_level: int = 11
 
 
+class CacheSettings(BaseSettings):
+    """
+    缓存配置
+    """
+
+    lru_cache_maxsize: int = 10000
+    lru_cache_capacity: int = 10000
+    ttl_cache_maxsize: int = 0
+    ttl_cache_expire: int = 600
+
+
 class GetConfig:
     """
     获取配置
@@ -38,6 +49,14 @@ class GetConfig:
         """
         # 实例化应用配置模型
         return AppSettings()
+
+    @lru_cache()
+    def get_cache_config(self):
+        """
+        获取缓存配置
+        """
+        # 实例化缓存配置模型
+        return CacheSettings()
 
     @staticmethod
     def parse_cli_args():
@@ -66,6 +85,8 @@ class GetConfig:
 get_config = GetConfig()
 # 应用配置
 AppConfig = get_config.get_app_config()
+# 缓存配置
+CacheConfig = get_config.get_cache_config()
 
 
 class ApiConfig:

@@ -1,10 +1,17 @@
 from cachebox import LRUCache, TTLCache
 from flask import session
 from typing import Any, Dict
+from config.env import CacheConfig
 
 
-cache_manager = LRUCache(maxsize=10000, iterable=None, capacity=10000)
-ttl_manager = TTLCache(maxsize=0, ttl=600)
+cache_manager = LRUCache(
+    maxsize=CacheConfig.lru_cache_maxsize,
+    iterable=None,
+    capacity=CacheConfig.lru_cache_capacity,
+)
+ttl_manager = TTLCache(
+    maxsize=CacheConfig.ttl_cache_maxsize, ttl=CacheConfig.ttl_cache_expire
+)
 
 
 class CacheManager:
