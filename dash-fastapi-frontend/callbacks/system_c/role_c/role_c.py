@@ -9,11 +9,11 @@ from api.system.menu import MenuApi
 from api.system.role import RoleApi
 from config.constant import SysNormalDisableConstant
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.time_format_util import TimeFormatUtil
-from utils.tree_tool import find_tree_all_keys
+from utils.tree_util import TreeUtil
 
 
 def generate_role_table(query_params: Dict):
@@ -309,7 +309,7 @@ def all_none_role_menu_mode(all_none, menu_tree):
     """
     if menu_tree and all_none is not None:
         if all_none:
-            all_keys = find_tree_all_keys(menu_tree, [])
+            all_keys = TreeUtil.find_tree_all_keys(menu_tree, [])
             return all_keys
         else:
             return []
@@ -515,7 +515,7 @@ def role_confirm(
             x['id']['index']: x.get('value') for x in ctx.states_list[3]
         }
         if all(
-            validate_data_not_empty(item)
+            ValidateUtil.not_empty(item)
             for item in [
                 form_value_state.get(k) for k in form_label_output_list
             ]
@@ -575,13 +575,13 @@ def role_confirm(
         return dict(
             form_label_validate_status=[
                 None
-                if validate_data_not_empty(form_value_state.get(k))
+                if ValidateUtil.not_empty(form_value_state.get(k))
                 else 'error'
                 for k in form_label_output_list
             ],
             form_label_validate_info=[
                 None
-                if validate_data_not_empty(form_value_state.get(k))
+                if ValidateUtil.not_empty(form_value_state.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
                 for k in form_label_output_list
             ],

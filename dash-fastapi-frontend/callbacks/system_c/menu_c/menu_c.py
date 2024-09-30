@@ -12,7 +12,7 @@ from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
 from utils.time_format_util import TimeFormatUtil
-from utils.tree_tool import list_to_tree, list_to_tree_select
+from utils.tree_util import TreeUtil
 from views.system.menu.components import button_type, content_type, menu_type
 
 
@@ -72,7 +72,7 @@ def generate_menu_table(query_params: Dict):
         item['status'] = DictManager.get_dict_tag(
             dict_type='sys_normal_disable', dict_value=item.get('status')
         )
-    table_data_new = list_to_tree(table_data, 'menu_id', 'parent_id')
+    table_data_new = TreeUtil.list_to_tree(table_data, 'menu_id', 'parent_id')
 
     return [table_data_new, default_expanded_row_keys]
 
@@ -269,12 +269,8 @@ def add_edit_menu_modal(
         menu_params = dict(menu_name='')
         tree_info = MenuApi.list_menu(menu_params)
         tree_data = [dict(title='主类目', value='0', key='0', children=[])]
-        tree_data[0]['children'] = list_to_tree_select(
-            tree_info['data'],
-            'menu_name',
-            'menu_id',
-            'menu_id',
-            'parent_id',
+        tree_data[0]['children'] = TreeUtil.list_to_tree_select(
+            tree_info['data'], 'menu_name', 'menu_id', 'menu_id', 'parent_id'
         )
 
         if trigger_id == {'index': 'add', 'type': 'menu-operation-button'}:

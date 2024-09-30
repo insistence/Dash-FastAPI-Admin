@@ -3,7 +3,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.forget import ForgetApi
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.feedback_util import MessageManager
 
 
@@ -51,7 +51,7 @@ def forget_auth(
     if nClicks:
         # 校验全部输入值是否不为空
         if all(
-            validate_data_not_empty(item)
+            ValidateUtil.not_empty(item)
             for item in [username, password, password_again, input_captcha]
         ):
             if password == password_again:
@@ -92,28 +92,28 @@ def forget_auth(
 
         return dict(
             username_form_status=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else 'error',
             password_form_status=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else 'error',
             password_again_form_status=None
-            if validate_data_not_empty(password_again)
+            if ValidateUtil.not_empty(password_again)
             else 'error',
             captcha_form_status=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else 'error',
             username_form_help=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else '请输入用户名！',
             password_form_help=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else '请输入新密码！',
             password_again_form_help=None
-            if validate_data_not_empty(password_again)
+            if ValidateUtil.not_empty(password_again)
             else '请再次输入新密码！',
             captcha_form_help=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else '请输入短信验证码！',
             redirect_container=None,
         )

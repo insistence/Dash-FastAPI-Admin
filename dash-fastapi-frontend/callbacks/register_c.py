@@ -5,7 +5,7 @@ from dash.exceptions import PreventUpdate
 from api.login import LoginApi
 from api.register import RegisterApi
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.feedback_util import MessageManager
 
 
@@ -70,7 +70,7 @@ def register(
         if captcha_hidden:
             validate_list = [username, password, confirm_password]
         # 校验全部输入值是否不为空
-        if all(validate_data_not_empty(item) for item in validate_list):
+        if all(ValidateUtil.not_empty(item) for item in validate_list):
             if password == confirm_password:
                 register_params = dict(
                     username=username,
@@ -112,28 +112,28 @@ def register(
 
         return dict(
             username_form_status=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else 'error',
             password_form_status=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else 'error',
             confirm_password_form_status=None
-            if validate_data_not_empty(confirm_password)
+            if ValidateUtil.not_empty(confirm_password)
             else 'error',
             captcha_form_status=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else 'error',
             username_form_help=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else '请输入用户名！',
             password_form_help=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else '请输入密码！',
             confirm_password_form_help=None
-            if validate_data_not_empty(confirm_password)
+            if ValidateUtil.not_empty(confirm_password)
             else '请再次输入密码！',
             captcha_form_help=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else '请输入验证码！',
             redirect_container=None,
             register_success=None,

@@ -7,7 +7,7 @@ from api.system.dict.data import DictDataApi
 from config.constant import SysNormalDisableConstant
 from server import app
 from utils.cache_util import TTLCacheManager
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
@@ -349,7 +349,7 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
             x['id']['index']: x.get('value') for x in ctx.states_list[-1]
         }
         if all(
-            validate_data_not_empty(item)
+            ValidateUtil.not_empty(item)
             for item in [form_value.get(k) for k in form_label_list]
         ):
             params_add = form_value
@@ -390,13 +390,13 @@ def dict_data_confirm(confirm_trigger, modal_type, form_value, form_label):
         return dict(
             form_label_validate_status={
                 form_label_state.get(k): None
-                if validate_data_not_empty(form_value.get(k))
+                if ValidateUtil.not_empty(form_value.get(k))
                 else 'error'
                 for k in form_label_list
             },
             form_label_validate_info={
                 form_label_state.get(k): None
-                if validate_data_not_empty(form_value.get(k))
+                if ValidateUtil.not_empty(form_value.get(k))
                 else f'{form_label_state.get(k)}不能为空!'
                 for k in form_label_list
             },

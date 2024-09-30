@@ -3,7 +3,7 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from api.system.menu import MenuApi
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.feedback_util import MessageManager
 
 
@@ -72,7 +72,7 @@ def menu_confirm_content(
     """
     if confirm_trigger:
         if all(
-            validate_data_not_empty(item)
+            ValidateUtil.not_empty(item)
             for item in [parent_id, menu_name, order_num, path]
         ):
             params_add = dict(
@@ -128,20 +128,20 @@ def menu_confirm_content(
 
         return dict(
             form_validate=[
-                None if validate_data_not_empty(parent_id) else 'error',
-                None if validate_data_not_empty(menu_name) else 'error',
-                None if validate_data_not_empty(order_num) else 'error',
-                None if validate_data_not_empty(path) else 'error',
+                None if ValidateUtil.not_empty(parent_id) else 'error',
+                None if ValidateUtil.not_empty(menu_name) else 'error',
+                None if ValidateUtil.not_empty(order_num) else 'error',
+                None if ValidateUtil.not_empty(path) else 'error',
                 None
-                if validate_data_not_empty(parent_id)
+                if ValidateUtil.not_empty(parent_id)
                 else '请选择上级菜单！',
                 None
-                if validate_data_not_empty(menu_name)
+                if ValidateUtil.not_empty(menu_name)
                 else '请输入菜单名称！',
                 None
-                if validate_data_not_empty(order_num)
+                if ValidateUtil.not_empty(order_num)
                 else '请输入显示排序！',
-                None if validate_data_not_empty(path) else '请输入路由地址！',
+                None if ValidateUtil.not_empty(path) else '请输入路由地址！',
             ],
             modal_visible=no_update,
             operations=no_update,

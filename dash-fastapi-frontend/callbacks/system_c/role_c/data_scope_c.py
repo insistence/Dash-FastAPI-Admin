@@ -5,7 +5,7 @@ from dash.exceptions import PreventUpdate
 from api.system.role import RoleApi
 from server import app
 from utils.feedback_util import MessageManager
-from utils.tree_tool import find_tree_all_keys
+from utils.tree_util import TreeUtil
 
 
 @app.callback(
@@ -43,7 +43,7 @@ def all_none_role_dept_mode(all_none, dept_tree):
     """
     if dept_tree and all_none is not None:
         if all_none:
-            all_keys = find_tree_all_keys(dept_tree, [])
+            all_keys = TreeUtil.find_tree_all_keys(dept_tree, [])
             return all_keys
         else:
             return []

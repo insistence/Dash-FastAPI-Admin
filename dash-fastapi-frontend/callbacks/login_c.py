@@ -6,7 +6,7 @@ from dash.exceptions import PreventUpdate
 from flask import session
 from api.login import LoginApi
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.feedback_util import MessageManager
 
 
@@ -60,7 +60,7 @@ def login_auth(
         if captcha_hidden:
             validate_list = [username, password]
         # 校验全部输入值是否不为空
-        if all(validate_data_not_empty(item) for item in validate_list):
+        if all(ValidateUtil.not_empty(item) for item in validate_list):
             user_params = dict(
                 username=username,
                 password=password,
@@ -87,22 +87,22 @@ def login_auth(
 
         return dict(
             username_form_status=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else 'error',
             password_form_status=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else 'error',
             captcha_form_status=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else 'error',
             username_form_help=None
-            if validate_data_not_empty(username)
+            if ValidateUtil.not_empty(username)
             else '请输入用户名！',
             password_form_help=None
-            if validate_data_not_empty(password)
+            if ValidateUtil.not_empty(password)
             else '请输入密码！',
             captcha_form_help=None
-            if validate_data_not_empty(input_captcha)
+            if ValidateUtil.not_empty(input_captcha)
             else '请输入验证码！',
             token=None,
             redirect_container=None,

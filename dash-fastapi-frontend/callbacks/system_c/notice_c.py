@@ -7,7 +7,7 @@ from api.system.notice import NoticeApi
 from config.constant import SysNoticeStatusConstant, SysNoticeTypeConstant
 from config.env import ApiConfig
 from server import app
-from utils.common import validate_data_not_empty
+from utils.common_util import ValidateUtil
 from utils.dict_util import DictManager
 from utils.feedback_util import MessageManager
 from utils.permission_util import PermissionManager
@@ -400,7 +400,7 @@ def notice_confirm(
     """
     if confirm_trigger:
         if all(
-            validate_data_not_empty(item)
+            ValidateUtil.not_empty(item)
             for item in [notice_title, notice_type]
         ):
             params_add = dict(
@@ -457,16 +457,16 @@ def notice_confirm(
 
         return dict(
             notice_title_form_status=None
-            if validate_data_not_empty(notice_title)
+            if ValidateUtil.not_empty(notice_title)
             else 'error',
             notice_type_form_status=None
-            if validate_data_not_empty(notice_type)
+            if ValidateUtil.not_empty(notice_type)
             else 'error',
             notice_title_form_help=None
-            if validate_data_not_empty(notice_title)
+            if ValidateUtil.not_empty(notice_title)
             else '请输入公告标题！',
             notice_type_form_help=None
-            if validate_data_not_empty(notice_type)
+            if ValidateUtil.not_empty(notice_type)
             else '请输入公告类型！',
             modal_visible=no_update,
             operations=no_update,
