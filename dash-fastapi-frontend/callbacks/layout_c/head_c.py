@@ -5,6 +5,7 @@ from dash.exceptions import PreventUpdate
 from flask import session
 from api.login import LoginApi
 from server import app
+from utils.cache_util import CacheManager
 
 
 # 页首右侧个人中心选项卡回调
@@ -58,6 +59,7 @@ def logout_confirm(okCounts):
         result = LoginApi.logout()
         if result['code'] == 200:
             session.clear()
+            CacheManager.clear()
 
             return [dcc.Location(pathname='/login', id='index-redirect'), None]
 

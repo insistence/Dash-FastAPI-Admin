@@ -61,6 +61,17 @@ class CacheManager:
         cache.pop(target_key, None)
         cache_manager.insert(session.get('Authorization'), cache)
 
+    @classmethod
+    def clear(cls):
+        """
+        清空缓存值
+
+        :return:
+        """
+        cache = cache_manager.get(session.get('Authorization'))
+        if cache:
+            del cache_manager[session.get('Authorization')]
+
 
 class TTLCacheManager:
     """

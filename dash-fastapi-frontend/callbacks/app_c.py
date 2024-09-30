@@ -3,6 +3,7 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 from flask import session
 from server import app
+from utils.cache_util import CacheManager
 
 
 # api拦截器——退出登录二次确认
@@ -17,6 +18,7 @@ from server import app
 def redirect_page(okCounts):
     if okCounts:
         session.clear()
+        CacheManager.clear()
 
         return [dcc.Location(pathname='/login', id='index-redirect'), None]
 
