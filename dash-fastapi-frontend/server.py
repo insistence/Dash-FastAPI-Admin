@@ -46,7 +46,7 @@ def get_user_agent_info():
                 '用户使用IE内核',
             )
             return "<h1 style='color: red'>请不要使用IE浏览器或360浏览器兼容模式</h1>"
-        if bw_version < 71:
+        if bw == 'Chrome' and bw_version < 71:
             logger.warning(
                 '[sys]请求人:{}||请求IP:{}||请求方法:{}||请求Data:{}',
                 session.get('name'),
