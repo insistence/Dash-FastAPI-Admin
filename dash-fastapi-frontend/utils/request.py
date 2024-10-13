@@ -11,6 +11,7 @@ from config.exception import (
     ServiceWarning,
 )
 from utils.cache_util import CacheManager
+from utils.common_util import FilterUtil
 from utils.log_util import logger
 
 
@@ -127,7 +128,18 @@ def api_request(
         if CacheManager.get('user_info')
         else None
     )
-    request_params = ','.join([str(x) for x in data_list if x])
+    request_params = ','.join(
+        [
+            str(
+                FilterUtil.fliter_params(
+                    params_name=['password', 'old_password', 'new_password'],
+                    fliter_dict=x,
+                )
+            )
+            for x in data_list
+            if x
+        ]
+    )
     log_message = LogMessage(
         request_user,
         remote_addr,
