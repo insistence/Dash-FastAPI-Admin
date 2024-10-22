@@ -1,12 +1,12 @@
 <p align="center">
 	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v2.0.1</h1>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Dash-FastAPI-Admin v2.1.0</h1>
 <h4 align="center">基于Dash+FastAPI前后端分离的纯Python快速开发框架</h4>
 <p align="center">
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/stargazers"><img src="https://gitee.com/insistence2022/dash-fastapi-admin/badge/star.svg?theme=dark"></a>
     <a href="https://github.com/insistence/Dash-FastAPI-Admin"><img src="https://img.shields.io/github/stars/insistence/Dash-FastAPI-Admin?style=social"></a>
-	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v2.0.1-brightgreen.svg"></a>
+	<a href="https://gitee.com/insistence2022/dash-fastapi-admin"><img src="https://img.shields.io/badge/DashFastAPIAdmin-v2.1.0-brightgreen.svg"></a>
 	<a href="https://gitee.com/insistence2022/dash-fastapi-admin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
     <img src="https://img.shields.io/badge/python-≥3.9-blue">
     <img src="https://img.shields.io/badge/MySQL-≥5.7-blue">
@@ -17,7 +17,7 @@
 Dash-FastAPI-Admin是一套全部开源的快速开发平台，毫无保留给个人及企业免费使用。
 
 * 前端采用Dash、feffery-antd-components、feffery-utils-components。
-* 后端采用FastAPI、sqlalchemy、MySQL、Redis、OAuth2 & Jwt。
+* 后端采用FastAPI、sqlalchemy、MySQL（PostgreSQL）、Redis、OAuth2 & Jwt。
 * 权限认证使用OAuth2 & Jwt，支持多终端认证系统。
 * 支持加载动态权限菜单，多方式轻松权限控制。
 * Vue2版本：
@@ -105,8 +105,10 @@ git clone https://gitee.com/insistence2022/dash-fastapi-admin.git
 # 进入项目根目录
 cd dash-fastapi-admin
 
-# 安装项目依赖环境
+# 如果使用的是MySQL数据库，请执行以下命令安装项目依赖环境
 pip3 install -r requirements.txt
+# 如果使用的是PostgreSQL数据库，请执行以下命令安装项目依赖环境
+pip3 install -r requirements-pg.txt
 ```
 
 ### 开发
@@ -134,7 +136,7 @@ cd dash-fastapi-backend
 
 # 运行sql文件
 1.新建数据库dash-fastapi(默认，可修改)
-2.使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql
+2.如果使用的是MySQL数据库，使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql；如果使用的是PostgreSQL数据库，使用命令或数据库连接工具运行sql文件夹下的dash-fastapi-pg.sql
 
 # 运行后端
 python3 app.py --env=dev
@@ -193,7 +195,7 @@ cd dash-fastapi-backend
 
 # 运行sql文件
 1.新建数据库dash-fastapi(默认，可修改)
-2.使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql
+2.如果使用的是MySQL数据库，使用命令或数据库连接工具运行sql文件夹下的dash-fastapi.sql；如果使用的是PostgreSQL数据库，使用命令或数据库连接工具运行sql文件夹下的dash-fastapi-pg.sql
 
 # 运行后端
 python3 app.py --env=prod
@@ -213,14 +215,14 @@ python3 app.py --env=prod
 如果有对本项目及FastAPI感兴趣的朋友，欢迎加入知识星球一起交流学习，让我们一起变得更强。如果你觉得这个项目帮助到了你，你可以请作者喝杯咖啡表示鼓励☕。扫描下面微信二维码添加微信备注DF-Admin即可进群，也欢迎大家加入dash大神费弗里的知识星球学习更多dash开发知识。
 <table>
     <tr>
-        <td><img alt="zanzhu_wx" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zanzhu_wx.jpg"></td>
-        <td><img alt="zanzhu_zfb" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zanzhu_zfb.jpg"></td>
+        <td style="width: 50%"><img alt="zanzhu_wx" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zanzhu_wx.jpg"></td>
+        <td style="width: 50%"><img alt="zanzhu_zfb" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zanzhu_zfb.jpg"></td>
     </tr>
     <tr>
-        <td><img alt="zsxq" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zsxq.jpg"></td>
-        <td><img alt="dashzsxq" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/dashzsxq.jpg"></td>
+        <td style="width: 50%"><img alt="zsxq" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/zsxq.jpg"></td>
+        <td style="width: 50%"><img alt="dashzsxq" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/dashzsxq.jpg"></td>
     </tr>
     <tr>
-        <td><img alt="wxcode" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/wxcode.jpg"></td>
+        <td style="width: 50%"><img alt="wxcode" src="https://gitee.com/insistence2022/dash-fastapi-admin/raw/master/demo-pictures/wxcode.jpg"></td>
     </tr>
 </table>
