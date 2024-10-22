@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from pydantic_validation_decorator import ValidateFields
 from config.get_db import get_db
 from config.env import UploadConfig
@@ -220,7 +220,7 @@ async def query_detail_system_user_profile(
 )
 async def query_detail_system_user(
     request: Request,
-    user_id: Optional[Union[int, str]] = '',
+    user_id: Optional[Union[int, Literal['']]] = '',
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     data_scope_sql: str = Depends(GetDataScope('SysUser')),
